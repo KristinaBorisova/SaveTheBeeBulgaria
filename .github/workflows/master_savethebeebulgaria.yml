@@ -21,19 +21,18 @@ jobs:
       - name: Set up .NET Core
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '9.x'
+          dotnet-version: '7.x' # or '8.x' if your project supports it
 
       - name: Build with dotnet
-        run: dotnet build --configuration Release
-
+        run: dotnet build HoneyWebPlatform.Web/HoneyWebPlatform.Web.csproj --configuration Release
       - name: dotnet publish
-        run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/myapp
+        run: dotnet publish HoneyWebPlatform.Web/HoneyWebPlatform.Web.csproj -c Release -o ./myapp
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: .net-app
-          path: ${{env.DOTNET_ROOT}}/myapp
+          path: ./myapp
 
   deploy:
     runs-on: ubuntu-latest
@@ -52,5 +51,5 @@ jobs:
         with:
           app-name: 'savethebeebulgaria'
           slot-name: 'Production'
-          package: .
+          package: ./myapp
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_18D43B3E035542168F412C0E36F0F7E7 }}

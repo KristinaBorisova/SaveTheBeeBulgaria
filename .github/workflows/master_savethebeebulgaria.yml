@@ -51,5 +51,5 @@ jobs:
         with:
           app-name: 'savethebeebulgaria'
           slot-name: 'Production'
-          package: ./myapp
+          package: .
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_18D43B3E035542168F412C0E36F0F7E7 }}

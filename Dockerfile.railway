@@ -1,8 +1,12 @@
-# Use the official .NET SDK image for build
-FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
+# Use a specific .NET 6.0 image
+FROM mcr.microsoft.com/dotnet/aspnet:6.0.25 AS base
 WORKDIR /app
+EXPOSE 80
 
-# Copy csproj and restore as distinct layers
+FROM mcr.microsoft.com/dotnet/sdk:6.0.25 AS build
+WORKDIR /src
+
+# Copy csproj files
 COPY HoneyWebPlatform.Web/*.csproj ./HoneyWebPlatform.Web/
 COPY HoneyWebPlatform.Data/*.csproj ./HoneyWebPlatform.Data/
 COPY HoneyWebPlatform.Data.Models/*.csproj ./HoneyWebPlatform.Data.Models/
@@ -11,20 +15,24 @@ COPY HoneyWebPlatform.Services.Data.Models/*.csproj ./HoneyWebPlatform.Services.
 COPY HoneyWebPlatform.Services.Mapping/*.csproj ./HoneyWebPlatform.Services.Mapping/
 COPY HoneyWebPlatform.Web.Infrastructure/*.csproj ./HoneyWebPlatform.Web.Infrastructure/
 COPY HoneyWebPlatform.Web.ViewModels/*.csproj ./HoneyWebPlatform.Web.ViewModels/
-RUN dotnet restore ./HoneyWebPlatform.Web/HoneyWebPlatform.Web.csproj
 
-# Copy everything else and build
+# Restore dependencies
+RUN dotnet restore "HoneyWebPlatform.Web/HoneyWebPlatform.Web.csproj"
+
+# Copy everything else
 COPY . .
-WORKDIR /app/HoneyWebPlatform.Web
-RUN dotnet publish -c Release -o out --self-contained false
 
-# Build runtime image
-FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS runtime
+# Build and publish
+WORKDIR "/src/HoneyWebPlatform.Web"
+RUN dotnet build "HoneyWebPlatform.Web.csproj" -c Release -o /app/build
+RUN dotnet publish "HoneyWebPlatform.Web.csproj" -c Release -o /app/publish
+
+# Final stage
+FROM base AS final
 WORKDIR /app
 
 # Verify .NET version
 RUN dotnet --version
 
-COPY --from=build /app/HoneyWebPlatform.Web/out .
-EXPOSE 80
-ENTRYPOINT ["dotnet", "HoneyWebPlatform.Web.dll"] 
+COPY --from=build /app/publish .
+ENTRYPOINT ["dotnet", "HoneyWebPlatform.Web.dll"]

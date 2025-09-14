@@ -11,7 +11,7 @@
         {
             builder
                 .Property(h => h.CreatedOn)
-                .HasDefaultValueSql("GETDATE()");
+                .HasDefaultValueSql("NOW()");
 
             builder
                 .Property(h => h.IsActive)

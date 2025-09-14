@@ -16,7 +16,7 @@
 
             builder
                 .Property(h => h.CreatedOn)
-                .HasDefaultValueSql("GETDATE()");
+                .HasDefaultValueSql("NOW()");
 
             builder
                 .HasOne(h => h.Author)

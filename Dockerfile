@@ -21,10 +21,6 @@ RUN dotnet publish -c Release -o out --self-contained false
 # Build runtime image
 FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS runtime
 WORKDIR /app
-
-# Verify .NET version
-RUN dotnet --version
-
 COPY --from=build /app/HoneyWebPlatform.Web/out .
 EXPOSE 80
 ENTRYPOINT ["dotnet", "HoneyWebPlatform.Web.dll"] 

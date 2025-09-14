@@ -47,6 +47,7 @@
 
 </head>
 <body>
+    @await Html.PartialAsync("_LanguageSwitcherSimple")
     <!--::header part start::-->
     <header class="main_menu @((controller?.ToString() == "Home" && action?.ToString() == "Index") ? "home_menu" : "")">
         <div class="container">

@@ -85,7 +85,7 @@ namespace HoneyWebPlatform.Web.Controllers
                     $"Name: {model.Name}\nEmail: {model.Email}\nPhone Number: {model.Number}\nSubject: {model.Subject}\nMessage: {model.Message}";
 
                 // Use the EmailSender service to send the email
-                await emailSender.SendEmailAsync("savethebee2024@gmail.com", model.Subject, emailMessage, model.Number);
+                await emailSender.SendEmailAsync("savethebeebulgaria@gmail.com", model.Subject, emailMessage, model.Number);
 
                 TempData[SuccessMessage] = "Благодарим Ви за имейла!";
 

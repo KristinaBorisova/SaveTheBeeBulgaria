@@ -80,6 +80,16 @@ namespace HoneyWebPlatform.Web
 
             builder.Services.AddTransient<IEmailSender, EmailSender>();
 
+            // Add localization services
+            builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+            builder.Services.Configure<RequestLocalizationOptions>(options =>
+            {
+                var supportedCultures = new[] { "en-US", "bg-BG" };
+                options.SetDefaultCulture("bg-BG")
+                    .AddSupportedCultures(supportedCultures)
+                    .AddSupportedUICultures(supportedCultures);
+            });
+
             //todo
             builder.Services.AddAuthentication()
                 .AddGoogle(options =>
@@ -120,6 +130,9 @@ namespace HoneyWebPlatform.Web
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
+
+            // Add localization middleware
+            app.UseRequestLocalization();
 
             app.UseRouting();
 

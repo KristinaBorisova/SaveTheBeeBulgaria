@@ -31,7 +31,7 @@ namespace HoneyWebPlatform.Web
                     ("Connection string 'DefaultConnection' not found.");
 
             builder.Services.AddDbContext<HoneyWebPlatformDbContext>(options =>
-                options.UseSqlServer(connectionString));
+                options.UseNpgsql(connectionString));
 
             builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
             {

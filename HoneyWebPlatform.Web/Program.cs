@@ -96,6 +96,13 @@ namespace HoneyWebPlatform.Web
 
             WebApplication app = builder.Build();
 
+            // Ensure database is created
+            using (var scope = app.Services.CreateScope())
+            {
+                var context = scope.ServiceProvider.GetRequiredService<HoneyWebPlatformDbContext>();
+                context.Database.EnsureCreated();
+            }
+
             AutoMapperConfig.RegisterMappings(typeof(ErrorViewModel).GetTypeInfo().Assembly);
 
             if (app.Environment.IsDevelopment())

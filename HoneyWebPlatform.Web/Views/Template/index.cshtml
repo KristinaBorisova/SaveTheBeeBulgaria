@@ -26,10 +26,11 @@
     <link rel="stylesheet" href="lib/bootstrap/dist/css/all.css">
     <!-- style CSS -->
     <link rel="stylesheet" href="lib/bootstrap/dist/css/style.css">
+    <!-- Language Switcher -->
+    <script src="~/js/language-switcher.js"></script>
 </head>
 
 <body>
-    @await Html.PartialAsync("_LanguageSwitcherSimple")
     <!--::header part start::-->
     <header class="main_menu home_menu">
         <div class="container">
@@ -69,7 +70,7 @@
                                     </div>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link" href="contact.html">Contact</a>
+                                    <a class="nav-link" href="contact.html" data-translate="Contact">Contact</a>
                                 </li>
                             </ul>
                         </div>
@@ -843,7 +844,7 @@
             <div class="row">
                 <div class="col-xl-3 col-sm-6 col-md-3 col-lg-3">
                     <div class="single-footer-widget footer_1">
-                        <h4>About Us</h4>
+                        <h4 data-translate="About Us">About Us</h4>
                         <p>
                             Heaven fruitful doesn't over for these theheaven fruitful doe over days
                             appear creeping seasons sad behold beari ath of it fly signs bearing
@@ -877,7 +878,7 @@
                 </div>
                 <div class="col-xl-3 col-sm-6 col-md-4 col-lg-3">
                     <div class="single-footer-widget footer_3">
-                        <h4>Newsletter</h4>
+                        <h4 data-translate="Newsletter">Newsletter</h4>
                         <p>Heaven fruitful doesn't over lesser in days. Appear creeping seas</p>
                         <form action="#">
                             <div class="form-group">

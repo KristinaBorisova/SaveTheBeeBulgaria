@@ -354,10 +354,39 @@
                 return RedirectToAction("Cart");
             }
 
+            // Validate user information
+            if (model == null || string.IsNullOrEmpty(model.FullName) || string.IsNullOrEmpty(model.Email) || string.IsNullOrEmpty(model.Address))
+            {
+                TempData[ErrorMessage] = "Моля, попълнете всички задължителни полета.";
+                return RedirectToAction("Cart");
+            }
+
+            // Set user information
             cart.UserInformation = model;
             cart.UserInformation.Id = Guid.Parse(userId);
 
-            Guid orderId = await orderService.CreateOrderAsync(cart);
+            // Debug logging
+            Console.WriteLine($"DEBUG: User Information - Name: {cart.UserInformation.FullName}, Email: {cart.UserInformation.Email}, Phone: {cart.UserInformation.PhoneNumber}, Address: {cart.UserInformation.Address}");
+
+            // Validate that user information is properly set
+            if (cart.UserInformation == null || string.IsNullOrEmpty(cart.UserInformation.Email))
+            {
+                TempData[ErrorMessage] = "Грешка при обработка на потребителските данни. Моля, опитайте отново.";
+                return RedirectToAction("Cart");
+            }
+
+            Guid orderId;
+            try
+            {
+                orderId = await orderService.CreateOrderAsync(cart);
+                Console.WriteLine($"DEBUG: Order created successfully with ID: {orderId}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"DEBUG: Error creating order: {ex.Message}");
+                TempData[ErrorMessage] = $"Грешка при създаване на поръчка: {ex.Message}";
+                return RedirectToAction("Cart");
+            }
 
             if (orderId == Guid.Empty)
             {

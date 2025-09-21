@@ -30,14 +30,30 @@ namespace HoneyWebPlatform.Services.Data
                 return Guid.Empty;
             }
 
+            // Debug: Check if UserInformation is properly set
+            if (cart.UserInformation == null)
+            {
+                throw new InvalidOperationException("UserInformation is null in cart");
+            }
+
+            if (string.IsNullOrEmpty(cart.UserInformation.Email))
+            {
+                throw new InvalidOperationException("User email is null or empty");
+            }
+
+            if (string.IsNullOrEmpty(cart.UserInformation.FullName))
+            {
+                throw new InvalidOperationException("User full name is null or empty");
+            }
+
             var order = new Order
             {
                 Id = Guid.NewGuid(),
                 UserId = cart.UserInformation.Id,
-                PhoneNumber = cart.UserInformation.PhoneNumber,
+                PhoneNumber = cart.UserInformation.PhoneNumber ?? "N/A",
                 CreatedOn = DateTime.Now,
                 Email = cart.UserInformation.Email,
-                Address = cart.UserInformation.Address,
+                Address = cart.UserInformation.Address ?? "N/A",
                 TotalPrice = cart.Honeys.Sum(honey => honey.TotalPrice) + cart.Propolises.Sum(propolis => propolis.TotalPrice),
                 Status = OrderStatus.Обработван
             };

@@ -23,7 +23,19 @@
             'Phone': 'Телефон',
             'Email': 'Имейл',
             'Team Member': 'Екипът ни',
-            'Chef Master': 'Пчелар'
+            'Chef Master': 'Пчелар',
+            'Why are bees important?': 'Защо са важни пчелите?',
+            'of flowers are pollinated by bees': 'от цветята се опрашват от пчели',
+            'of food depends on bee pollination': 'от храната зависи от пчелното опрашване',
+            'billion annual value of pollination': 'милиарда годишна стойност на опрашването',
+            'annual decline in bee colonies': 'намаление на пчелните колонии годишно',
+            'Our History': 'Нашата История',
+            'Preserving traditions, Saving bees': 'Запазваме традициите, Спасяваме пчелите',
+            'Every drop of honey tells a story about nature': 'Всяка капка мед разказва история за природата',
+            'Our Mission': 'Нашата Мисия',
+            'Saving bees, Preserving nature': 'Спасяваме пчелите, Запазваме природата',
+            'Every purchase supports Bulgarian beekeepers': 'Всяка покупка подкрепя българските пчелари',
+            'Propolis': 'Прополис'
         },
         en: {
             'Начало': 'Home',

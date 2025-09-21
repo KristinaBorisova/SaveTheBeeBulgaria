@@ -49,6 +49,23 @@
                         cartViewModel.Propolises.Add(cartItemViewModel);
                     }
                 }
+
+                // Get user information from the database
+                var user = await dbContext.Users
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(u => u.Id == userId);
+
+                if (user != null)
+                {
+                    cartViewModel.UserInformation = new UserViewModel
+                    {
+                        Id = Guid.Parse(userId),
+                        FullName = user.FirstName + " " + user.LastName,
+                        PhoneNumber = user.PhoneNumber,
+                        Email = user.Email,
+                        Address = "" // This will be filled by the user in the form
+                    };
+                }
             }
 
             return cartViewModel;

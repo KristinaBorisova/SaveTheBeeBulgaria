@@ -11,6 +11,12 @@
     {
         public void Configure(EntityTypeBuilder<Comment> builder)
         {
+            // Configure AuthorId as Guid for PostgreSQL
+            builder
+                .Property(c => c.AuthorId)
+                .HasColumnName("AuthorId")
+                .HasColumnType("uuid");
+
             builder
                 .HasOne(c => c.Author)
                 .WithMany(a => a.OwnedComments)

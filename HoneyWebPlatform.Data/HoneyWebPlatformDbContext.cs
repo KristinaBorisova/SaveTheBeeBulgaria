@@ -57,6 +57,7 @@
             });
 
             builder.ApplyConfiguration(new ApplicationUserEntityConfiguration());
+            builder.ApplyConfiguration(new BeekeeperEntityConfiguration());
 
             //after creating two users through the app - continue with seeding these 4
             builder.ApplyConfiguration(new CategoryEntityConfiguration());

@@ -25,7 +25,7 @@
                 .ThenInclude(ci => ci.Honey)
                 .Include(c => c.CartItems)
                 .ThenInclude(ci => ci.Propolis)
-                .FirstOrDefaultAsync(c => c.UserId == userId);
+                .FirstOrDefaultAsync(c => c.UserId == Guid.Parse(userId));
 
             if (cart != null)
             {
@@ -53,7 +53,7 @@
                 // Get user information from the database
                 var user = await dbContext.Users
                     .AsNoTracking()
-                    .FirstOrDefaultAsync(u => u.Id == userId);
+                    .FirstOrDefaultAsync(u => u.Id == Guid.Parse(userId));
 
                 if (user != null)
                 {
@@ -75,7 +75,7 @@
         {
             var cartItem = await dbContext.CartItems
                 .Include(ci => ci.Cart)
-                .SingleOrDefaultAsync(c => c.Cart.UserId == userId &&
+                .SingleOrDefaultAsync(c => c.Cart.UserId == Guid.Parse(userId) &&
                                            (c.HoneyId == productId || c.PropolisId == productId));
 
             if (cartItem != null)
@@ -97,13 +97,13 @@
 
             var cart = await dbContext.Carts
                 .Include(c => c.CartItems)
-                .FirstOrDefaultAsync(c => c.UserId == userId);
+                .FirstOrDefaultAsync(c => c.UserId == Guid.Parse(userId));
 
             if (cart == null)
             {
                 cart = new Cart
                 {
-                    UserId = userId
+                    UserId = Guid.Parse(userId)
                 };
 
                 dbContext.Carts.Add(cart);
@@ -183,7 +183,7 @@
         {
             var cartItem = await dbContext.CartItems
                 .Include(ci => ci.Cart)
-                .FirstOrDefaultAsync(ci => ci.Cart.UserId == userId &&
+                .FirstOrDefaultAsync(ci => ci.Cart.UserId == Guid.Parse(userId) &&
                                            (ci.HoneyId == cartItemId || ci.PropolisId == cartItemId));
 
             if (cartItem != null)
@@ -201,7 +201,7 @@
         {
             var cart = await dbContext.Carts
                 .Include(c => c.CartItems)
-                .FirstOrDefaultAsync(c => c.UserId == userId);
+                .FirstOrDefaultAsync(c => c.UserId == Guid.Parse(userId));
 
             if (cart != null)
             {

@@ -53,7 +53,7 @@
                 // Get user information from the database
                 var user = await dbContext.Users
                     .AsNoTracking()
-                    .FirstOrDefaultAsync(u => u.Id == Guid.Parse(userId));
+                    .FirstOrDefaultAsync(u => u.Id.ToString() == userId);
 
                 if (user != null)
                 {
@@ -201,7 +201,7 @@
         {
             var cart = await dbContext.Carts
                 .Include(c => c.CartItems)
-                .FirstOrDefaultAsync(c => c.UserId == Guid.Parse(userId));
+                .FirstOrDefaultAsync(c => c.UserId == userId);
 
             if (cart != null)
             {

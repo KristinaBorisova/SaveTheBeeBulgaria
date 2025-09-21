@@ -79,7 +79,7 @@ namespace HoneyWebPlatform.Services.Data
         {
             var cart = await dbContext.Carts
                 .Include(c => c.CartItems)
-                .FirstOrDefaultAsync(c => c.UserId == Guid.Parse(userId));
+                .FirstOrDefaultAsync(c => c.UserId == userId);
 
             if (cart != null)
             {

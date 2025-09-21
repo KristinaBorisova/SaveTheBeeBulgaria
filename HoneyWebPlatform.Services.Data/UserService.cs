@@ -118,7 +118,7 @@
             }
 
             // Check if the user is a beekeeper
-            var beekeeper = await dbContext.Beekeepers.FirstOrDefaultAsync(b => b.UserId == Guid.Parse(userId));
+            var beekeeper = await dbContext.Beekeepers.FirstOrDefaultAsync(b => b.UserId == userId);
             if (beekeeper != null)
             {
                 // Delete all honeys and propolises of the user
@@ -170,7 +170,7 @@
 
             // Delete posts and associated comments of the user
             var userPosts = await dbContext.Posts.Include(p => p.Comments)
-                                                  .Where(p => p.AuthorId == Guid.Parse(userId))
+                                                  .Where(p => p.AuthorId == userId)
                                                   .ToListAsync();
             foreach (var post in userPosts)
             {
@@ -180,10 +180,10 @@
             }
 
             // Delete comments made by the user
-            var userComments = await dbContext.Comments.Where(c => c.AuthorId == Guid.Parse(userId)).ToListAsync();
+            var userComments = await dbContext.Comments.Where(c => c.AuthorId == userId).ToListAsync();
             dbContext.Comments.RemoveRange(userComments);
 
-            var userOrders = await dbContext.Orders.Where(o => o.UserId == Guid.Parse(userId)).ToListAsync();
+            var userOrders = await dbContext.Orders.Where(o => o.UserId == userId).ToListAsync();
             dbContext.Orders.RemoveRange(userOrders);
 
             if (user.ProfilePicturePath != null)

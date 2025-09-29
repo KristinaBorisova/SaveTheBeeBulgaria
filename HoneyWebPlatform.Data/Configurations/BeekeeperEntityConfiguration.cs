@@ -9,11 +9,10 @@ namespace HoneyWebPlatform.Data.Configurations
     {
         public void Configure(EntityTypeBuilder<Beekeeper> builder)
         {
-            // Configure UserId as Guid for PostgreSQL
+            // Configure UserId for PostgreSQL compatibility
             builder
                 .Property(b => b.UserId)
-                .HasColumnName("UserId")
-                .HasColumnType("uuid");
+                .HasColumnName("UserId");
 
             // Configure other properties if needed
             builder

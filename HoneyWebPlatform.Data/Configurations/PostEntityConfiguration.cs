@@ -9,11 +9,10 @@
 
         public void Configure(EntityTypeBuilder<Post> builder)
         {
-            // Configure AuthorId as Guid for PostgreSQL
+            // Configure AuthorId for PostgreSQL compatibility
             builder
                 .Property(p => p.AuthorId)
-                .HasColumnName("AuthorId")
-                .HasColumnType("uuid");
+                .HasColumnName("AuthorId");
 
             builder
                 .Property(h => h.IsActive)

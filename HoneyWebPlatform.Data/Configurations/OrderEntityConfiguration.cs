@@ -9,11 +9,10 @@
     {
         public void Configure(EntityTypeBuilder<Order> builder)
         {
-            // Configure UserId as Guid for PostgreSQL
+            // Configure UserId for PostgreSQL compatibility
             builder
                 .Property(o => o.UserId)
-                .HasColumnName("UserId")
-                .HasColumnType("uuid");
+                .HasColumnName("UserId");
 
             // Relationships
             builder.HasMany(o => o.OrderItems)

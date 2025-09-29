@@ -5,6 +5,7 @@ namespace HoneyWebPlatform.Web
     using Microsoft.AspNetCore.Identity;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.EntityFrameworkCore;
+    using Microsoft.Extensions.Diagnostics.HealthChecks;
 
     using HoneyWebPlatform.Services.Data.Models;
     using HoneyWebPlatform.Web.Areas.Hubs;
@@ -103,7 +104,7 @@ namespace HoneyWebPlatform.Web
 
             // Add health checks
             builder.Services.AddHealthChecks()
-                .AddDbContext<HoneyWebPlatformDbContext>();
+                .AddNpgSql(connectionString, name: "postgresql");
 
             // Add localization services
             builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");

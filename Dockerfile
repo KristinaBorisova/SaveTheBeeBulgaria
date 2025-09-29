@@ -4,6 +4,7 @@ WORKDIR /app
 
 # Copy csproj and restore as distinct layers
 COPY HoneyWebPlatform.Web/*.csproj ./HoneyWebPlatform.Web/
+COPY HoneyWebPlatform.Common/*.csproj ./HoneyWebPlatform.Common/
 COPY HoneyWebPlatform.Data/*.csproj ./HoneyWebPlatform.Data/
 COPY HoneyWebPlatform.Data.Models/*.csproj ./HoneyWebPlatform.Data.Models/
 COPY HoneyWebPlatform.Services.Data/*.csproj ./HoneyWebPlatform.Services.Data/

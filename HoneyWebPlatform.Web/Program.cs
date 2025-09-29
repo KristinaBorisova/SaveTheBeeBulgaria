@@ -24,14 +24,35 @@ namespace HoneyWebPlatform.Web
         {
             WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
-            string connectionString =
-                builder.Configuration.GetConnectionString("DefaultConnection")
-                    //builder.Configuration.GetConnectionString("AzureConnection") 
-                    ?? throw new InvalidOperationException
-                    ("Connection string 'DefaultConnection' not found.");
+            string connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+            
+            // Handle Railway environment variables
+            if (string.IsNullOrEmpty(connectionString))
+            {
+                var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
+                if (!string.IsNullOrEmpty(databaseUrl))
+                {
+                    // Parse Railway's DATABASE_URL format: postgresql://user:password@host:port/database
+                    var uri = new Uri(databaseUrl);
+                    var userInfo = uri.UserInfo.Split(':');
+                    connectionString = $"Host={uri.Host};Port={uri.Port};Database={uri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={userInfo[1]};SSL Mode=Require;";
+                }
+                else
+                {
+                    throw new InvalidOperationException("Connection string 'DefaultConnection' not found and DATABASE_URL environment variable is not set.");
+                }
+            }
 
             builder.Services.AddDbContext<HoneyWebPlatformDbContext>(options =>
-                options.UseNpgsql(connectionString));
+            {
+                options.UseNpgsql(connectionString);
+                // Add logging for debugging
+                if (builder.Environment.IsDevelopment())
+                {
+                    options.EnableSensitiveDataLogging();
+                    options.EnableDetailedErrors();
+                }
+            });
 
             builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
             {
@@ -80,6 +101,10 @@ namespace HoneyWebPlatform.Web
 
             builder.Services.AddTransient<IEmailSender, EmailSender>();
 
+            // Add health checks
+            builder.Services.AddHealthChecks()
+                .AddDbContext<HoneyWebPlatformDbContext>();
+
             // Add localization services
             builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
             builder.Services.Configure<RequestLocalizationOptions>(options =>
@@ -90,27 +115,63 @@ namespace HoneyWebPlatform.Web
                     .AddSupportedUICultures(supportedCultures);
             });
 
-            //todo
-            builder.Services.AddAuthentication()
-                .AddGoogle(options =>
+            // External authentication providers - only add if properly configured
+            var googleClientId = builder.Configuration["Authentication:Google:ClientId"];
+            var googleClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+            var facebookAppId = builder.Configuration["Authentication:Facebook:AppId"];
+            var facebookAppSecret = builder.Configuration["Authentication:Facebook:AppSecret"];
+
+            var authBuilder = builder.Services.AddAuthentication();
+
+            if (!string.IsNullOrEmpty(googleClientId) && !string.IsNullOrEmpty(googleClientSecret) && 
+                googleClientId != "YOUR_GOOGLE_CLIENT_ID")
+            {
+                authBuilder.AddGoogle(options =>
                 {
-                    options.ClientId = "YOUR_GOOGLE_CLIENT_ID";
-                    options.ClientSecret = "YOUR_GOOGLE_CLIENT_SECRET";
-                })
-                .AddFacebook(options =>
-                {
-                    options.AppId = "YOUR_FACEBOOK_APP_ID";
-                    options.AppSecret = "YOUR_FACEBOOK_APP_SECRET";
+                    options.ClientId = googleClientId;
+                    options.ClientSecret = googleClientSecret;
                 });
+            }
+
+            if (!string.IsNullOrEmpty(facebookAppId) && !string.IsNullOrEmpty(facebookAppSecret) && 
+                facebookAppId != "YOUR_FACEBOOK_APP_ID")
+            {
+                authBuilder.AddFacebook(options =>
+                {
+                    options.AppId = facebookAppId;
+                    options.AppSecret = facebookAppSecret;
+                });
+            }
 
 
             WebApplication app = builder.Build();
 
-            // Ensure database is created
+            // Ensure database is created and migrated
             using (var scope = app.Services.CreateScope())
             {
                 var context = scope.ServiceProvider.GetRequiredService<HoneyWebPlatformDbContext>();
-                context.Database.EnsureCreated();
+                try
+                {
+                    // Use Migrate() instead of EnsureCreated() for production
+                    if (app.Environment.IsProduction())
+                    {
+                        context.Database.Migrate();
+                    }
+                    else
+                    {
+                        context.Database.EnsureCreated();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+                    logger.LogError(ex, "An error occurred while creating/migrating the database.");
+                    // Don't rethrow in production to prevent container restart loops
+                    if (!app.Environment.IsProduction())
+                    {
+                        throw;
+                    }
+                }
             }
 
             AutoMapperConfig.RegisterMappings(typeof(ErrorViewModel).GetTypeInfo().Assembly);
@@ -140,6 +201,9 @@ namespace HoneyWebPlatform.Web
 
             app.UseAuthentication();
             app.UseAuthorization();
+
+            // Add health check endpoint
+            app.MapHealthChecks("/health");
 
             app.EnableOnlineUsersCheck();
 

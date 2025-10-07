@@ -192,14 +192,7 @@
                     model.Email, createdUser.Id);
 
                 // Sign in the user
-                var signInResult = await signInManager.SignInAsync(user, false);
-                if (!signInResult.Succeeded)
-                {
-                    _logger.LogError("User sign-in failed for email: {Email}", model.Email);
-                    ModelState.AddModelError(string.Empty, "Грешка при влизане в системата. Моля опитайте отново.");
-                    return View(model);
-                }
-
+                await signInManager.SignInAsync(user, false);
                 _logger.LogInformation("User signed in successfully for email: {Email}", model.Email);
 
                 // Clear cache

@@ -17,6 +17,7 @@ namespace HoneyWebPlatform.Web
     using Services.Mapping;
     using ViewModels.Home;
     using static Common.GeneralApplicationConstants;
+    using HoneyWebPlatform.Services.Data;
 
     public class Program
     {
@@ -53,6 +54,10 @@ namespace HoneyWebPlatform.Web
             builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 
             builder.Services.AddApplicationServices(typeof(IHoneyService));
+            
+            // Add database health service
+            builder.Services.AddScoped<IDatabaseHealthService, DatabaseHealthService>();
+            
             // Print the list of added services
             //PrintAddedServicesForEntities(builder.Services);
 

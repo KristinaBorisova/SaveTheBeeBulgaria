@@ -27,6 +27,7 @@
         private readonly ISubscribedEmailService subscribedEmailService;
         private readonly ICartService cartService;
         private readonly IOrderService orderService;
+        private readonly IDatabaseHealthService databaseHealthService;
 
         private readonly IHubContext<CartHub> hubContext;
 
@@ -37,7 +38,8 @@
                               ICartService cartService,
                               IOrderService orderService,
                               IHubContext<CartHub> hubContext,
-                              IWebHostEnvironment webHostEnvironment)
+                              IWebHostEnvironment webHostEnvironment,
+                              IDatabaseHealthService databaseHealthService)
         {
             this.signInManager = signInManager;
             this.userManager = userManager;
@@ -48,6 +50,7 @@
             this.subscribedEmailService = subscribedEmailService;
             this.cartService = cartService;
             this.orderService = orderService;
+            this.databaseHealthService = databaseHealthService;
 
             this.hubContext = hubContext;
         }
@@ -70,52 +73,155 @@
             ValidationFailedAction = ValidationFailedAction.ContinueRequest)]
         public async Task<IActionResult> Register(RegisterFormModel model)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                return View(model);
-            }
-
-            ApplicationUser user = new ApplicationUser()
-            {
-                FirstName = model.FirstName,
-                LastName = model.LastName
-                // Add more properties as needed
-            };
-
-            await userManager.SetEmailAsync(user, model.Email);
-            await userManager.SetUserNameAsync(user, model.Email);
-
-            if (model.ProfilePicturePath != null && model.ProfilePicturePath.Length > 0)
-            {
-                var uploadsFolder = Path.Combine(webHostEnvironment.WebRootPath, "uploads", "UsersProfilePictures");
-                var uniqueFileName = Guid.NewGuid().ToString() + "_" + model.ProfilePicturePath.FileName;
-                var filePath = Path.Combine(uploadsFolder, uniqueFileName);
-
-                await using (var fileStream = new FileStream(filePath, FileMode.Create))
+                if (!ModelState.IsValid)
                 {
-                    await model.ProfilePicturePath.CopyToAsync(fileStream);
-                }
-                user.ProfilePicturePath = "/uploads/UsersProfilePictures/" + uniqueFileName;
-            }
-
-
-            IdentityResult result =
-                await userManager.CreateAsync(user, model.Password);
-
-            if (!result.Succeeded)
-            {
-                foreach (IdentityError error in result.Errors)
-                {
-                    ModelState.AddModelError(string.Empty, error.Description);
+                    return View(model);
                 }
 
+                // Check database health before proceeding
+                var canCreateUser = await databaseHealthService.CanCreateUserAsync();
+                if (!canCreateUser)
+                {
+                    var dbStatus = await databaseHealthService.GetDatabaseStatusAsync();
+                    ModelState.AddModelError(string.Empty, $"Базата данни не е достъпна: {dbStatus}. Моля, опитайте отново по-късно или се свържете с администратор.");
+                    return View(model);
+                }
+
+                // Check if user already exists
+                var existingUser = await userManager.FindByEmailAsync(model.Email);
+                if (existingUser != null)
+                {
+                    ModelState.AddModelError(string.Empty, "Потребител с този имейл адрес вече съществува.");
+                    return View(model);
+                }
+
+                ApplicationUser user = new ApplicationUser()
+                {
+                    FirstName = model.FirstName,
+                    LastName = model.LastName
+                    // Add more properties as needed
+                };
+
+                await userManager.SetEmailAsync(user, model.Email);
+                await userManager.SetUserNameAsync(user, model.Email);
+
+                // Handle profile picture upload with proper error handling
+                if (model.ProfilePicturePath != null && model.ProfilePicturePath.Length > 0)
+                {
+                    try
+                    {
+                        // Validate file size (e.g., max 5MB)
+                        const long maxFileSize = 5 * 1024 * 1024; // 5MB
+                        if (model.ProfilePicturePath.Length > maxFileSize)
+                        {
+                            ModelState.AddModelError(string.Empty, "Файлът е твърде голям. Максималният размер е 5MB.");
+                            return View(model);
+                        }
+
+                        // Validate file type
+                        var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
+                        var fileExtension = Path.GetExtension(model.ProfilePicturePath.FileName).ToLowerInvariant();
+                        if (!allowedExtensions.Contains(fileExtension))
+                        {
+                            ModelState.AddModelError(string.Empty, "Невалиден тип файл. Разрешени са само JPG, JPEG, PNG и GIF файлове.");
+                            return View(model);
+                        }
+
+                        var uploadsFolder = Path.Combine(webHostEnvironment.WebRootPath, "uploads", "UsersProfilePictures");
+                        
+                        // Ensure directory exists
+                        if (!Directory.Exists(uploadsFolder))
+                        {
+                            Directory.CreateDirectory(uploadsFolder);
+                        }
+
+                        var uniqueFileName = Guid.NewGuid().ToString() + "_" + model.ProfilePicturePath.FileName;
+                        var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                        await using (var fileStream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await model.ProfilePicturePath.CopyToAsync(fileStream);
+                        }
+                        user.ProfilePicturePath = "/uploads/UsersProfilePictures/" + uniqueFileName;
+                    }
+                    catch (UnauthorizedAccessException)
+                    {
+                        ModelState.AddModelError(string.Empty, "Нямате права за качване на файлове. Моля, свържете се с администратор.");
+                        return View(model);
+                    }
+                    catch (DirectoryNotFoundException)
+                    {
+                        ModelState.AddModelError(string.Empty, "Директорията за качване на файлове не е намерена. Моля, свържете се с администратор.");
+                        return View(model);
+                    }
+                    catch (IOException ex)
+                    {
+                        ModelState.AddModelError(string.Empty, $"Грешка при качване на файла: {ex.Message}");
+                        return View(model);
+                    }
+                    catch (Exception ex)
+                    {
+                        ModelState.AddModelError(string.Empty, $"Неочаквана грешка при качване на файла: {ex.Message}");
+                        return View(model);
+                    }
+                }
+
+                // Attempt to create user with comprehensive error handling
+                IdentityResult result;
+                try
+                {
+                    result = await userManager.CreateAsync(user, model.Password);
+                }
+                catch (Exception ex) when (ex is InvalidOperationException || ex is ArgumentException)
+                {
+                    ModelState.AddModelError(string.Empty, "Грешка в конфигурацията на системата. Моля, опитайте отново по-късно.");
+                    return View(model);
+                }
+                catch (Exception ex)
+                {
+                    // Log the exception for debugging
+                    // In a real application, you would use a proper logging framework
+                    ModelState.AddModelError(string.Empty, "Възникна неочаквана грешка при създаване на профила. Моля, опитайте отново.");
+                    return View(model);
+                }
+
+                if (!result.Succeeded)
+                {
+                    foreach (IdentityError error in result.Errors)
+                    {
+                        // Provide more user-friendly error messages
+                        var friendlyMessage = GetFriendlyErrorMessage(error.Code);
+                        ModelState.AddModelError(string.Empty, friendlyMessage);
+                    }
+
+                    return View(model);
+                }
+
+                // Sign in the user
+                try
+                {
+                    await signInManager.SignInAsync(user, false);
+                    this.memoryCache.Remove(UsersCacheKey);
+
+                    TempData[SuccessMessage] = "Успешно създадохте профил! Добре дошли!";
+                    return Redirect(model.ReturnUrl ?? "/Home/Index");
+                }
+                catch (Exception ex)
+                {
+                    // User was created but sign-in failed
+                    ModelState.AddModelError(string.Empty, "Профилът беше създаден, но възникна грешка при влизането. Моля, влезте с вашите данни.");
+                    return View(model);
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log the exception for debugging
+                // In a real application, you would use a proper logging framework
+                ModelState.AddModelError(string.Empty, "Възникна критична грешка. Моля, опитайте отново или се свържете с администратор.");
                 return View(model);
             }
-
-            await signInManager.SignInAsync(user, false);
-            this.memoryCache.Remove(UsersCacheKey);
-
-            return Redirect(model.ReturnUrl ?? "/Home/Index");
         }
 
         [HttpGet]
@@ -422,6 +528,32 @@
             {
                 return false;
             }
+        }
+
+        private string GetFriendlyErrorMessage(string errorCode)
+        {
+            return errorCode switch
+            {
+                "DuplicateUserName" => "Потребител с това име вече съществува.",
+                "DuplicateEmail" => "Потребител с този имейл адрес вече съществува.",
+                "InvalidUserName" => "Невалидно потребителско име.",
+                "InvalidEmail" => "Невалиден имейл адрес.",
+                "InvalidPassword" => "Невалидна парола.",
+                "PasswordTooShort" => "Паролата е твърде къса.",
+                "PasswordRequiresNonAlphanumeric" => "Паролата трябва да съдържа поне един символ, който не е буква или цифра.",
+                "PasswordRequiresDigit" => "Паролата трябва да съдържа поне една цифра.",
+                "PasswordRequiresLower" => "Паролата трябва да съдържа поне една малка буква.",
+                "PasswordRequiresUpper" => "Паролата трябва да съдържа поне една главна буква.",
+                "UserAlreadyHasPassword" => "Потребителят вече има парола.",
+                "UserLockoutNotEnabled" => "Заключването на потребители не е активирано.",
+                "UserAlreadyInRole" => "Потребителят вече е в тази роля.",
+                "UserNotInRole" => "Потребителят не е в тази роля.",
+                "InvalidToken" => "Невалиден токен.",
+                "RecoveryCodeRedemptionFailed" => "Неуспешно възстановяване на код.",
+                "ConcurrencyFailure" => "Грешка при конкурентност. Операцията беше прекъсната.",
+                "DefaultIdentityError" => "Възникна грешка при създаване на потребителя.",
+                _ => $"Грешка: {errorCode}"
+            };
         }
 
     }

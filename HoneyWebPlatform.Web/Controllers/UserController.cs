@@ -7,6 +7,7 @@
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.Caching.Memory;
     using Microsoft.AspNetCore.SignalR;
+    using Microsoft.Extensions.Logging;
 
     using Hubs;
     using Data.Models;
@@ -28,6 +29,7 @@
         private readonly ICartService cartService;
         private readonly IOrderService orderService;
         private readonly IDatabaseHealthService databaseHealthService;
+        private readonly ILogger<UserController> logger;
 
         private readonly IHubContext<CartHub> hubContext;
 
@@ -39,7 +41,8 @@
                               IOrderService orderService,
                               IHubContext<CartHub> hubContext,
                               IWebHostEnvironment webHostEnvironment,
-                              IDatabaseHealthService databaseHealthService)
+                              IDatabaseHealthService databaseHealthService,
+                              ILogger<UserController> logger)
         {
             this.signInManager = signInManager;
             this.userManager = userManager;
@@ -51,6 +54,7 @@
             this.cartService = cartService;
             this.orderService = orderService;
             this.databaseHealthService = databaseHealthService;
+            this.logger = logger;
 
             this.hubContext = hubContext;
         }
@@ -73,10 +77,13 @@
             ValidationFailedAction = ValidationFailedAction.ContinueRequest)]
         public async Task<IActionResult> Register(RegisterFormModel model)
         {
+            logger.LogInformation("Registration attempt started for email: {Email}", model.Email);
+            
             try
             {
                 if (!ModelState.IsValid)
                 {
+                    logger.LogWarning("Registration failed - ModelState is invalid for email: {Email}", model.Email);
                     return View(model);
                 }
 
@@ -85,6 +92,7 @@
                 if (!canCreateUser)
                 {
                     var dbStatus = await databaseHealthService.GetDatabaseStatusAsync();
+                    logger.LogError("Database health check failed for registration attempt. Email: {Email}, Status: {Status}", model.Email, dbStatus);
                     ModelState.AddModelError(string.Empty, $"Базата данни не е достъпна: {dbStatus}. Моля, опитайте отново по-късно или се свържете с администратор.");
                     return View(model);
                 }
@@ -93,6 +101,7 @@
                 var existingUser = await userManager.FindByEmailAsync(model.Email);
                 if (existingUser != null)
                 {
+                    logger.LogWarning("Registration failed - User already exists with email: {Email}", model.Email);
                     ModelState.AddModelError(string.Empty, "Потребител с този имейл адрес вече съществува.");
                     return View(model);
                 }
@@ -107,66 +116,8 @@
                 await userManager.SetEmailAsync(user, model.Email);
                 await userManager.SetUserNameAsync(user, model.Email);
 
-                // Handle profile picture upload with proper error handling
-                if (model.ProfilePicturePath != null && model.ProfilePicturePath.Length > 0)
-                {
-                    try
-                    {
-                        // Validate file size (e.g., max 5MB)
-                        const long maxFileSize = 5 * 1024 * 1024; // 5MB
-                        if (model.ProfilePicturePath.Length > maxFileSize)
-                        {
-                            ModelState.AddModelError(string.Empty, "Файлът е твърде голям. Максималният размер е 5MB.");
-                            return View(model);
-                        }
-
-                        // Validate file type
-                        var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
-                        var fileExtension = Path.GetExtension(model.ProfilePicturePath.FileName).ToLowerInvariant();
-                        if (!allowedExtensions.Contains(fileExtension))
-                        {
-                            ModelState.AddModelError(string.Empty, "Невалиден тип файл. Разрешени са само JPG, JPEG, PNG и GIF файлове.");
-                            return View(model);
-                        }
-
-                        var uploadsFolder = Path.Combine(webHostEnvironment.WebRootPath, "uploads", "UsersProfilePictures");
-                        
-                        // Ensure directory exists
-                        if (!Directory.Exists(uploadsFolder))
-                        {
-                            Directory.CreateDirectory(uploadsFolder);
-                        }
-
-                        var uniqueFileName = Guid.NewGuid().ToString() + "_" + model.ProfilePicturePath.FileName;
-                        var filePath = Path.Combine(uploadsFolder, uniqueFileName);
-
-                        await using (var fileStream = new FileStream(filePath, FileMode.Create))
-                        {
-                            await model.ProfilePicturePath.CopyToAsync(fileStream);
-                        }
-                        user.ProfilePicturePath = "/uploads/UsersProfilePictures/" + uniqueFileName;
-                    }
-                    catch (UnauthorizedAccessException)
-                    {
-                        ModelState.AddModelError(string.Empty, "Нямате права за качване на файлове. Моля, свържете се с администратор.");
-                        return View(model);
-                    }
-                    catch (DirectoryNotFoundException)
-                    {
-                        ModelState.AddModelError(string.Empty, "Директорията за качване на файлове не е намерена. Моля, свържете се с администратор.");
-                        return View(model);
-                    }
-                    catch (IOException ex)
-                    {
-                        ModelState.AddModelError(string.Empty, $"Грешка при качване на файла: {ex.Message}");
-                        return View(model);
-                    }
-                    catch (Exception ex)
-                    {
-                        ModelState.AddModelError(string.Empty, $"Неочаквана грешка при качване на файла: {ex.Message}");
-                        return View(model);
-                    }
-                }
+                // Profile picture upload removed for now
+                // File upload handling code has been removed
 
                 // Attempt to create user with comprehensive error handling
                 IdentityResult result;
@@ -189,6 +140,9 @@
 
                 if (!result.Succeeded)
                 {
+                    logger.LogWarning("User creation failed for email: {Email}. Errors: {Errors}", 
+                        model.Email, string.Join(", ", result.Errors.Select(e => e.Description)));
+                    
                     foreach (IdentityError error in result.Errors)
                     {
                         // Provide more user-friendly error messages
@@ -199,18 +153,22 @@
                     return View(model);
                 }
 
+                logger.LogInformation("User successfully created for email: {Email}", model.Email);
+
                 // Sign in the user
                 try
                 {
                     await signInManager.SignInAsync(user, false);
                     this.memoryCache.Remove(UsersCacheKey);
 
+                    logger.LogInformation("User successfully signed in after registration. Email: {Email}", model.Email);
                     TempData[SuccessMessage] = "Успешно създадохте профил! Добре дошли!";
                     return Redirect(model.ReturnUrl ?? "/Home/Index");
                 }
                 catch (Exception ex)
                 {
                     // User was created but sign-in failed
+                    logger.LogError(ex, "User was created but sign-in failed for email: {Email}", model.Email);
                     ModelState.AddModelError(string.Empty, "Профилът беше създаден, но възникна грешка при влизането. Моля, влезте с вашите данни.");
                     return View(model);
                 }
@@ -218,7 +176,7 @@
             catch (Exception ex)
             {
                 // Log the exception for debugging
-                // In a real application, you would use a proper logging framework
+                logger.LogError(ex, "Critical error during registration for email: {Email}", model.Email);
                 ModelState.AddModelError(string.Empty, "Възникна критична грешка. Моля, опитайте отново или се свържете с администратор.");
                 return View(model);
             }

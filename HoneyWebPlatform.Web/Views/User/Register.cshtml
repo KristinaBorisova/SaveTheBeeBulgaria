@@ -7,10 +7,13 @@
 
 <div class="row">
     <div class="col-md-4 offset-md-4">
-        <form id="registerForm" method="post" enctype="multipart/form-data">
+        <form id="registerForm" method="post">
             <h2 class="text-center">Създай нов потребителски профил.</h2>
             <hr />
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div asp-validation-summary="All" class="alert alert-danger" role="alert" style="display: none;" id="validation-summary">
+                <h6 class="alert-heading">Моля поправете следните грешки:</h6>
+                <ul class="mb-0" id="validation-errors-list"></ul>
+            </div>
             <div class="form-floating mb-2 text-center">
                 <label asp-for="Email">Имейл</label>
                 <input asp-for="Email" class="form-control" autocomplete="username" aria-required="true" />
@@ -36,21 +39,15 @@
                 <input asp-for="LastName" class="form-control" autocomplete="new-password" aria-required="true" />
                 <span asp-validation-for="LastName" class="text-danger"></span>
             </div>
-            <!-- Profile picture upload field -->
-            <div class="form-group text-center">
-                <label for="profilePicture" class="form-label">Профилна снимка</label>
-                <div class="input-group">
-                    <label class="input-group-btn">
-                        <span class="btn btn-primary">
-                            Избери файл&hellip; <input type="file" id="profilePicture" name="ProfilePicturePath" style="display: none;" accept="image/*" onchange="updateFileName(this)">
-                        </span>
-                    </label>
-                    <input type="text" class="form-control" id="upload-file-info" readonly placeholder="Файл не е избран">
-                </div>
-                <span asp-validation-for="ProfilePicturePath" class="text-danger"></span>
-            </div>
+            <!-- Profile picture upload removed for now -->
 
-            <recaptcha-v3 form-id="registerForm" action="submit" class="w-100 btn btn-lg btn-primary mb-4">Регистрирай</recaptcha-v3>
+            <recaptcha-v3 form-id="registerForm" action="submit" class="w-100 btn btn-lg btn-primary mb-4" id="register-btn">
+                <span id="btn-text">Регистрирай</span>
+                <span id="btn-loading" style="display: none;">
+                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                    Регистриране...
+                </span>
+            </recaptcha-v3>
         </form>
         
         <div class="text-center mt-3">
@@ -67,10 +64,177 @@
     <partial name="_ValidationScriptsPartial" />
     
     <script>
-        function updateFileName(input) {
-            var fileName = input.files[0].name;
-            document.getElementById('upload-file-info').value = fileName;
-        }
+        // File upload functions removed - no longer needed
+        
+        // Enhanced form validation
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('registerForm');
+            const password = document.querySelector('input[name="Password"]');
+            const confirmPassword = document.querySelector('input[name="ConfirmPassword"]');
+            const email = document.querySelector('input[name="Email"]');
+            
+            // Real-time password confirmation validation
+            function validatePasswordMatch() {
+                if (confirmPassword.value && password.value !== confirmPassword.value) {
+                    confirmPassword.setCustomValidity('Паролата и потвърждението не съвпадат.');
+                } else {
+                    confirmPassword.setCustomValidity('');
+                }
+            }
+            
+            // Real-time email validation
+            function validateEmail() {
+                var emailValue = email.value;
+                var atIndex = emailValue.indexOf(".");
+                var dotIndex = emailValue.indexOf(".");
+                var isValidEmail = atIndex > 0 && dotIndex > atIndex;
+                if (emailValue && !isValidEmail) {
+                    email.setCustomValidity("Моля въведете валиден имейл адрес.");
+                } else {
+                    email.setCustomValidity("");
+                }
+            }
+            
+            // Password strength indicator
+            function checkPasswordStrength() {
+                const passwordValue = password.value;
+                const strengthIndicator = document.getElementById('password-strength');
+                
+                if (!strengthIndicator) {
+                    // Create strength indicator if it doesn't exist
+                    const strengthDiv = document.createElement('div');
+                    strengthDiv.id = 'password-strength';
+                    strengthDiv.className = 'mt-1';
+                    password.parentNode.appendChild(strengthDiv);
+                }
+                
+                let strength = 0;
+                let strengthText = '';
+                let strengthClass = '';
+                
+                if (passwordValue.length >= 6) strength++;
+                if (/[a-z]/.test(passwordValue)) strength++;
+                if (/[A-Z]/.test(passwordValue)) strength++;
+                if (/[0-9]/.test(passwordValue)) strength++;
+                if (/[^A-Za-z0-9]/.test(passwordValue)) strength++;
+                
+                switch (strength) {
+                    case 0:
+                    case 1:
+                        strengthText = 'Слаба парола';
+                        strengthClass = 'text-danger';
+                        break;
+                    case 2:
+                    case 3:
+                        strengthText = 'Средна парола';
+                        strengthClass = 'text-warning';
+                        break;
+                    case 4:
+                    case 5:
+                        strengthText = 'Силна парола';
+                        strengthClass = 'text-success';
+                        break;
+                }
+                
+                const strengthIndicator = document.getElementById('password-strength');
+                if (passwordValue) {
+                    strengthIndicator.innerHTML = `<small class="${strengthClass}">${strengthText}</small>`;
+                } else {
+                    strengthIndicator.innerHTML = '';
+                }
+            }
+            
+            // Event listeners
+            password.addEventListener('input', function() {
+                validatePasswordMatch();
+                checkPasswordStrength();
+            });
+            
+            confirmPassword.addEventListener('input', validatePasswordMatch);
+            email.addEventListener('input', validateEmail);
+            
+            // Form submission validation
+            form.addEventListener('submit', function(e) {
+                let isValid = true;
+                
+                // Clear previous custom validity
+                const inputs = form.querySelectorAll('input');
+                inputs.forEach(input => input.setCustomValidity(''));
+                
+                // Validate all required fields
+                const requiredFields = form.querySelectorAll('input[required]');
+                requiredFields.forEach(field => {
+                    if (!field.value.trim()) {
+                        field.setCustomValidity('Това поле е задължително.');
+                        isValid = false;
+                    }
+                });
+                
+                // Validate email format
+                var emailValue = email.value;
+                var atIndex = emailValue.indexOf(".");
+                var dotIndex = emailValue.indexOf(".");
+                var isValidEmail = atIndex > 0 && dotIndex > atIndex;
+                if (emailValue && !isValidEmail) {
+                    email.setCustomValidity('Моля въведете валиден имейл адрес.');
+                    isValid = false;
+                }
+                
+                // Validate password match
+                if (password.value !== confirmPassword.value) {
+                    confirmPassword.setCustomValidity('Паролата и потвърждението не съвпадат.');
+                    isValid = false;
+                }
+                
+                // Validate password length
+                if (password.value && password.value.length < 6) {
+                    password.setCustomValidity('Паролата трябва да е поне 6 символа.');
+                    isValid = false;
+                }
+                
+                if (!isValid) {
+                    e.preventDefault();
+                    // Show validation summary
+                    const validationSummary = document.querySelector('.validation-summary-errors');
+                    if (validationSummary) {
+                        validationSummary.style.display = 'block';
+                    }
+                } else {
+                    // Show loading state
+                    showLoadingState();
+                }
+            });
+            
+            // Loading state functions
+            function showLoadingState() {
+                const btn = document.getElementById('register-btn');
+                const btnText = document.getElementById('btn-text');
+                const btnLoading = document.getElementById('btn-loading');
+                
+                if (btn && btnText && btnLoading) {
+                    btn.disabled = true;
+                    btnText.style.display = 'none';
+                    btnLoading.style.display = 'inline';
+                }
+            }
+            
+            function hideLoadingState() {
+                const btn = document.getElementById('register-btn');
+                const btnText = document.getElementById('btn-text');
+                const btnLoading = document.getElementById('btn-loading');
+                
+                if (btn && btnText && btnLoading) {
+                    btn.disabled = false;
+                    btnText.style.display = 'inline';
+                    btnLoading.style.display = 'none';
+                }
+            }
+            
+            // Hide loading state if form validation fails
+            form.addEventListener('invalid', function() {
+                hideLoadingState();
+            });
+        });
     </script>
 
 }

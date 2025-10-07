@@ -2,8 +2,6 @@
 {
     using System.ComponentModel.DataAnnotations;
 
-    using Microsoft.AspNetCore.Http;
-
     using Common;
 
     using static Common.EntityValidationConstants.User;
@@ -36,11 +34,6 @@
         [StringLength(LastNameMaxLength, MinimumLength = LastNameMinLength,
             ErrorMessage = "Фамилията трябва да е с дължина от {2} до {1} символа.")]
         public string LastName { get; set; } = null!;
-
-        // New property for profile picture path
-        [Display(Name = "Профилна снимка")]
-        [MaxFileSize(ProfilePictureMaxSize, ErrorMessage = "Максималният размер на файла за профилната снимка е 2 мегабайта.")]
-        public IFormFile? ProfilePicturePath { get; set; }
 
         public string? ReturnUrl { get; set; }
 

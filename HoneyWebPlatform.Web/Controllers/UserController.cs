@@ -7,6 +7,7 @@
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.Caching.Memory;
     using Microsoft.AspNetCore.SignalR;
+    using Microsoft.Extensions.Logging;
 
     using Hubs;
     using Data.Models;
@@ -21,6 +22,7 @@
         private readonly SignInManager<ApplicationUser> signInManager;
         private readonly UserManager<ApplicationUser> userManager;
         private readonly IWebHostEnvironment webHostEnvironment;
+        private readonly ILogger<UserController> _logger;
 
         private readonly IMemoryCache memoryCache;
 
@@ -37,11 +39,13 @@
                               ICartService cartService,
                               IOrderService orderService,
                               IHubContext<CartHub> hubContext,
-                              IWebHostEnvironment webHostEnvironment)
+                              IWebHostEnvironment webHostEnvironment,
+                              ILogger<UserController> logger)
         {
             this.signInManager = signInManager;
             this.userManager = userManager;
             this.webHostEnvironment = webHostEnvironment;
+            this._logger = logger;
 
             this.memoryCache = memoryCache;
 
@@ -55,14 +59,26 @@
         [HttpGet]
         public async Task<IActionResult> Register(string? returnUrl = null)
         {
-            await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
-
-            RegisterFormModel model = new RegisterFormModel()
+            try
             {
-                ReturnUrl = returnUrl
-            };
+                _logger.LogInformation("GET Register action called with returnUrl: {ReturnUrl}", returnUrl);
 
-            return View(model);
+                await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
+                _logger.LogInformation("External authentication schemes signed out");
+
+                RegisterFormModel model = new RegisterFormModel()
+                {
+                    ReturnUrl = returnUrl
+                };
+
+                _logger.LogInformation("RegisterFormModel created successfully");
+                return View(model);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in GET Register action");
+                throw;
+            }
         }
 
         [HttpPost]
@@ -70,52 +86,135 @@
             ValidationFailedAction = ValidationFailedAction.ContinueRequest)]
         public async Task<IActionResult> Register(RegisterFormModel model)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                return View(model);
-            }
+                _logger.LogInformation("Registration attempt started for email: {Email}", model.Email);
 
-            ApplicationUser user = new ApplicationUser()
-            {
-                FirstName = model.FirstName,
-                LastName = model.LastName
-                // Add more properties as needed
-            };
-
-            await userManager.SetEmailAsync(user, model.Email);
-            await userManager.SetUserNameAsync(user, model.Email);
-
-            if (model.ProfilePicturePath != null && model.ProfilePicturePath.Length > 0)
-            {
-                var uploadsFolder = Path.Combine(webHostEnvironment.WebRootPath, "uploads", "UsersProfilePictures");
-                var uniqueFileName = Guid.NewGuid().ToString() + "_" + model.ProfilePicturePath.FileName;
-                var filePath = Path.Combine(uploadsFolder, uniqueFileName);
-
-                await using (var fileStream = new FileStream(filePath, FileMode.Create))
+                // Validate model state
+                if (!ModelState.IsValid)
                 {
-                    await model.ProfilePicturePath.CopyToAsync(fileStream);
-                }
-                user.ProfilePicturePath = "/uploads/UsersProfilePictures/" + uniqueFileName;
-            }
-
-
-            IdentityResult result =
-                await userManager.CreateAsync(user, model.Password);
-
-            if (!result.Succeeded)
-            {
-                foreach (IdentityError error in result.Errors)
-                {
-                    ModelState.AddModelError(string.Empty, error.Description);
+                    _logger.LogWarning("Registration failed - ModelState is invalid for email: {Email}. Errors: {Errors}", 
+                        model.Email, string.Join(", ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)));
+                    return View(model);
                 }
 
+                _logger.LogInformation("Model validation passed for email: {Email}", model.Email);
+
+                // Additional input validation and sanitization
+                if (string.IsNullOrWhiteSpace(model.Email) || string.IsNullOrWhiteSpace(model.Password) || 
+                    string.IsNullOrWhiteSpace(model.FirstName) || string.IsNullOrWhiteSpace(model.LastName))
+                {
+                    _logger.LogWarning("Registration failed - Required fields are empty for email: {Email}", model.Email);
+                    ModelState.AddModelError(string.Empty, "Всички полета са задължителни.");
+                    return View(model);
+                }
+
+                // Sanitize inputs
+                model.Email = model.Email.Trim().ToLowerInvariant();
+                model.FirstName = model.FirstName.Trim();
+                model.LastName = model.LastName.Trim();
+
+                _logger.LogInformation("Input sanitization completed for email: {Email}", model.Email);
+
+                // Password strength validation
+                if (model.Password.Length < 6)
+                {
+                    _logger.LogWarning("Registration failed - Password too short for email: {Email}", model.Email);
+                    ModelState.AddModelError(nameof(model.Password), "Паролата трябва да е поне 6 символа.");
+                    return View(model);
+                }
+
+                if (model.Password != model.ConfirmPassword)
+                {
+                    _logger.LogWarning("Registration failed - Password confirmation mismatch for email: {Email}", model.Email);
+                    ModelState.AddModelError(nameof(model.ConfirmPassword), "Паролите не съвпадат.");
+                    return View(model);
+                }
+
+                _logger.LogInformation("Password validation passed for email: {Email}", model.Email);
+
+                // Check if user already exists
+                var existingUser = await userManager.FindByEmailAsync(model.Email);
+                if (existingUser != null)
+                {
+                    _logger.LogWarning("Registration failed - User already exists with email: {Email}", model.Email);
+                    ModelState.AddModelError(string.Empty, "Потребител с този имейл вече съществува.");
+                    return View(model);
+                }
+
+                _logger.LogInformation("User does not exist, proceeding with creation for email: {Email}", model.Email);
+
+                // Create new user
+                ApplicationUser user = new ApplicationUser()
+                {
+                    FirstName = model.FirstName,
+                    LastName = model.LastName
+                };
+
+                _logger.LogInformation("Created ApplicationUser object for: {Email}, FirstName: {FirstName}, LastName: {LastName}", 
+                    model.Email, model.FirstName, model.LastName);
+
+                // Set email and username
+                await userManager.SetEmailAsync(user, model.Email);
+                await userManager.SetUserNameAsync(user, model.Email);
+
+                _logger.LogInformation("Set email and username for user: {Email}", model.Email);
+
+                // Create user with password
+                IdentityResult result = await userManager.CreateAsync(user, model.Password);
+
+                if (!result.Succeeded)
+                {
+                    _logger.LogError("User creation failed for email: {Email}. Errors: {Errors}", 
+                        model.Email, string.Join(", ", result.Errors.Select(e => e.Description)));
+
+                    foreach (IdentityError error in result.Errors)
+                    {
+                        ModelState.AddModelError(string.Empty, error.Description);
+                    }
+
+                    return View(model);
+                }
+
+                _logger.LogInformation("User created successfully for email: {Email}, UserId: {UserId}", 
+                    model.Email, user.Id);
+
+                // Verify user was created by attempting to retrieve it
+                var createdUser = await userManager.FindByEmailAsync(model.Email);
+                if (createdUser == null)
+                {
+                    _logger.LogError("User creation verification failed - User not found after creation for email: {Email}", model.Email);
+                    ModelState.AddModelError(string.Empty, "Грешка при създаване на потребителя. Моля опитайте отново.");
+                    return View(model);
+                }
+
+                _logger.LogInformation("User creation verified successfully for email: {Email}, UserId: {UserId}", 
+                    model.Email, createdUser.Id);
+
+                // Sign in the user
+                var signInResult = await signInManager.SignInAsync(user, false);
+                if (!signInResult.Succeeded)
+                {
+                    _logger.LogError("User sign-in failed for email: {Email}", model.Email);
+                    ModelState.AddModelError(string.Empty, "Грешка при влизане в системата. Моля опитайте отново.");
+                    return View(model);
+                }
+
+                _logger.LogInformation("User signed in successfully for email: {Email}", model.Email);
+
+                // Clear cache
+                this.memoryCache.Remove(UsersCacheKey);
+                _logger.LogInformation("Cache cleared for users");
+
+                _logger.LogInformation("Registration completed successfully for email: {Email}", model.Email);
+                return Redirect(model.ReturnUrl ?? "/Home/Index");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unexpected error during registration for email: {Email}", model.Email);
+                ModelState.AddModelError(string.Empty, "Възникна неочаквана грешка по време на регистрацията. Моля опитайте отново.");
                 return View(model);
             }
-
-            await signInManager.SignInAsync(user, false);
-            this.memoryCache.Remove(UsersCacheKey);
-
-            return Redirect(model.ReturnUrl ?? "/Home/Index");
         }
 
         [HttpGet]

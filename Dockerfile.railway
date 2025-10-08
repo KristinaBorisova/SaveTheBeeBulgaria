@@ -27,6 +27,9 @@ WORKDIR "/src/HoneyWebPlatform.Web"
 RUN dotnet build "HoneyWebPlatform.Web.csproj" -c Release -o /app/build
 RUN dotnet publish "HoneyWebPlatform.Web.csproj" -c Release -o /app/publish
 
+# Ensure static files are included
+RUN ls -la /app/publish/wwwroot/
+
 # Final stage
 FROM base AS final
 WORKDIR /app

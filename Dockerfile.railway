@@ -30,7 +30,7 @@ RUN dotnet publish "HoneyWebPlatform.Web.csproj" -c Release -o /app/publish
 # Ensure static files are included
 RUN ls -la /app/publish/wwwroot/
 
-# Final stage
+# Final stage - Fixed for Railway deployment
 FROM base AS final
 WORKDIR /app
 

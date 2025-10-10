@@ -34,8 +34,5 @@ RUN ls -la /app/publish/wwwroot/
 FROM base AS final
 WORKDIR /app
 
-# Verify .NET version
-RUN dotnet --version
-
 COPY --from=build /app/publish .
 ENTRYPOINT ["dotnet", "HoneyWebPlatform.Web.dll"]

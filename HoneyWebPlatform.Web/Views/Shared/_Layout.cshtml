@@ -168,34 +168,19 @@
                 </div>
                 <div class="col-xl-3 col-sm-6 col-md-4 col-lg-3">
                     <div class="single-footer-widget footer_3">
-                        <h4>📧 Бюлетин</h4>
+                        <h4>Бюлетин</h4>
                         <p>Абонирайте се за нашия бюлетин и получавайте най-новите новини за медовете и пчеларството в България.</p>
-                        <div class="newsletter-form">
-                            <form asp-controller="User" asp-action="SubscribeNewsletter" method="post" class="newsletter-subscription">
-                                <div class="form-group">
-                                    <div class="input-group newsletter-input-group">
-                                        <input type="email" name="email" class="form-control newsletter-input" 
-                                               placeholder='Въведете вашия имейл'
-                                               onfocus="this.placeholder = ''" 
-                                               onblur="this.placeholder = 'Въведете вашия имейл'"
-                                               required>
-                                        <div class="input-group-append">
-                                            <button type="submit" class="btn newsletter-btn">
-                                                <i class="fas fa-paper-plane"></i>
-                                                <span class="btn-text">Абонирай се</span>
-                                            </button>
-                                        </div>
+                        <form asp-controller="User" asp-action="SubscribeNewsletter" method="post">
+                            <div class="form-group">
+                                <div class="input-group mb-3">
+                                    <input type="text" name="email" class="form-control" placeholder='Имейл адрес'
+                                           onfocus="this.placeholder = ''" onblur="this.placeholder = 'Имейл адрес'">
+                                    <div class="input-group-append">
+                                        <button type="submit" class="btn"><i class="fas fa-paper-plane"></i></button>
                                     </div>
                                 </div>
-                            </form>
-                        </div>
-                        <div class="newsletter-benefits">
-                            <small class="text-muted">
-                                ✅ Ексклузивни оферти<br>
-                                ✅ Нови рецепти с мед<br>
-                                ✅ Съвети от пчелари
-                            </small>
-                        </div>
+                            </div>
+                        </form>
                     </div>
                 </div>
 
@@ -256,90 +241,6 @@
     <script src="~/lib/bootstrap/dist/js/jquery.nice-select.min.js"></script>
     <!-- custom js -->
     <script src="~/lib/bootstrap/dist/js/custom.js"></script>
-
-    <!-- Custom Newsletter Styles -->
-    <style>
-        .newsletter-form {
-            margin-bottom: 15px;
-        }
-        
-        .newsletter-input-group {
-            border-radius: 25px;
-            overflow: hidden;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        
-        .newsletter-input {
-            border: none;
-            padding: 12px 20px;
-            background: #f8f9fa;
-            font-size: 14px;
-        }
-        
-        .newsletter-input:focus {
-            background: #fff;
-            box-shadow: none;
-            border: none;
-        }
-        
-        .newsletter-btn {
-            background: linear-gradient(45deg, #ff6426, #ff8c42);
-            border: none;
-            padding: 12px 20px;
-            color: white;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-        
-        .newsletter-btn:hover {
-            background: linear-gradient(45deg, #e55a20, #ff7a35);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 15px rgba(255, 100, 38, 0.3);
-        }
-        
-        .newsletter-btn .btn-text {
-            margin-left: 5px;
-        }
-        
-        .newsletter-benefits {
-            margin-top: 10px;
-            padding: 10px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-        }
-        
-        .newsletter-benefits small {
-            line-height: 1.6;
-        }
-        
-        .copyright_social_icon a {
-            display: inline-block;
-            width: 40px;
-            height: 40px;
-            line-height: 40px;
-            text-align: center;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 50%;
-            margin: 0 5px;
-            transition: all 0.3s ease;
-        }
-        
-        .copyright_social_icon a:hover {
-            background: #ff6426;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(255, 100, 38, 0.3);
-        }
-        
-        @@media (max-width: 768px) {
-            .newsletter-btn .btn-text {
-                display: none;
-            }
-            
-            .newsletter-btn {
-                padding: 12px 15px;
-            }
-        }
-    </style>
 
     <!--tstr-->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.1.3/toastr.min.js"

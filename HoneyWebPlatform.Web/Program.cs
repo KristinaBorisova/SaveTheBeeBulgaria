@@ -111,15 +111,15 @@ namespace HoneyWebPlatform.Web
             builder.Services.AddHealthChecks()
                 .AddNpgSql(connectionString, name: "postgresql");
 
-            // Add localization services
-            builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
-            builder.Services.Configure<RequestLocalizationOptions>(options =>
-            {
-                var supportedCultures = new[] { "en-US", "bg-BG" };
-                options.SetDefaultCulture("bg-BG")
-                    .AddSupportedCultures(supportedCultures)
-                    .AddSupportedUICultures(supportedCultures);
-            });
+            // Add localization services - COMMENTED OUT FOR SIMPLICITY
+            // builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+            // builder.Services.Configure<RequestLocalizationOptions>(options =>
+            // {
+            //     var supportedCultures = new[] { "en-US", "bg-BG" };
+            //     options.SetDefaultCulture("bg-BG")
+            //         .AddSupportedCultures(supportedCultures)
+            //         .AddSupportedUICultures(supportedCultures);
+            // });
 
             // External authentication providers - only add if properly configured
             var googleClientId = builder.Configuration["Authentication:Google:ClientId"];
@@ -198,8 +198,8 @@ namespace HoneyWebPlatform.Web
             app.UseHttpsRedirection();
             app.UseStaticFiles();
 
-            // Add localization middleware
-            app.UseRequestLocalization();
+            // Add localization middleware - COMMENTED OUT FOR SIMPLICITY
+            // app.UseRequestLocalization();
 
             app.UseRouting();
 

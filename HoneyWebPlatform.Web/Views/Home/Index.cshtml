@@ -333,47 +333,53 @@
                     <form>
                         <div class="form-row">
                             <div class="form-group col-md-6">
-                                <input type="email" class="form-control" id="inputEmail4" placeholder="Име *">
+                                <input type="text" class="form-control" id="inputName" placeholder="Име *">
                             </div>
                             <div class="form-group col-md-6">
-                                <input type="email" class="form-control" id="inputPassword4"
+                                <input type="email" class="form-control" id="inputEmail"
                                        placeholder="Имейл адрес *">
                             </div>
                             <div class="form-group col-md-6">
-                                <select class="form-control" id="Select">
-                                    <option value="1" selected>Количество *</option>
-                                    <option value="2">1 буркан</option>
-                                    <option value="3">2 буркана</option>
-                                    <option value="4">3 буркана</option>
-                                    <option value="5">4+ буркана</option>
+                                <input type="tel" class="form-control" id="inputPhone" placeholder="Телефонен номер *">
+                            </div>
+                            <div class="form-group col-md-6">
+                                <select class="form-control" id="honeyType">
+                                    <option value="" selected>Вид Мед *</option>
+                                    <option value="linden">Липов мед</option>
+                                    <option value="bio">Био мед</option>
+                                    <option value="sunflower">Слънчогледов мед</option>
+                                    <option value="bouquet">Букет мед</option>
+                                    <option value="honeydew">Медова роса</option>
                                 </select>
                             </div>
                             <div class="form-group col-md-6">
-                                <input type="text" class="form-control" id="pnone" placeholder="Телефонен номер *">
+                                <select class="form-control" id="quantity">
+                                    <option value="" selected>Количество *</option>
+                                    <option value="1">1 буркан</option>
+                                    <option value="2">2 буркана</option>
+                                    <option value="3">3 буркана</option>
+                                    <option value="4">4+ буркана</option>
+                                </select>
                             </div>
                             <div class="form-group col-md-6">
-                                <div class="input-group date">
-                                    <input id="datepicker" type="text" class="form-control" placeholder="Дата *" />
-                                </div>
-                            </div>
-                            <div class="form-group col-md-6">
-                                <select class="form-control" id="Select2">
-                                    <option value="" selected>Време *</option>
-                                    <option value="1">8:00 - 10:00</option>
-                                    <option value="1">10:00 - 12:00</option>
-                                    <option value="1">12:00 - 14:00</option>
-                                    <option value="1">14:00 - 16:00</option>
-                                    <option value="1">16:00 - 18:00</option>
-                                    <option value="1">18:00 - 20:00</option>
-                                    <option value="1">20:00 - 22:00</option>
+                                <select class="form-control" id="beekeeper">
+                                    <option value="" selected>Пчелар *</option>
+                                    <option value="petar-sofia">Петър Димитров - София</option>
+                                    <option value="maria-plovdiv">Мария Петрова - Пловдив</option>
+                                    <option value="ivan-varna">Иван Стоянов - Варна</option>
+                                    <option value="elena-burgas">Елена Георгиева - Бургас</option>
+                                    <option value="nikolay-ruse">Николай Иванов - Русе</option>
+                                    <option value="svetlana-pleven">Светлана Петрова - Плевен</option>
                                 </select>
                             </div>
                             <div class="form-group col-md-12">
+                                <input type="text" class="form-control" id="inputAddress" placeholder="Адрес за доставка *">
+                            </div>
+                            <div class="form-group col-md-12">
                                 <textarea class="form-control" id="Textarea" rows="4"
-                                          placeholder="Вашата бележка *"></textarea>
+                                          placeholder="Вашата бележка"></textarea>
                             </div>
                         </div>
-
 
                         <div class="regerv_btn">
                             <a href="#" class="btn_4">Поръчай мед</a>

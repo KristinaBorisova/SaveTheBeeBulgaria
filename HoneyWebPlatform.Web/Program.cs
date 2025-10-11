@@ -46,12 +46,17 @@ namespace HoneyWebPlatform.Web
 
             builder.Services.AddDbContext<HoneyWebPlatformDbContext>(options =>
             {
-                options.UseNpgsql(connectionString);
-                // Add logging for debugging
                 if (builder.Environment.IsDevelopment())
                 {
+                    // Use SQLite for local development
+                    options.UseSqlite(connectionString);
                     options.EnableSensitiveDataLogging();
                     options.EnableDetailedErrors();
+                }
+                else
+                {
+                    // Use PostgreSQL for production
+                    options.UseNpgsql(connectionString);
                 }
             });
 

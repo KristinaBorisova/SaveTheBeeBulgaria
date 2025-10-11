@@ -50,19 +50,14 @@
     }
     else
     {
-        <!-- Поръчай Button -->
-        <li class="menu_btn">
-            <a class="btn custom-order-btn d-none d-sm-block" asp-controller="User" asp-action="Cart">Поръчай</a>
-        </li>
-        
-        <!-- Register -->
-        <li class="menu_btn">
-            <a class="btn custom-login-btn d-none d-sm-block" asp-area="" asp-controller="User" asp-action="Register" asp-route-returnUrl="@Context.Request.Path">Регистрирай се</a>
-        </li>
-        
         <!-- Login -->
         <li class="menu_btn">
             <a class="btn custom-login-btn d-none d-sm-block" asp-area="" asp-controller="User" asp-action="Login" asp-route-returnUrl="@Context.Request.Path">Вход</a>
+        </li>
+        
+        <!-- Поръчай Button -->
+        <li class="menu_btn">
+            <a class="btn custom-order-btn d-none d-sm-block" asp-controller="User" asp-action="Cart">Поръчай</a>
         </li>
     }
 </ul>

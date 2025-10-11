@@ -47,7 +47,6 @@
 
 </head>
 <body>
-    @await Html.PartialAsync("_LanguageSwitcherSimple")
     <!--::header part start::-->
     <header class="main_menu @((controller?.ToString() == "Home" && action?.ToString() == "Index") ? "home_menu" : "")">
         <div class="container">
@@ -73,10 +72,8 @@
                                     <a class="nav-link custom-menu-link dropdown-toggle" href="#" role="button" id="productsDropdown" data-bs-toggle="dropdown" aria-expanded="false">Продукти</a>
                                     <ul class="dropdown-menu" aria-labelledby="productsDropdown">
                                         <li>
-                                            <a class="dropdown-item nav-link text-dark" asp-area="" asp-controller="Honey" asp-action="All">Медове</a>
+                                            <a class="dropdown-item nav-link text-dark" asp-area="" asp-controller="Honey" asp-action="All">Пчелен Мед</a>
                                             <a class="dropdown-item nav-link text-dark" asp-area="" asp-controller="Propolis" asp-action="All">Прополиси</a>
-                                            <a class="dropdown-item nav-link text-dark" asp-area="" asp-controller="Category" asp-action="All">Категории</a>
-                                            <a class="dropdown-item nav-link text-dark" asp-area="" asp-controller="Flavour" asp-action="All">Вкусове</a>
                                         </li>
                                     </ul>
                                 </li>
@@ -310,6 +307,10 @@
         
         .dropdown-item:hover {
             background-color: #F59F0A !important;
+            color: white !important;
+        }
+        
+        .dropdown-item.nav-link.text-dark:hover {
             color: white !important;
         }
         

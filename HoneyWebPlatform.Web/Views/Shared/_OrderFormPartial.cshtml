@@ -1,9 +1,10 @@
 ﻿@model UserViewModel
 
 <!-- Add the Place Order button here -->
-<form asp-controller="User" asp-action="PlaceOrder" method="post">
+<form asp-controller="Home" asp-action="PlaceOrderFromHomepage" method="post">
     <div class="mt-10">
-        <input asp-for="FullName" placeholder="Пълно Име" class="single-input"/>
+        <input asp-for="FullName" placeholder="Пълно Име" class="single-input" required/>
+        <span asp-validation-for="FullName" class="small text-danger"></span>
     </div>
 
     @if (!string.IsNullOrEmpty(Model.PhoneNumber))
@@ -16,17 +17,18 @@
     else
     {
         <div class="mt-10">
-            <input asp-for="PhoneNumber" type="number" placeholder="Телефонен номер" class="single-input" />
+            <input asp-for="PhoneNumber" type="tel" placeholder="Телефонен номер" class="single-input" required />
             <span asp-validation-for="PhoneNumber" class="small text-danger"></span>
         </div>
     }
 
     <div class="mt-10">
-        <input asp-for="Email" placeholder="Имейл" class="single-input"/>
+        <input asp-for="Email" type="email" placeholder="Имейл" class="single-input" required/>
+        <span asp-validation-for="Email" class="small text-danger"></span>
     </div>
 
     <div class="mt-10">
-        <input asp-for="Address" placeholder="Адрес за доставка" class="single-input" />
+        <input asp-for="Address" placeholder="Адрес за доставка" class="single-input" required />
         <span asp-validation-for="Address" class="small text-danger"></span>
     </div>
 

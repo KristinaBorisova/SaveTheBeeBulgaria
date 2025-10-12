@@ -7,8 +7,11 @@ namespace HoneyWebPlatform.Web.Controllers
     using Microsoft.AspNetCore.Mvc;
 
     using Services.Data.Interfaces;
+    using HoneyWebPlatform.Data.Models;
+    using HoneyWebPlatform.Data;
 
     using ViewModels.Home;
+    using ViewModels.User;
     using static Common.GeneralApplicationConstants;
     using static Common.NotificationMessagesConstants;
 
@@ -17,17 +20,16 @@ namespace HoneyWebPlatform.Web.Controllers
         private readonly IHoneyService honeyService;
         private readonly IPropolisService propolisService;
         private readonly IPostService postService;
-
-
         private readonly IEmailSender emailSender;
+        private readonly IOrderEmailService orderEmailService;
 
-
-        public HomeController(IHoneyService honeyService, IPropolisService propolisService, IPostService postService, IEmailSender emailSender)
+        public HomeController(IHoneyService honeyService, IPropolisService propolisService, IPostService postService, IEmailSender emailSender, IOrderEmailService orderEmailService)
         {
             this.honeyService = honeyService;
             this.propolisService = propolisService;
             this.postService = postService;
             this.emailSender = emailSender;
+            this.orderEmailService = orderEmailService;
         }
 
         public async Task<IActionResult> Index()
@@ -99,6 +101,56 @@ namespace HoneyWebPlatform.Web.Controllers
                 return RedirectToAction("Error", "Home");
             }
         }
+
+        [HttpPost]
+        public async Task<IActionResult> PlaceOrderFromHomepage(UserViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                TempData[ErrorMessage] = "Моля, попълнете всички задължителни полета.";
+                return RedirectToAction("Index", "Home");
+            }
+
+            try
+            {
+                // Create a new order directly from homepage form
+                var order = new Order
+                {
+                    Id = Guid.NewGuid(),
+                    UserId = Guid.NewGuid(), // Generate a temporary user ID for guest orders
+                    PhoneNumber = model.PhoneNumber ?? "N/A",
+                    CreatedOn = DateTime.Now,
+                    Email = model.Email,
+                    Address = model.Address ?? "N/A",
+                    TotalPrice = 0, // Will be calculated when products are added
+                    Status = OrderStatus.Обработван
+                };
+
+                // Add order to database
+                using (var scope = HttpContext.RequestServices.CreateScope())
+                {
+                    var dbContext = scope.ServiceProvider.GetRequiredService<HoneyWebPlatformDbContext>();
+                    dbContext.Orders.Add(order);
+                    await dbContext.SaveChangesAsync();
+                }
+
+                // Send order confirmation email
+                await orderEmailService.SendOrderConfirmationEmailAsync(model.Email, order, model.FullName);
+                
+                // Send admin notification
+                await orderEmailService.SendAdminOrderNotificationAsync(order, model.FullName);
+
+                TempData[SuccessMessage] = $"Успешно създадена поръчка с номер {order.Id}. Проверете имейла си за потвърждение!";
+
+                return RedirectToAction("Index", "Home");
+            }
+            catch (Exception ex)
+            {
+                TempData[ErrorMessage] = $"Грешка при създаване на поръчка: {ex.Message}";
+                return RedirectToAction("Index", "Home");
+            }
+        }
+
 
 
 

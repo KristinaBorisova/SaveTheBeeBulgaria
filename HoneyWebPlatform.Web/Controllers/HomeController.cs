@@ -40,8 +40,9 @@ namespace HoneyWebPlatform.Web.Controllers
             IEnumerable<HoneyAllViewModel> honeyIndexViewModel =
                 await honeyService.LastThreeHoneysAsync();
 
-            IEnumerable<PropolisAllViewModel> propolisIndexViewModel =
-               await propolisService.LastThreePropolisеsAsync();
+            // Removed propolis from homepage as requested
+            // IEnumerable<PropolisAllViewModel> propolisIndexViewModel =
+            //    await propolisService.LastThreePropolisеsAsync();
 
             IEnumerable<PostIndexViewModel> postIndexViewModel =
                 await postService.LastThreePostsAsync();
@@ -49,7 +50,7 @@ namespace HoneyWebPlatform.Web.Controllers
             var viewModel = new IndexViewModel
             {
                 Honeys = honeyIndexViewModel,
-                Propolises = propolisIndexViewModel,
+                Propolises = new List<PropolisAllViewModel>(), // Empty list instead of propolis data
                 Posts = postIndexViewModel
             };
 

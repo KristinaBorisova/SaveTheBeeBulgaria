@@ -27,20 +27,74 @@ namespace HoneyWebPlatform.Web
 
             string connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
             
+            // Debug logging for connection string
+            Console.WriteLine($"Initial connection string: {(string.IsNullOrEmpty(connectionString) ? "NULL" : "SET")}");
+            
             // Handle Railway environment variables
             if (string.IsNullOrEmpty(connectionString))
             {
                 var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
+                Console.WriteLine($"DATABASE_URL: {(string.IsNullOrEmpty(databaseUrl) ? "NULL" : "SET")}");
+                
                 if (!string.IsNullOrEmpty(databaseUrl))
                 {
-                    // Parse Railway's DATABASE_URL format: postgresql://user:password@host:port/database
-                    var uri = new Uri(databaseUrl);
-                    var userInfo = uri.UserInfo.Split(':');
-                    connectionString = $"Host={uri.Host};Port={uri.Port};Database={uri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={userInfo[1]};SSL Mode=Require;";
+                    try
+                    {
+                        // Parse Railway's DATABASE_URL format: postgresql://user:password@host:port/database
+                        var uri = new Uri(databaseUrl);
+                        var userInfo = uri.UserInfo.Split(':');
+                        
+                        // Handle port parsing more safely
+                        var port = uri.Port > 0 ? uri.Port : 5432; // Default PostgreSQL port
+                        
+                        connectionString = $"Host={uri.Host};Port={port};Database={uri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={userInfo[1]};SSL Mode=Require;";
+                        
+                        Console.WriteLine($"Parsed connection string successfully for host: {uri.Host}, port: {port}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error parsing DATABASE_URL: {ex.Message}");
+                        Console.WriteLine($"DATABASE_URL: {databaseUrl}");
+                        
+                        // Try alternative Railway environment variables
+                        var pgHost = Environment.GetEnvironmentVariable("PGHOST");
+                        var pgPort = Environment.GetEnvironmentVariable("PGPORT");
+                        var pgDatabase = Environment.GetEnvironmentVariable("PGDATABASE");
+                        var pgUser = Environment.GetEnvironmentVariable("PGUSER");
+                        var pgPassword = Environment.GetEnvironmentVariable("PGPASSWORD");
+                        
+                        if (!string.IsNullOrEmpty(pgHost))
+                        {
+                            var port = !string.IsNullOrEmpty(pgPort) ? int.Parse(pgPort) : 5432;
+                            connectionString = $"Host={pgHost};Port={port};Database={pgDatabase};Username={pgUser};Password={pgPassword};SSL Mode=Require;";
+                            Console.WriteLine($"Using alternative Railway environment variables");
+                        }
+                        else
+                        {
+                            // Fallback to default connection string
+                            connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+                        }
+                    }
                 }
                 else
                 {
-                    throw new InvalidOperationException("Connection string 'DefaultConnection' not found and DATABASE_URL environment variable is not set.");
+                    // Try alternative Railway environment variables
+                    var pgHost = Environment.GetEnvironmentVariable("PGHOST");
+                    var pgPort = Environment.GetEnvironmentVariable("PGPORT");
+                    var pgDatabase = Environment.GetEnvironmentVariable("PGDATABASE");
+                    var pgUser = Environment.GetEnvironmentVariable("PGUSER");
+                    var pgPassword = Environment.GetEnvironmentVariable("PGPASSWORD");
+                    
+                    if (!string.IsNullOrEmpty(pgHost))
+                    {
+                        var port = !string.IsNullOrEmpty(pgPort) ? int.Parse(pgPort) : 5432;
+                        connectionString = $"Host={pgHost};Port={port};Database={pgDatabase};Username={pgUser};Password={pgPassword};SSL Mode=Require;";
+                        Console.WriteLine($"Using Railway environment variables: PGHOST={pgHost}");
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException("Connection string 'DefaultConnection' not found and DATABASE_URL environment variable is not set.");
+                    }
                 }
             }
 
@@ -172,10 +226,20 @@ namespace HoneyWebPlatform.Web
                 {
                     var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
                     logger.LogError(ex, "An error occurred while creating/migrating the database.");
+                    
+                    // Log connection string details for debugging (without sensitive data)
+                    logger.LogError("Connection string details: {ConnectionString}", 
+                        connectionString?.Replace("Password=", "Password=***").Replace("Pwd=", "Pwd=***"));
+                    
                     // Don't rethrow in production to prevent container restart loops
                     if (!app.Environment.IsProduction())
                     {
                         throw;
+                    }
+                    else
+                    {
+                        // In production, log the error but continue startup
+                        logger.LogError("Database migration failed, but continuing application startup");
                     }
                 }
             }

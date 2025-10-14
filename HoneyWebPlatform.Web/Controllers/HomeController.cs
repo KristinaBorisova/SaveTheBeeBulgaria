@@ -22,14 +22,18 @@ namespace HoneyWebPlatform.Web.Controllers
         private readonly IPostService postService;
         private readonly IEmailSender emailSender;
         private readonly IOrderEmailService orderEmailService;
+        private readonly ICategoryService categoryService;
+        private readonly IBeekeeperService beekeeperService;
 
-        public HomeController(IHoneyService honeyService, IPropolisService propolisService, IPostService postService, IEmailSender emailSender, IOrderEmailService orderEmailService)
+        public HomeController(IHoneyService honeyService, IPropolisService propolisService, IPostService postService, IEmailSender emailSender, IOrderEmailService orderEmailService, ICategoryService categoryService, IBeekeeperService beekeeperService)
         {
             this.honeyService = honeyService;
             this.propolisService = propolisService;
             this.postService = postService;
             this.emailSender = emailSender;
             this.orderEmailService = orderEmailService;
+            this.categoryService = categoryService;
+            this.beekeeperService = beekeeperService;
         }
 
         public async Task<IActionResult> Index()
@@ -56,6 +60,12 @@ namespace HoneyWebPlatform.Web.Controllers
                 Posts = postIndexViewModel
             };
 
+            // Populate order form data
+            ViewBag.OrderFormData = new OrderFormViewModel
+            {
+                AvailableHoneyTypes = await GetHoneyTypesAsync(),
+                AvailableBeekeepers = await GetBeekeepersAsync()
+            };
 
             return View(viewModel);
         }
@@ -102,8 +112,20 @@ namespace HoneyWebPlatform.Web.Controllers
             }
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetOrderFormData()
+        {
+            var orderFormData = new OrderFormViewModel
+            {
+                AvailableHoneyTypes = await GetHoneyTypesAsync(),
+                AvailableBeekeepers = await GetBeekeepersAsync()
+            };
+
+            return Json(orderFormData);
+        }
+
         [HttpPost]
-        public async Task<IActionResult> PlaceOrderFromHomepage(UserViewModel model)
+        public async Task<IActionResult> PlaceOrderFromHomepage(OrderFormViewModel model)
         {
             if (!ModelState.IsValid)
             {
@@ -113,6 +135,14 @@ namespace HoneyWebPlatform.Web.Controllers
 
             try
             {
+                // Get honey type details
+                var honeyTypes = await GetHoneyTypesAsync();
+                var selectedHoneyType = honeyTypes.FirstOrDefault(h => h.Id == model.HoneyTypeId);
+                var honeyPrice = selectedHoneyType?.Price ?? 0m;
+
+                // Calculate total price
+                var totalPrice = honeyPrice * model.Quantity;
+
                 // Create a new order directly from homepage form
                 var order = new Order
                 {
@@ -122,7 +152,7 @@ namespace HoneyWebPlatform.Web.Controllers
                     CreatedOn = DateTime.Now,
                     Email = model.Email,
                     Address = model.Address ?? "N/A",
-                    TotalPrice = 0, // Will be calculated when products are added
+                    TotalPrice = totalPrice,
                     Status = OrderStatus.Обработван
                 };
 
@@ -131,6 +161,20 @@ namespace HoneyWebPlatform.Web.Controllers
                 {
                     var dbContext = scope.ServiceProvider.GetRequiredService<HoneyWebPlatformDbContext>();
                     dbContext.Orders.Add(order);
+                    await dbContext.SaveChangesAsync();
+
+                    // Add order items
+                    var orderItem = new OrderItem
+                    {
+                        Id = Guid.NewGuid(),
+                        ProductId = Guid.NewGuid(), // This would be the actual honey product ID
+                        ProductName = selectedHoneyType?.Name ?? "Мед",
+                        Quantity = model.Quantity,
+                        Price = honeyPrice,
+                        OrderId = order.Id
+                    };
+
+                    dbContext.OrderItems.Add(orderItem);
                     await dbContext.SaveChangesAsync();
                 }
 
@@ -171,6 +215,74 @@ namespace HoneyWebPlatform.Web.Controllers
             }
 
             return View();
+        }
+
+        private async Task<IEnumerable<HoneyTypeViewModel>> GetHoneyTypesAsync()
+        {
+            var categories = await categoryService.AllCategoriesAsync();
+            return categories.Select(c => new HoneyTypeViewModel
+            {
+                Id = c.Id,
+                Name = c.Name,
+                Price = GetHoneyPriceByCategory(c.Name),
+                Description = GetHoneyDescriptionByCategory(c.Name)
+            });
+        }
+
+        private async Task<IEnumerable<BeekeeperViewModel>> GetBeekeepersAsync()
+        {
+            // For now, return sample beekeepers. In a real implementation, 
+            // you would query the database for active beekeepers
+            return new List<BeekeeperViewModel>
+            {
+                new BeekeeperViewModel
+                {
+                    Id = Guid.NewGuid(),
+                    FullName = "Петър Димитров",
+                    Location = "София",
+                    PhoneNumber = "+359888123456"
+                },
+                new BeekeeperViewModel
+                {
+                    Id = Guid.NewGuid(),
+                    FullName = "Мария Петрова",
+                    Location = "Пловдив",
+                    PhoneNumber = "+359888234567"
+                },
+                new BeekeeperViewModel
+                {
+                    Id = Guid.NewGuid(),
+                    FullName = "Иван Стоянов",
+                    Location = "Варна",
+                    PhoneNumber = "+359888345678"
+                }
+            };
+        }
+
+        private decimal GetHoneyPriceByCategory(string categoryName)
+        {
+            return categoryName switch
+            {
+                "Linden" => 15.50m,
+                "Bio" => 18.00m,
+                "Sunflower" => 12.00m,
+                "Bouquet" => 20.00m,
+                "Honeydew" => 16.50m,
+                _ => 15.00m
+            };
+        }
+
+        private string GetHoneyDescriptionByCategory(string categoryName)
+        {
+            return categoryName switch
+            {
+                "Linden" => "Нежен липов мед с цветен аромат",
+                "Bio" => "Органичен мед от сертифицирани кошери",
+                "Sunflower" => "Слънчогледов мед с богат вкус",
+                "Bouquet" => "Букет мед от различни цветя",
+                "Honeydew" => "Медова роса с уникален вкус",
+                _ => "Висококачествен български мед"
+            };
         }
     }
 }

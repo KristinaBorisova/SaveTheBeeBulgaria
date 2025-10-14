@@ -219,14 +219,19 @@ namespace HoneyWebPlatform.Web.Controllers
 
         private async Task<IEnumerable<HoneyTypeViewModel>> GetHoneyTypesAsync()
         {
+            // Filter to only include the specified honey types
+            var allowedHoneyTypes = new[] { "Linden", "Bio", "Sunflower" };
             var categories = await categoryService.AllCategoriesAsync();
-            return categories.Select(c => new HoneyTypeViewModel
-            {
-                Id = c.Id,
-                Name = c.Name,
-                Price = GetHoneyPriceByCategory(c.Name),
-                Description = GetHoneyDescriptionByCategory(c.Name)
-            });
+            
+            return categories
+                .Where(c => allowedHoneyTypes.Contains(c.Name))
+                .Select(c => new HoneyTypeViewModel
+                {
+                    Id = c.Id,
+                    Name = GetBulgarianHoneyName(c.Name),
+                    Price = GetHoneyPriceByCategory(c.Name),
+                    Description = GetHoneyDescriptionByCategory(c.Name)
+                });
         }
 
         private async Task<IEnumerable<BeekeeperViewModel>> GetBeekeepersAsync()
@@ -238,9 +243,9 @@ namespace HoneyWebPlatform.Web.Controllers
                 new BeekeeperViewModel
                 {
                     Id = Guid.NewGuid(),
-                    FullName = "Петър Димитров",
-                    Location = "София",
-                    PhoneNumber = "+359888123456"
+                    FullName = "Ивайло Борисов",
+                    Location = "Враца",
+                    PhoneNumber = "+359886612263"
                 },
                 new BeekeeperViewModel
                 {
@@ -266,9 +271,18 @@ namespace HoneyWebPlatform.Web.Controllers
                 "Linden" => 15.50m,
                 "Bio" => 18.00m,
                 "Sunflower" => 12.00m,
-                "Bouquet" => 20.00m,
-                "Honeydew" => 16.50m,
                 _ => 15.00m
+            };
+        }
+
+        private string GetBulgarianHoneyName(string categoryName)
+        {
+            return categoryName switch
+            {
+                "Linden" => "Липов мед",
+                "Bio" => "Билков мед",
+                "Sunflower" => "Слънчогледов мед",
+                _ => categoryName
             };
         }
 
@@ -277,10 +291,8 @@ namespace HoneyWebPlatform.Web.Controllers
             return categoryName switch
             {
                 "Linden" => "Нежен липов мед с цветен аромат",
-                "Bio" => "Органичен мед от сертифицирани кошери",
+                "Bio" => "Билков мед от различни лечебни билки",
                 "Sunflower" => "Слънчогледов мед с богат вкус",
-                "Bouquet" => "Букет мед от различни цветя",
-                "Honeydew" => "Медова роса с уникален вкус",
                 _ => "Висококачествен български мед"
             };
         }

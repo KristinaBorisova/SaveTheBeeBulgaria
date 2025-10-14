@@ -74,10 +74,7 @@
                                         <li>
                                             <a class="dropdown-item nav-link text-dark" asp-area="" asp-controller="Honey" asp-action="All">Медове</a>
                                             <a class="dropdown-item nav-link text-dark" asp-area="" asp-controller="Propolis" asp-action="All">Прополиси</a>
-                                            @if (User.Identity?.IsAuthenticated ?? false && await orderService.HasOrdersForUserAsync(User.FindFirstValue(ClaimTypes.NameIdentifier)))
-                                            {
-                                                <a class="dropdown-item nav-link text-dark" asp-area="" asp-controller="User" asp-action="Orders">Поръчки</a>
-                                            }
+                                            <a class="dropdown-item nav-link text-dark" href="#order-section">Поръчка</a>
                                         </li>
                                     </ul>
                                 </li>

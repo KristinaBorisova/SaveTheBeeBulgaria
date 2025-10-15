@@ -13,7 +13,7 @@
     using Microsoft.AspNetCore.Hosting;
     using HoneyWebPlatform.Services.Data;
 
-
+    /*
     [Authorize]
     public class PropolisController : Controller
     {
@@ -484,4 +484,5 @@
             return RedirectToAction("Index", "Home");
         }
     }
+    */
 }

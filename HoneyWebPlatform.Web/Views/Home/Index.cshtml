@@ -30,8 +30,8 @@
                     {
                         <a asp-controller="Honey" asp-action="Add" class="btn btn-primary btn-lg"
                            role="button">Добави Мед</a>
-                        <a asp-controller="Propolis" asp-action="Add" class="btn btn-primary btn-lg"
-                           role="button">Добави Прополис</a>
+                        @*<a asp-controller="Propolis" asp-action="Add" class="btn btn-primary btn-lg"
+                           role="button">Добави Прополис</a>*@
                     }
                 }
             </p>
@@ -197,10 +197,10 @@
                         Мед
                         <img src="dingo-master/dingo-master/img/icon/play.svg" alt="play">
                     </a>
-                    <a id="Propolis-tab" data-toggle="tab" href="#Propolis" role="tab" aria-controls="Propolis" aria-selected="false">
+                    @*<a id="Propolis-tab" data-toggle="tab" href="#Propolis" role="tab" aria-controls="Propolis" aria-selected="false">
                         Прополис
                         <img src="dingo-master/dingo-master/img/icon/play.svg" alt="play">
-                    </a>
+                    </a>*@
                 </div>
             </div>
             <div class="col-lg-12">
@@ -215,7 +215,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="tab-pane fade" id="Propolis" role="tabpanel" aria-labelledby="Propolis-tab">
+                    @*<div class="tab-pane fade" id="Propolis" role="tabpanel" aria-labelledby="Propolis-tab">
                         <div class="row">
                             <div class="col-sm-6 col-lg-6">
                                 <partial name="_PropolisIndexPartial" model="propolises.Take(3)" />
@@ -224,7 +224,7 @@
                                 <partial name="_PropolisIndexPartial" model="propolises.Skip(3)" />
                             </div>
                         </div>
-                    </div>
+                    </div>*@
                 </div>
             </div>
         </div>

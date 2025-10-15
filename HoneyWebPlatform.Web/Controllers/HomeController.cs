@@ -18,7 +18,7 @@ namespace HoneyWebPlatform.Web.Controllers
     public class HomeController : Controller
     {
         private readonly IHoneyService honeyService;
-        private readonly IPropolisService propolisService;
+        // private readonly IPropolisService propolisService; // Commented out - propolis functionality disabled
         private readonly IPostService postService;
         private readonly IEmailSender emailSender;
         private readonly IOrderEmailService orderEmailService;
@@ -28,7 +28,7 @@ namespace HoneyWebPlatform.Web.Controllers
         public HomeController(IHoneyService honeyService, IPropolisService propolisService, IPostService postService, IEmailSender emailSender, IOrderEmailService orderEmailService, ICategoryService categoryService, IBeekeeperService beekeeperService)
         {
             this.honeyService = honeyService;
-            this.propolisService = propolisService;
+            // this.propolisService = propolisService; // Commented out - propolis functionality disabled
             this.postService = postService;
             this.emailSender = emailSender;
             this.orderEmailService = orderEmailService;

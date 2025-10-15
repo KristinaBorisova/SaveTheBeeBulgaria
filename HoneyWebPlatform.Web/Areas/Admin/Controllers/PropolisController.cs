@@ -11,6 +11,7 @@ namespace HoneyWebPlatform.Web.Areas.Admin.Controllers
     
     using static NotificationMessagesConstants;
 
+    /*
     public class PropolisController : BaseAdminController
     {
         private readonly IBeekeeperService beekeeperService;
@@ -70,4 +71,5 @@ namespace HoneyWebPlatform.Web.Areas.Admin.Controllers
         }
 
     }
+    */
 }

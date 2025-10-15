@@ -14,31 +14,6 @@
     bool isUserBeekeeper = await BeekeeperService.BeekeeperExistsByUserIdAsync(User.GetId()!);
 }
 
-@*@if (!honeys.Any())
-    {
-        <div class="mt-4 p-5 bg-light">
-            <h1 class="display-4">Добре дошли на най-хубавото място за Пчелари!</h1>
-            <p class="lead">
-                В момента няма налични медове и прополиси.
-                Защо не добавите някой?
-            </p>
-            <hr class="my-4">
-            <p class="lead">
-                @if (User.Identity?.IsAuthenticated ?? false)
-                {
-                    @if (isUserBeekeeper)
-                    {
-                        <a asp-controller="Honey" asp-action="Add" class="btn btn-primary btn-lg"
-                           role="button">Добави Мед</a>
-                        @*<a asp-controller="Propolis" asp-action="Add" class="btn btn-primary btn-lg"
-                           role="button">Добави Прополис</a>*@
-                    }
-                }
-            </p>
-        </div>
-    }*@
-
-
 <!-- banner part start-->
 <section class="banner_part">
     <div class="container">

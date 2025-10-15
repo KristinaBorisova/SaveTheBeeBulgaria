@@ -38,7 +38,7 @@
         [Required(ErrorMessage = "Моля добавете снимка до 2MB.")]
         [Display(Name = "Снимка")]
         [MaxFileSize(HoneyPictureMaxSize, ErrorMessage = "Максималният размер на файла за снимка е 2 мегабайта.")]
-        public IFormFile? HoneyPicture { get; set; }
+        public IFormFile HoneyPicture { get; set; } = null!;
 
         public string HoneyPicturePath { get; set; }
 

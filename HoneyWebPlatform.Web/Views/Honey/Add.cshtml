@@ -14,9 +14,39 @@
 
     <script>
         function updateFileName(input) {
-            var fileName = input.files[0].name;
-            document.getElementById('upload-file-info').value = fileName;
+            console.log('updateFileName called');
+            console.log('input:', input);
+            console.log('input.files:', input.files);
+            
+            if (input.files && input.files.length > 0) {
+                var fileName = input.files[0].name;
+                var fileSize = input.files[0].size;
+                console.log('Selected file:', fileName, 'Size:', fileSize, 'bytes');
+                
+                var fileInfoElement = document.getElementById('upload-file-info');
+                if (fileInfoElement) {
+                    fileInfoElement.value = fileName;
+                } else {
+                    console.error('upload-file-info element not found');
+                }
+            } else {
+                console.log('No file selected');
+                var fileInfoElement = document.getElementById('upload-file-info');
+                if (fileInfoElement) {
+                    fileInfoElement.value = '';
+                }
+            }
         }
+        
+        // Add event listener to ensure the function is called
+        document.addEventListener('DOMContentLoaded', function() {
+            var fileInput = document.getElementById('HoneyPicture');
+            if (fileInput) {
+                fileInput.addEventListener('change', function() {
+                    updateFileName(this);
+                });
+            }
+        });
     </script>
 
 }

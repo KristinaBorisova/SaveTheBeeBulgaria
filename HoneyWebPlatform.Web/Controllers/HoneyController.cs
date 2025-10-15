@@ -107,7 +107,13 @@
                 // Picture saving logic
                 if (model.HoneyPicture != null && model.HoneyPicture.Length > 0)
                 {
+                    // Ensure the uploads directory exists
                     var uploadsFolder = Path.Combine(webHostEnvironment.WebRootPath, "uploads", "HoneyPictures");
+                    if (!Directory.Exists(uploadsFolder))
+                    {
+                        Directory.CreateDirectory(uploadsFolder);
+                    }
+
                     var uniqueFileName = Guid.NewGuid().ToString() + "_" + model.HoneyPicture.FileName;
                     var filePath = Path.Combine(uploadsFolder, uniqueFileName);
 
@@ -117,6 +123,13 @@
                     }
 
                     model.HoneyPicturePath = "/uploads/HoneyPictures/" + uniqueFileName;
+                }
+                else
+                {
+                    // If no picture is uploaded, set a default path or handle accordingly
+                    ModelState.AddModelError(nameof(model.HoneyPicture), "Моля добавете снимка на меда!");
+                    model.Categories = await categoryService.AllCategoriesAsync();
+                    return View(model);
                 }
 
                 string honeyId =

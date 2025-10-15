@@ -109,10 +109,10 @@
                 return RedirectToAction("All");
             }
 
-            //if (!ModelState.IsValid)
-            //{
-            //    return View(input);
-            //}
+            if (!ModelState.IsValid)
+            {
+                return View(input);
+            }
 
             try
             {
@@ -142,7 +142,7 @@
             catch (Exception e)
             {
                 ModelState.AddModelError(string.Empty,
-                    "Неочакван проблем стана докато опитвахме да добавим Вашия мед! " +
+                    "Неочакван проблем стана докато опитвахме да добавим Вашия пост! " +
                     "Моля опитайте пак след малко или се свържете с администратор!");
 
                 return View(input);

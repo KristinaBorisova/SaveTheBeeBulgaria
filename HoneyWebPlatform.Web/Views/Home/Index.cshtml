@@ -1,5 +1,6 @@
 ﻿@using HoneyWebPlatform.Services.Data.Interfaces
 @using HoneyWebPlatform.Web.Infrastructure.Extensions
+@using HoneyWebPlatform.Web.ViewModels.User
 @model IndexViewModel
 
 @inject IBeekeeperService BeekeeperService
@@ -267,7 +268,7 @@
                         <img src="dingo-master/dingo-master/img/team/chefs_2.png" alt="">
                     </div>
                     <div class="single_blog_text text-center">
-                        <h3>Петър Димитров</h3>
+                        <h3>Мария Петрова</h3>
                         <p>Главен пчелар, Централна България</p>
                         <div class="social_icon">
                             <a href="#"> <i class="ti-facebook"></i> </a>
@@ -317,74 +318,21 @@
 </section>
 <!--::chefs_part end::-->
 <!--::reservation_part start::-->
-<section class="regervation_part section_padding">
+<section class="regervation_part section_padding" id="order-section">
     <div class="container">
         <div class="row">
             <div class="col-xl-5">
                 <div class="section_tittle">
                     <p>Поръчка</p>
-                    <h2>Поръчайте мед</h2>
+                    <h2>Поръчай Истински пчелен мед</h2>
+                     <h3>Подкрепи работата на български пчелар</h2>
                 </div>
             </div>
         </div>
         <div class="row">
             <div class="col-lg-6">
                 <div class="regervation_part_iner">
-                    <form>
-                        <div class="form-row">
-                            <div class="form-group col-md-6">
-                                <input type="text" class="form-control" id="inputName" placeholder="Име *">
-                            </div>
-                            <div class="form-group col-md-6">
-                                <input type="email" class="form-control" id="inputEmail"
-                                       placeholder="Имейл адрес *">
-                            </div>
-                            <div class="form-group col-md-6">
-                                <input type="tel" class="form-control" id="inputPhone" placeholder="Телефонен номер *">
-                            </div>
-                            <div class="form-group col-md-6">
-                                <select class="form-control" id="honeyType">
-                                    <option value="" selected>Вид Мед *</option>
-                                    <option value="linden">Липов мед</option>
-                                    <option value="bio">Био мед</option>
-                                    <option value="sunflower">Слънчогледов мед</option>
-                                    <option value="bouquet">Букет мед</option>
-                                    <option value="honeydew">Медова роса</option>
-                                </select>
-                            </div>
-                            <div class="form-group col-md-6">
-                                <select class="form-control" id="quantity">
-                                    <option value="" selected>Количество *</option>
-                                    <option value="1">1 буркан</option>
-                                    <option value="2">2 буркана</option>
-                                    <option value="3">3 буркана</option>
-                                    <option value="4">4+ буркана</option>
-                                </select>
-                            </div>
-                            <div class="form-group col-md-6">
-                                <select class="form-control" id="beekeeper">
-                                    <option value="" selected>Пчелар *</option>
-                                    <option value="petar-sofia">Петър Димитров - София</option>
-                                    <option value="maria-plovdiv">Мария Петрова - Пловдив</option>
-                                    <option value="ivan-varna">Иван Стоянов - Варна</option>
-                                    <option value="elena-burgas">Елена Георгиева - Бургас</option>
-                                    <option value="nikolay-ruse">Николай Иванов - Русе</option>
-                                    <option value="svetlana-pleven">Светлана Петрова - Плевен</option>
-                                </select>
-                            </div>
-                            <div class="form-group col-md-12">
-                                <input type="text" class="form-control" id="inputAddress" placeholder="Адрес за доставка *">
-                            </div>
-                            <div class="form-group col-md-12">
-                                <textarea class="form-control" id="Textarea" rows="4"
-                                          placeholder="Вашата бележка"></textarea>
-                            </div>
-                        </div>
-
-                        <div class="regerv_btn">
-                            <a asp-controller="Honey" asp-action="All" class="btn_4">Поръчай мед</a>
-                        </div>
-                    </form>
+                    <partial name="_EnhancedOrderFormPartial" model="@ViewBag.OrderFormData" />
                 </div>
             </div>
         </div>

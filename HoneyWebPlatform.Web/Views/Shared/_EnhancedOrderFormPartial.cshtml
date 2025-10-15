@@ -1,0 +1,121 @@
+@model OrderFormViewModel
+
+<!-- Enhanced Order Form with Beekeeper and Honey Type Selection -->
+<form asp-controller="Home" asp-action="PlaceOrderFromHomepage" method="post" id="orderForm">
+    <div class="form-row">
+        <!-- Customer Information -->
+        <div class="form-group col-md-6">
+            <label asp-for="FullName">Пълно Име *</label>
+            <input asp-for="FullName" placeholder="Пълно Име" class="form-control" required/>
+            <span asp-validation-for="FullName" class="small text-danger"></span>
+        </div>
+
+        <div class="form-group col-md-6">
+            <label asp-for="Email">Имейл *</label>
+            <input asp-for="Email" type="email" placeholder="Имейл" class="form-control" required/>
+            <span asp-validation-for="Email" class="small text-danger"></span>
+        </div>
+
+        <div class="form-group col-md-6">
+            <label asp-for="PhoneNumber">Телефонен номер *</label>
+            <input asp-for="PhoneNumber" type="tel" placeholder="+359888123456" class="form-control" required />
+            <span asp-validation-for="PhoneNumber" class="small text-danger"></span>
+        </div>
+
+        <div class="form-group col-md-6">
+            <label asp-for="Address">Адрес за доставка *</label>
+            <input asp-for="Address" placeholder="Адрес за доставка" class="form-control" required />
+            <span asp-validation-for="Address" class="small text-danger"></span>
+        </div>
+
+        <!-- Honey Type Selection -->
+        <div class="form-group col-md-6">
+            <label asp-for="HoneyTypeId">Вид Мед *</label>
+            <select asp-for="HoneyTypeId" class="form-control" required id="honeyTypeSelect">
+                <option value="">Изберете вид мед</option>
+                @foreach (var honeyType in Model.AvailableHoneyTypes)
+                {
+                    <option value="@honeyType.Id" data-price="@honeyType.Price" data-description="@honeyType.Description">
+                        @honeyType.Name - @honeyType.Price.ToString("F2") лв
+                    </option>
+                }
+            </select>
+            <span asp-validation-for="HoneyTypeId" class="small text-danger"></span>
+            <small class="form-text text-muted" id="honeyDescription"></small>
+        </div>
+
+        <!-- Beekeeper Selection -->
+        <div class="form-group col-md-6">
+            <label asp-for="BeekeeperId">Пчелар *</label>
+            <select asp-for="BeekeeperId" class="form-control" required>
+                <option value="">Изберете пчелар</option>
+                @foreach (var beekeeper in Model.AvailableBeekeepers)
+                {
+                    <option value="@beekeeper.Id">
+                        @beekeeper.FullName - @beekeeper.Location
+                    </option>
+                }
+            </select>
+            <span asp-validation-for="BeekeeperId" class="small text-danger"></span>
+        </div>
+
+        <!-- Quantity -->
+        <div class="form-group col-md-6">
+            <label asp-for="Quantity">Количество *</label>
+            <select asp-for="Quantity" class="form-control" required id="quantitySelect">
+                <option value="1">1 буркан</option>
+                <option value="2">2 буркана</option>
+                <option value="3">3 буркана</option>
+                <option value="4">4 буркана</option>
+                <option value="5">5+ буркана</option>
+            </select>
+            <span asp-validation-for="Quantity" class="small text-danger"></span>
+        </div>
+
+        <!-- Price Display -->
+        <div class="form-group col-md-6">
+            <label>Обща цена</label>
+            <div class="form-control-plaintext" id="totalPrice">
+                0.00 лв
+            </div>
+        </div>
+
+        <!-- Notes -->
+        <div class="form-group col-md-12">
+            <label asp-for="Notes">Бележки</label>
+            <textarea asp-for="Notes" class="form-control" rows="3" placeholder="Допълнителни бележки за поръчката..."></textarea>
+            <span asp-validation-for="Notes" class="small text-danger"></span>
+        </div>
+    </div>
+
+    <div class="text-center">
+        <button class="genric-btn primary radius mt-10" type="submit">Поръчай</button>
+    </div>
+
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+</form>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const honeyTypeSelect = document.getElementById('honeyTypeSelect');
+    const quantitySelect = document.getElementById('quantitySelect');
+    const totalPriceElement = document.getElementById('totalPrice');
+    const honeyDescriptionElement = document.getElementById('honeyDescription');
+
+    function updatePrice() {
+        const selectedOption = honeyTypeSelect.options[honeyTypeSelect.selectedIndex];
+        const price = parseFloat(selectedOption.getAttribute('data-price')) || 0;
+        const quantity = parseInt(quantitySelect.value) || 1;
+        const total = price * quantity;
+        
+        totalPriceElement.textContent = total.toFixed(2) + ' лв';
+        
+        // Update description
+        const description = selectedOption.getAttribute('data-description') || '';
+        honeyDescriptionElement.textContent = description;
+    }
+
+    honeyTypeSelect.addEventListener('change', updatePrice);
+    quantitySelect.addEventListener('change', updatePrice);
+});
+</script>

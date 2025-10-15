@@ -92,12 +92,12 @@
                 ModelState.AddModelError(nameof(model.CategoryId), "Тази категория не съществува!");
             }
 
-            //if (!ModelState.IsValid)
-            //{
-            //    model.Categories = await categoryService.AllCategoriesAsync();
+            if (!ModelState.IsValid)
+            {
+                model.Categories = await categoryService.AllCategoriesAsync();
 
-            //    return View(model);
-            //}
+                return View(model);
+            }
 
             try
             {

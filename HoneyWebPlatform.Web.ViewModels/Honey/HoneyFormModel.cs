@@ -40,7 +40,7 @@
         [MaxFileSize(HoneyPictureMaxSize, ErrorMessage = "Максималният размер на файла за снимка е 2 мегабайта.")]
         public IFormFile HoneyPicture { get; set; } = null!;
 
-        public string HoneyPicturePath { get; set; }
+        public string HoneyPicturePath { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Полето Цена е задължително.")]
         [RegularExpression(@"^\d+(\.\d{1,2})?$", 
@@ -69,7 +69,7 @@
                 .ForMember(d => d.BeekeeperId, opt => opt.Ignore())
                 .ForMember(d => d.CreatedOn, opt => opt.MapFrom(s => DateTime.UtcNow))
                 .ForMember(d => d.IsActive, opt => opt.MapFrom(s => true))
-                .ForMember(d => d.ImageUrl, opt => opt.MapFrom(s => s.HoneyPicturePath));
+                .ForMember(d => d.ImageUrl, opt => opt.Ignore()); // We'll set this manually in the service
         }
     }
 }

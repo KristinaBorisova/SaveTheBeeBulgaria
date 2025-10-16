@@ -140,6 +140,9 @@
 
                 model.HoneyPicturePath = "/uploads/HoneyPictures/" + uniqueFileName;
 
+                // Debug: Log the HoneyPicturePath value
+                Console.WriteLine($"HoneyPicturePath set to: {model.HoneyPicturePath}");
+
                 string honeyId =
                     await honeyService.CreateAndReturnIdAsync(model, beekeeperId!);
 

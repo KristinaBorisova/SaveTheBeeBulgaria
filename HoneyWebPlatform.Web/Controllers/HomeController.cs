@@ -142,14 +142,24 @@ namespace HoneyWebPlatform.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> PlaceOrderFromHomepage(OrderFormViewModel model)
         {
+            // Debug: Log model state
+            Console.WriteLine($"DEBUG: ModelState.IsValid: {ModelState.IsValid}");
             if (!ModelState.IsValid)
             {
+                foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    Console.WriteLine($"DEBUG: Validation Error: {error.ErrorMessage}");
+                }
                 TempData[ErrorMessage] = "Моля, попълнете всички задължителни полета.";
                 return RedirectToAction("Index", "Home");
             }
 
             try
             {
+                // Debug: Log form data
+                Console.WriteLine($"DEBUG: Form Data - FullName: {model.FullName}, Email: {model.Email}, Phone: {model.PhoneNumber}, Address: {model.Address}");
+                Console.WriteLine($"DEBUG: Form Data - HoneyTypeId: {model.HoneyTypeId}, BeekeeperId: {model.BeekeeperId}, Quantity: {model.Quantity}");
+                
                 // Get honey type details
                 var honeyTypes = await GetHoneyTypesAsync();
                 var selectedHoneyType = honeyTypes.FirstOrDefault(h => h.Id == model.HoneyTypeId);

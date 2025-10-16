@@ -13,7 +13,7 @@ namespace HoneyWebPlatform.Web.ViewModels.Home
         public string Email { get; set; } = null!;
 
         [Required(ErrorMessage = "Моля, въведете телефонния си номер.")]
-        [RegularExpression(@"^(\+359|0)[0-9]{9}$", ErrorMessage = "Телефонният номер трябва да започва с +359 или 0 и да съдържа 9 цифри след това.")]
+        [RegularExpression(@"^(\+359|0)[0-9]{8,9}$", ErrorMessage = "Телефонният номер трябва да започва с +359 или 0 и да съдържа 8-9 цифри след това.")]
         public string PhoneNumber { get; set; } = null!;
 
         [Required(ErrorMessage = "Моля, въведете адрес за доставка.")]
@@ -22,8 +22,7 @@ namespace HoneyWebPlatform.Web.ViewModels.Home
         [Required(ErrorMessage = "Моля, изберете вид мед.")]
         public int HoneyTypeId { get; set; }
 
-        [Required(ErrorMessage = "Моля, изберете пчелар.")]
-        public Guid BeekeeperId { get; set; }
+        public Guid? BeekeeperId { get; set; }
 
         [Required(ErrorMessage = "Моля, въведете количество.")]
         [Range(1, 10, ErrorMessage = "Количеството трябва да е между 1 и 10.")]

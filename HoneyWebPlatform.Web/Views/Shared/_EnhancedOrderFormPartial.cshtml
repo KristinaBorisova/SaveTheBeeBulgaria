@@ -1,93 +1,257 @@
 @model OrderFormViewModel
 
+<style>
+    .enhanced-order-form {
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        margin: 20px 0;
+    }
+
+    .enhanced-order-form .form-group {
+        margin-bottom: 20px;
+    }
+
+    .enhanced-order-form label {
+        color: white !important;
+        font-weight: bold !important;
+        font-size: 1rem;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    }
+
+    .enhanced-order-form label i {
+        margin-right: 8px;
+        color: #F59F0A;
+        font-size: 1.1rem;
+    }
+
+    .enhanced-order-form .form-control {
+        background: rgba(255, 255, 255, 0.95);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 8px;
+        padding: 12px 15px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        color: #2c3e50;
+    }
+
+    .enhanced-order-form .form-control:focus {
+        background: white;
+        border-color: #F59F0A;
+        box-shadow: 0 0 0 0.2rem rgba(245, 159, 10, 0.25);
+        outline: none;
+    }
+
+    .enhanced-order-form .form-control::placeholder {
+        color: #7f8c8d;
+        font-style: italic;
+    }
+
+    .enhanced-order-form .form-control-plaintext {
+        background: rgba(245, 159, 10, 0.1);
+        border: 2px solid #F59F0A;
+        border-radius: 8px;
+        padding: 12px 15px;
+        color: white;
+        font-weight: bold;
+        font-size: 1.2rem;
+        text-align: center;
+        margin: 0;
+    }
+
+    .enhanced-order-form .text-danger {
+        color: #e74c3c !important;
+        font-weight: 500;
+        font-size: 0.9rem;
+        margin-top: 5px;
+        display: block;
+    }
+
+    .enhanced-order-form .form-text {
+        color: rgba(255, 255, 255, 0.8) !important;
+        font-size: 0.9rem;
+        margin-top: 5px;
+        font-style: italic;
+    }
+
+    .enhanced-order-form .btn-submit {
+        background: linear-gradient(135deg, #F59F0A 0%, #f39c12 100%);
+        border: none;
+        color: white;
+        font-weight: bold;
+        font-size: 1.1rem;
+        padding: 15px 40px;
+        border-radius: 25px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(245, 159, 10, 0.3);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .enhanced-order-form .btn-submit:hover {
+        background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(245, 159, 10, 0.4);
+    }
+
+    .enhanced-order-form .btn-submit:active {
+        transform: translateY(0);
+    }
+
+    .enhanced-order-form .validation-summary {
+        background: rgba(231, 76, 60, 0.1);
+        border: 1px solid #e74c3c;
+        border-radius: 8px;
+        padding: 15px;
+        margin: 20px 0;
+    }
+
+    .enhanced-order-form .validation-summary ul {
+        margin: 0;
+        padding-left: 20px;
+    }
+
+    .enhanced-order-form .validation-summary li {
+        color: #e74c3c;
+        font-weight: 500;
+    }
+
+    @@media (max-width: 768px) {
+        .enhanced-order-form {
+            padding: 20px;
+            margin: 10px 0;
+        }
+        
+        .enhanced-order-form label {
+            font-size: 0.95rem;
+        }
+        
+        .enhanced-order-form .form-control {
+            padding: 10px 12px;
+            font-size: 0.95rem;
+        }
+        
+        .enhanced-order-form .btn-submit {
+            padding: 12px 30px;
+            font-size: 1rem;
+        }
+    }
+</style>
+
 <!-- Enhanced Order Form with Beekeeper and Honey Type Selection -->
-<form asp-controller="Home" asp-action="PlaceOrderFromHomepage" method="post" id="orderForm">
-    <div class="form-row">
-        <!-- Customer Information -->
-        <div class="form-group col-md-6">
-            <label asp-for="FullName">Пълно Име *</label>
-            <input asp-for="FullName" placeholder="Пълно Име" class="form-control" required/>
-            <span asp-validation-for="FullName" class="small text-danger"></span>
-        </div>
+<div class="enhanced-order-form">
+    <form asp-controller="Home" asp-action="PlaceOrderFromHomepage" method="post" id="orderForm">
+        <div class="form-row">
+            <!-- Customer Information -->
+            <div class="form-group col-md-6">
+                <label asp-for="FullName">
+                    <i class="fas fa-user"></i> Пълно Име *
+                </label>
+                <input asp-for="FullName" placeholder="Въведете вашето пълно име" class="form-control" required/>
+                <span asp-validation-for="FullName" class="small text-danger"></span>
+            </div>
 
-        <div class="form-group col-md-6">
-            <label asp-for="Email">Имейл *</label>
-            <input asp-for="Email" type="email" placeholder="Имейл" class="form-control" required/>
-            <span asp-validation-for="Email" class="small text-danger"></span>
-        </div>
+            <div class="form-group col-md-6">
+                <label asp-for="Email">
+                    <i class="fas fa-envelope"></i> Имейл *
+                </label>
+                <input asp-for="Email" type="email" placeholder="your.email@example.com" class="form-control" required/>
+                <span asp-validation-for="Email" class="small text-danger"></span>
+            </div>
 
-        <div class="form-group col-md-6">
-            <label asp-for="PhoneNumber">Телефонен номер *</label>
-            <input asp-for="PhoneNumber" type="tel" placeholder="+359888123456" class="form-control" required />
-            <span asp-validation-for="PhoneNumber" class="small text-danger"></span>
-        </div>
+            <div class="form-group col-md-6">
+                <label asp-for="PhoneNumber">
+                    <i class="fas fa-phone"></i> Телефонен номер *
+                </label>
+                <input asp-for="PhoneNumber" type="tel" placeholder="+359888123456" class="form-control" required />
+                <span asp-validation-for="PhoneNumber" class="small text-danger"></span>
+            </div>
 
-        <div class="form-group col-md-6">
-            <label asp-for="Address">Адрес за доставка *</label>
-            <input asp-for="Address" placeholder="Адрес за доставка" class="form-control" required />
-            <span asp-validation-for="Address" class="small text-danger"></span>
-        </div>
+            <div class="form-group col-md-6">
+                <label asp-for="Address">
+                    <i class="fas fa-map-marker-alt"></i> Адрес за доставка *
+                </label>
+                <input asp-for="Address" placeholder="Град, улица, номер" class="form-control" required />
+                <span asp-validation-for="Address" class="small text-danger"></span>
+            </div>
 
-        <!-- Honey Type Selection -->
-        <div class="form-group col-md-6">
-            <label asp-for="HoneyTypeId">Вид Мед *</label>
-            <select asp-for="HoneyTypeId" class="form-control" required id="honeyTypeSelect">
-                <option value="">Изберете вид мед</option>
-                @foreach (var honeyType in Model.AvailableHoneyTypes)
-                {
-                    <option value="@honeyType.Id" data-price="@honeyType.Price" data-description="@honeyType.Description">
-                        @honeyType.Name - @honeyType.Price.ToString("F2") лв
-                    </option>
-                }
-            </select>
-            <span asp-validation-for="HoneyTypeId" class="small text-danger"></span>
-            <small class="form-text text-muted" id="honeyDescription"></small>
-        </div>
+            <!-- Honey Type Selection -->
+            <div class="form-group col-md-6">
+                <label asp-for="HoneyTypeId">
+                    <i class="fas fa-seedling"></i> Вид Мед *
+                </label>
+                <select asp-for="HoneyTypeId" class="form-control" required id="honeyTypeSelect">
+                    <option value="">Изберете вид мед</option>
+                    @foreach (var honeyType in Model.AvailableHoneyTypes)
+                    {
+                        <option value="@honeyType.Id" data-price="@honeyType.Price" data-description="@honeyType.Description">
+                            @honeyType.Name - @honeyType.Price.ToString("F2") лв
+                        </option>
+                    }
+                </select>
+                <span asp-validation-for="HoneyTypeId" class="small text-danger"></span>
+                <small class="form-text text-muted" id="honeyDescription"></small>
+            </div>
 
-        <!-- Beekeeper Selection -->
-        <div class="form-group col-md-6">
-            <label asp-for="BeekeeperId">Пчелар *</label>
-            <select asp-for="BeekeeperId" class="form-control" required id="beekeeperSelect">
-                <option value="">Първо изберете вид мед</option>
-            </select>
-            <span asp-validation-for="BeekeeperId" class="small text-danger"></span>
-        </div>
+            <!-- Beekeeper Selection -->
+            <div class="form-group col-md-6">
+                <label asp-for="BeekeeperId">
+                    <i class="fas fa-user-tie"></i> Пчелар *
+                </label>
+                <select asp-for="BeekeeperId" class="form-control" required id="beekeeperSelect">
+                    <option value="">Първо изберете вид мед</option>
+                </select>
+                <span asp-validation-for="BeekeeperId" class="small text-danger"></span>
+            </div>
 
-        <!-- Quantity -->
-        <div class="form-group col-md-6">
-            <label asp-for="Quantity">Количество *</label>
-            <select asp-for="Quantity" class="form-control" required id="quantitySelect">
-                <option value="1">1 буркан</option>
-                <option value="2">2 буркана</option>
-                <option value="3">3 буркана</option>
-                <option value="4">4 буркана</option>
-                <option value="5">5+ буркана</option>
-            </select>
-            <span asp-validation-for="Quantity" class="small text-danger"></span>
-        </div>
+            <!-- Quantity -->
+            <div class="form-group col-md-6">
+                <label asp-for="Quantity">
+                    <i class="fas fa-shopping-cart"></i> Количество *
+                </label>
+                <select asp-for="Quantity" class="form-control" required id="quantitySelect">
+                    <option value="1">1 буркан</option>
+                    <option value="2">2 буркана</option>
+                    <option value="3">3 буркана</option>
+                    <option value="4">4 буркана</option>
+                    <option value="5">5+ буркана</option>
+                </select>
+                <span asp-validation-for="Quantity" class="small text-danger"></span>
+            </div>
 
-        <!-- Price Display -->
-        <div class="form-group col-md-6">
-            <label>Обща цена</label>
-            <div class="form-control-plaintext" id="totalPrice">
-                0.00 лв
+            <!-- Price Display -->
+            <div class="form-group col-md-6">
+                <label>
+                    <i class="fas fa-calculator"></i> Обща цена
+                </label>
+                <div class="form-control-plaintext" id="totalPrice">
+                    0.00 лв
+                </div>
+            </div>
+
+            <!-- Notes -->
+            <div class="form-group col-md-12">
+                <label asp-for="Notes">
+                    <i class="fas fa-sticky-note"></i> Бележки
+                </label>
+                <textarea asp-for="Notes" class="form-control" rows="3" placeholder="Допълнителни бележки за поръчката (по желание)..."></textarea>
+                <span asp-validation-for="Notes" class="small text-danger"></span>
             </div>
         </div>
 
-        <!-- Notes -->
-        <div class="form-group col-md-12">
-            <label asp-for="Notes">Бележки</label>
-            <textarea asp-for="Notes" class="form-control" rows="3" placeholder="Допълнителни бележки за поръчката..."></textarea>
-            <span asp-validation-for="Notes" class="small text-danger"></span>
+        <div class="text-center">
+            <button class="btn btn-submit" type="submit">
+                <i class="fas fa-shopping-bag"></i> Поръчай сега
+            </button>
         </div>
-    </div>
 
-    <div class="text-center">
-        <button class="genric-btn primary radius mt-10" type="submit">Поръчай</button>
-    </div>
-
-    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-</form>
+        <div asp-validation-summary="ModelOnly" class="validation-summary"></div>
+    </form>
+</div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {

@@ -42,7 +42,7 @@
             </div>
             <div class="col-lg-9">
                 <form method="get" class="modern-search-form">
-                    <div class="row">
+                    <div class="row g-3">
                         <div class="form-group col-xl-2 col-lg-3 col-md-6 col-sm-12">
                             <label asp-for="Category" class="form-label">
                                 <i class="fas fa-filter"></i> Категория
@@ -56,7 +56,7 @@
                             </select>
                         </div>
 
-                        <div class="form-group col-xl-5 col-lg-5 col-md-6 col-sm-12">
+                        <div class="form-group col-xl-4 col-lg-4 col-md-6 col-sm-12">
                             <label asp-for="SearchString" class="form-label">
                                 <i class="fas fa-search"></i> Търси мед
                             </label>
@@ -75,7 +75,7 @@
                             </select>
                         </div>
 
-                        <div class="col-xl-2 col-lg-1 col-md-6 col-sm-12">
+                        <div class="col-xl-3 col-lg-2 col-md-6 col-sm-12">
                             <div class="form-group mt-4">
                                 <button type="submit" class="btn btn-primary modern-btn w-100">
                                     <i class="fas fa-search"></i> Търси
@@ -150,6 +150,19 @@
     font-size: 0.9rem;
 }
 
+.modern-search-form .form-group {
+    margin-bottom: 8px;
+    padding: 0 5px;
+}
+
+.modern-search-form .row.g-3 {
+    margin: 0 -5px;
+}
+
+.modern-search-form .row.g-3 > * {
+    padding: 0 5px;
+}
+
 .modern-input,
 .modern-select {
     border: 2px solid #ecf0f1;
@@ -158,8 +171,9 @@
     font-size: 0.95rem;
     transition: all 0.3s ease;
     background: #f8f9fa;
-    min-width: 140px;
+    min-width: 120px;
     width: 100%;
+    margin-bottom: 0;
 }
 
 .modern-select {
@@ -273,17 +287,29 @@
     
     .modern-input,
     .modern-select {
-        min-width: 130px;
-        padding: 11px 14px;
+        min-width: 110px;
+        padding: 10px 12px;
     }
     
     .modern-select {
-        min-width: 170px;
+        min-width: 150px;
     }
     
     .modern-select option {
         padding: 8px 12px;
         font-size: 0.9rem;
+    }
+    
+    .modern-search-form .form-group {
+        padding: 0 3px;
+    }
+    
+    .modern-search-form .row.g-3 {
+        margin: 0 -3px;
+    }
+    
+    .modern-search-form .row.g-3 > * {
+        padding: 0 3px;
     }
 }
 

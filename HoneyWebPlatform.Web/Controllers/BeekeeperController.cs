@@ -118,7 +118,7 @@ using static Common.NotificationMessagesConstants;
                     HiveFarmPicturePaths = beekeeper.HiveFarmPicturePaths,
                     OwnedHoneys = ownedHoneys,
                     TotalHoneys = ownedHoneys.Count(),
-                    JoinedDate = DateTime.Now.AddMonths(-6) // Default to 6 months ago since we don't have CreatedOn
+                    JoinedDate = DateTime.Now.AddMonths(-6) // Default to 6 months ago since ApplicationUser doesn't have CreatedOn property
                 };
 
                 return View(viewModel);

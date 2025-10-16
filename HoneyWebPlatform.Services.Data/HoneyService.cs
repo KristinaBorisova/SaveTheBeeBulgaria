@@ -40,7 +40,6 @@
         {
             Honey newHoney = AutoMapperConfig.MapperInstance.Map<Honey>(formModel);
             newHoney.BeekeeperId = Guid.Parse(beekeeperId);
-            newHoney.ImageUrl = formModel.HoneyPicturePath;
 
             await dbContext.Honeys.AddAsync(newHoney);
             await dbContext.SaveChangesAsync();

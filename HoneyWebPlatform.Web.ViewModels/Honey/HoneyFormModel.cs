@@ -53,12 +53,25 @@
         [Display(Name = "Категория")]
         public int CategoryId { get; set; }
 
+        [Required(ErrorMessage = "Полето Тегло е задължително.")]
+        [Range(1, 10000, ErrorMessage = "Теглото трябва да е между 1 и 10000 грама.")]
+        [Display(Name = "Тегло (грама)")]
+        public int NetWeight { get; set; }
+
+        [Required(ErrorMessage = "Полето Година на производство е задължително.")]
+        [Range(2020, 2024, ErrorMessage = "Годината трябва да е между 2020 и 2024.")]
+        [Display(Name = "Година на производство")]
+        public int YearMade { get; set; }
+
         public IEnumerable<HoneySelectCategoryFormModel> Categories { get; set; }
 
         public void CreateMappings(IProfileExpression configuration)
         {
             configuration.CreateMap<HoneyFormModel, Honey>()
-                .ForMember(d => d.BeekeeperId, opt => opt.Ignore());
+                .ForMember(d => d.BeekeeperId, opt => opt.Ignore())
+                .ForMember(d => d.CreatedOn, opt => opt.MapFrom(s => DateTime.UtcNow))
+                .ForMember(d => d.IsActive, opt => opt.MapFrom(s => true))
+                .ForMember(d => d.ImageUrl, opt => opt.MapFrom(s => s.HoneyPicturePath));
         }
     }
 }

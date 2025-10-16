@@ -15,6 +15,7 @@ namespace HoneyWebPlatform.Web
     using Infrastructure.Extensions;
     using Infrastructure.ModelBinders;
     using Services.Data.Interfaces;
+    using Services.Data;
     using Services.Mapping;
     using ViewModels.Home;
     using static Common.GeneralApplicationConstants;

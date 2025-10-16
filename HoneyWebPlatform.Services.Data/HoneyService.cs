@@ -97,8 +97,9 @@
                     .OrderByDescending(h => h.CreatedOn)
             };
 
+            int totalHoneys = await honeysQuery.CountAsync();
+            
             IEnumerable<HoneyAllViewModel> allHoneys = await honeysQuery
-                .Where(h => h.IsActive)
                 //.Skip((queryModel.CurrentPage - 1) * queryModel.HoneysPerPage)
                 //.Take(queryModel.HoneysPerPage)
                 .Select(h => new HoneyAllViewModel
@@ -110,7 +111,6 @@
                     Price = h.Price,
                 })
                 .ToArrayAsync();
-            int totalHoneys = honeysQuery.Count();
 
             return new AllHoneysFilteredAndPagedServiceModel()
             {

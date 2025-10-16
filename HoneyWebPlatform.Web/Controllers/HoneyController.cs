@@ -92,6 +92,12 @@
                 ModelState.AddModelError(nameof(model.CategoryId), "Тази категория не съществува!");
             }
 
+            // Check if photo is uploaded before validation
+            if (model.HoneyPicture == null || model.HoneyPicture.Length == 0)
+            {
+                ModelState.AddModelError(nameof(model.HoneyPicture), "Моля добавете снимка на меда!");
+            }
+
             if (!ModelState.IsValid)
             {
                 model.Categories = await categoryService.AllCategoriesAsync();
@@ -104,33 +110,23 @@
                 string? beekeeperId =
                     await beekeeperService.GetBeekeeperIdByUserIdAsync(User.GetId()!);
 
-                // Picture saving logic
-                if (model.HoneyPicture != null && model.HoneyPicture.Length > 0)
+                // Picture saving logic - we already validated this exists above
+                // Ensure the uploads directory exists
+                var uploadsFolder = Path.Combine(webHostEnvironment.WebRootPath, "uploads", "HoneyPictures");
+                if (!Directory.Exists(uploadsFolder))
                 {
-                    // Ensure the uploads directory exists
-                    var uploadsFolder = Path.Combine(webHostEnvironment.WebRootPath, "uploads", "HoneyPictures");
-                    if (!Directory.Exists(uploadsFolder))
-                    {
-                        Directory.CreateDirectory(uploadsFolder);
-                    }
-
-                    var uniqueFileName = Guid.NewGuid().ToString() + "_" + model.HoneyPicture.FileName;
-                    var filePath = Path.Combine(uploadsFolder, uniqueFileName);
-
-                    await using (var fileStream = new FileStream(filePath, FileMode.Create))
-                    {
-                        await model.HoneyPicture.CopyToAsync(fileStream);
-                    }
-
-                    model.HoneyPicturePath = "/uploads/HoneyPictures/" + uniqueFileName;
+                    Directory.CreateDirectory(uploadsFolder);
                 }
-                else
+
+                var uniqueFileName = Guid.NewGuid().ToString() + "_" + model.HoneyPicture.FileName;
+                var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                await using (var fileStream = new FileStream(filePath, FileMode.Create))
                 {
-                    // If no picture is uploaded, set a default path or handle accordingly
-                    ModelState.AddModelError(nameof(model.HoneyPicture), "Моля добавете снимка на меда!");
-                    model.Categories = await categoryService.AllCategoriesAsync();
-                    return View(model);
+                    await model.HoneyPicture.CopyToAsync(fileStream);
                 }
+
+                model.HoneyPicturePath = "/uploads/HoneyPictures/" + uniqueFileName;
 
                 string honeyId =
                     await honeyService.CreateAndReturnIdAsync(model, beekeeperId!);

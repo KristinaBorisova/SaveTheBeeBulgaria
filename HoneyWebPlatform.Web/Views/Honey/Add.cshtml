@@ -21,11 +21,20 @@
             if (input.files && input.files.length > 0) {
                 var fileName = input.files[0].name;
                 var fileSize = input.files[0].size;
+                var maxSize = 2 * 1024 * 1024; // 2MB
+                
                 console.log('Selected file:', fileName, 'Size:', fileSize, 'bytes');
                 
                 var fileInfoElement = document.getElementById('upload-file-info');
                 if (fileInfoElement) {
-                    fileInfoElement.value = fileName;
+                    if (fileSize > maxSize) {
+                        fileInfoElement.value = 'Файлът е твърде голям! Максимум 2MB';
+                        fileInfoElement.style.color = 'red';
+                        input.value = ''; // Clear the file input
+                    } else {
+                        fileInfoElement.value = fileName + ' (' + Math.round(fileSize / 1024) + ' KB)';
+                        fileInfoElement.style.color = 'green';
+                    }
                 } else {
                     console.error('upload-file-info element not found');
                 }
@@ -34,6 +43,7 @@
                 var fileInfoElement = document.getElementById('upload-file-info');
                 if (fileInfoElement) {
                     fileInfoElement.value = '';
+                    fileInfoElement.style.color = '';
                 }
             }
         }
@@ -44,6 +54,28 @@
             if (fileInput) {
                 fileInput.addEventListener('change', function() {
                     updateFileName(this);
+                });
+            }
+            
+            // Add form validation feedback
+            var form = document.querySelector('form[enctype="multipart/form-data"]');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    var fileInput = document.getElementById('HoneyPicture');
+                    if (!fileInput.files || fileInput.files.length === 0) {
+                        e.preventDefault();
+                        alert('Моля изберете снимка на меда!');
+                        return false;
+                    }
+                    
+                    // Check file size
+                    var file = fileInput.files[0];
+                    var maxSize = 2 * 1024 * 1024; // 2MB
+                    if (file.size > maxSize) {
+                        e.preventDefault();
+                        alert('Файлът е твърде голям! Максималният размер е 2MB.');
+                        return false;
+                    }
                 });
             }
         });

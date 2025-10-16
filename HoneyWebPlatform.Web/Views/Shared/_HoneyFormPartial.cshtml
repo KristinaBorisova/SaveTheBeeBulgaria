@@ -50,13 +50,13 @@
 
             <div class="form-group">
                 <label asp-for="NetWeight">Тегло (грама)</label>
-                <input type="number" asp-for="NetWeight" class="form-control" placeholder="500">
+                <input type="number" asp-for="NetWeight" class="form-control" placeholder="500" value="@(Model.NetWeight == 0 ? "" : Model.NetWeight.ToString())">
                 <span asp-validation-for="NetWeight" class="small text-danger"></span>
             </div>
 
             <div class="form-group">
                 <label asp-for="YearMade">Година на производство</label>
-                <input type="number" asp-for="YearMade" class="form-control" placeholder="2024" min="2020" max="2024">
+                <input type="number" asp-for="YearMade" class="form-control" placeholder="2024" min="2020" max="2024" value="@(Model.YearMade == 0 ? DateTime.Now.Year : Model.YearMade)">
                 <span asp-validation-for="YearMade" class="small text-danger"></span>
             </div>
 

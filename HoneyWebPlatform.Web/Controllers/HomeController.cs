@@ -5,6 +5,7 @@ using HoneyWebPlatform.Web.ViewModels.Propolis;
 namespace HoneyWebPlatform.Web.Controllers
 {
     using Microsoft.AspNetCore.Mvc;
+    using Microsoft.EntityFrameworkCore;
 
     using Services.Data.Interfaces;
     using HoneyWebPlatform.Data.Models;
@@ -318,7 +319,7 @@ namespace HoneyWebPlatform.Web.Controllers
                     };
                 }
 
-                return beekeepers;
+                return beekeepers ?? new List<BeekeeperViewModel>();
             }
         }
 

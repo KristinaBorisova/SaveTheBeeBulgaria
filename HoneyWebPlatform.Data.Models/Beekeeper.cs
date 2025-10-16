@@ -22,7 +22,7 @@
         public string PhoneNumber { get; set; } = null!;
         
         [MaxLength(255)]
-        public string HiveFarmPicturePaths { get; set; }
+        public string? HiveFarmPicturePaths { get; set; }
 
         [MaxLength(500)]
         public string? Story { get; set; }

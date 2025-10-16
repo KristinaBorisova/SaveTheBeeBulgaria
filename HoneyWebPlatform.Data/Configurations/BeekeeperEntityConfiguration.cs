@@ -22,8 +22,7 @@ namespace HoneyWebPlatform.Data.Configurations
 
             builder
                 .Property(b => b.HiveFarmPicturePaths)
-                .HasMaxLength(255)
-                .IsRequired();
+                .HasMaxLength(255);
         }
     }
 }

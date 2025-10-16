@@ -119,7 +119,7 @@
             return beekeeper.OwnedPropolis.Any(h => h.Id.ToString() == propolisId);
         }
 
-        public async Task<Beekeeper?> GetBeekeeperProfileByIdAsync(string beekeeperId)
+        public async Task<HoneyWebPlatform.Data.Models.Beekeeper?> GetBeekeeperProfileByIdAsync(string beekeeperId)
         {
             return await dbContext
                 .Beekeepers

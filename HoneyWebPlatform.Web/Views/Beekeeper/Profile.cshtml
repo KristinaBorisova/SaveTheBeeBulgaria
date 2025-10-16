@@ -1,0 +1,431 @@
+@model BeekeeperProfileViewModel
+
+@{
+    ViewBag.Title = $"Пчелар - {Model.FullName}";
+}
+
+<style>
+    .beekeeper-profile {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        min-height: 100vh;
+        padding: 2rem 0;
+    }
+
+    .beekeeper-hero {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        margin-bottom: 3rem;
+        position: relative;
+    }
+
+    .beekeeper-header {
+        background: linear-gradient(135deg, #F59F0A 0%, #f39c12 100%);
+        padding: 3rem 2rem 2rem;
+        color: white;
+        text-align: center;
+        position: relative;
+    }
+
+    .beekeeper-avatar {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        border: 5px solid white;
+        margin: 0 auto 1rem;
+        background: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        color: #F59F0A;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    .beekeeper-name {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .beekeeper-subtitle {
+        font-size: 1.2rem;
+        opacity: 0.9;
+        margin-bottom: 1rem;
+    }
+
+    .beekeeper-stats {
+        display: flex;
+        justify-content: center;
+        gap: 2rem;
+        margin-top: 1.5rem;
+    }
+
+    .stat-item {
+        text-align: center;
+    }
+
+    .stat-number {
+        font-size: 1.8rem;
+        font-weight: 700;
+        display: block;
+    }
+
+    .stat-label {
+        font-size: 0.9rem;
+        opacity: 0.8;
+    }
+
+    .beekeeper-content {
+        padding: 2.5rem;
+    }
+
+    .story-section {
+        margin-bottom: 3rem;
+    }
+
+    .section-title {
+        font-size: 1.8rem;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .story-text {
+        font-size: 1.1rem;
+        line-height: 1.7;
+        color: #495057;
+        background: #f8f9fa;
+        padding: 1.5rem;
+        border-radius: 15px;
+        border-left: 4px solid #F59F0A;
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 3rem;
+    }
+
+    .info-card {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        border: 1px solid #e9ecef;
+    }
+
+    .info-card-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .info-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.5rem 0;
+        color: #495057;
+    }
+
+    .info-item i {
+        color: #F59F0A;
+        width: 20px;
+        text-align: center;
+    }
+
+    .honeys-section {
+        margin-top: 3rem;
+    }
+
+    .honeys-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 1.5rem;
+        margin-top: 2rem;
+    }
+
+    .honey-card {
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .honey-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    .honey-card-image {
+        height: 200px;
+        background: linear-gradient(135deg, #fff8f0 0%, #fef3e0 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+
+    .honey-card-image img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: cover;
+    }
+
+    .honey-card-content {
+        padding: 1.5rem;
+    }
+
+    .honey-card-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+    }
+
+    .honey-card-origin {
+        color: #6c757d;
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+    }
+
+    .honey-card-price {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #F59F0A;
+        margin-bottom: 1rem;
+    }
+
+    .honey-card-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .btn-sm-modern {
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .btn-primary-sm {
+        background: #F59F0A;
+        color: white;
+    }
+
+    .btn-primary-sm:hover {
+        background: #f39c12;
+        color: white;
+        transform: translateY(-1px);
+    }
+
+    .btn-outline-sm {
+        background: transparent;
+        color: #F59F0A;
+        border: 1px solid #F59F0A;
+    }
+
+    .btn-outline-sm:hover {
+        background: #F59F0A;
+        color: white;
+    }
+
+    .no-honeys {
+        text-align: center;
+        padding: 3rem;
+        color: #6c757d;
+    }
+
+    .no-honeys i {
+        font-size: 3rem;
+        color: #dee2e6;
+        margin-bottom: 1rem;
+    }
+
+    @@media (max-width: 768px) {
+        .beekeeper-hero {
+            margin: 1rem;
+            border-radius: 15px;
+        }
+
+        .beekeeper-header {
+            padding: 2rem 1rem 1.5rem;
+        }
+
+        .beekeeper-name {
+            font-size: 2rem;
+        }
+
+        .beekeeper-stats {
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .beekeeper-content {
+            padding: 1.5rem;
+        }
+
+        .info-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .honeys-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .honey-card-actions {
+            flex-direction: column;
+        }
+    }
+</style>
+
+<div class="beekeeper-profile">
+    <div class="container">
+        <div class="beekeeper-hero">
+            <div class="beekeeper-header">
+                <div class="beekeeper-avatar">
+                    <i class="fas fa-user-tie"></i>
+                </div>
+                <h1 class="beekeeper-name">@Model.FullName</h1>
+                <p class="beekeeper-subtitle">@Model.Region</p>
+                
+                <div class="beekeeper-stats">
+                    <div class="stat-item">
+                        <span class="stat-number">@Model.NumberOfHives</span>
+                        <span class="stat-label">Кошера</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">@Model.TotalHoneys</span>
+                        <span class="stat-label">Вида мед</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">@Model.ExperienceYears</span>
+                        <span class="stat-label">Години опит</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="beekeeper-content">
+                @if (!string.IsNullOrEmpty(Model.Story))
+                {
+                    <div class="story-section">
+                        <h2 class="section-title">
+                            <i class="fas fa-book-open"></i> Моята история
+                        </h2>
+                        <div class="story-text">
+                            @Model.Story
+                        </div>
+                    </div>
+                }
+
+                <div class="info-grid">
+                    <div class="info-card">
+                        <h3 class="info-card-title">
+                            <i class="fas fa-map-marker-alt"></i> Локация
+                        </h3>
+                        <div class="info-item">
+                            <i class="fas fa-map"></i>
+                            <span>@Model.Region</span>
+                        </div>
+                    </div>
+
+                    <div class="info-card">
+                        <h3 class="info-card-title">
+                            <i class="fas fa-phone"></i> Контакт
+                        </h3>
+                        <div class="info-item">
+                            <i class="fas fa-envelope"></i>
+                            <span>@Model.Email</span>
+                        </div>
+                        <div class="info-item">
+                            <i class="fas fa-phone"></i>
+                            <span>@Model.PhoneNumber</span>
+                        </div>
+                    </div>
+
+                    <div class="info-card">
+                        <h3 class="info-card-title">
+                            <i class="fas fa-cogs"></i> Специализация
+                        </h3>
+                        <div class="info-item">
+                            <i class="fas fa-star"></i>
+                            <span>@Model.Specialties</span>
+                        </div>
+                    </div>
+
+                    <div class="info-card">
+                        <h3 class="info-card-title">
+                            <i class="fas fa-calendar"></i> Член от
+                        </h3>
+                        <div class="info-item">
+                            <i class="fas fa-clock"></i>
+                            <span>@Model.JoinedDate.ToString("MMMM yyyy")</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="honeys-section">
+                    <h2 class="section-title">
+                        <i class="fas fa-seedling"></i> Моите медове
+                    </h2>
+                    
+                    @if (Model.OwnedHoneys.Any())
+                    {
+                        <div class="honeys-grid">
+                            @foreach (var honey in Model.OwnedHoneys)
+                            {
+                                <div class="honey-card">
+                                    <div class="honey-card-image">
+                                        <img src="@honey.ImageUrl" alt="@honey.Title">
+                                    </div>
+                                    <div class="honey-card-content">
+                                        <h3 class="honey-card-title">@honey.Title</h3>
+                                        <p class="honey-card-origin">@honey.Origin</p>
+                                        <div class="honey-card-price">@($"{honey.Price:F2}") лв</div>
+                                        <div class="honey-card-actions">
+                                            <a asp-controller="Honey" asp-action="Details" asp-route-id="@honey.Id" class="btn-sm-modern btn-outline-sm">
+                                                <i class="fas fa-eye"></i> Детайли
+                                            </a>
+                                            <form method="post" asp-controller="User" asp-action="AddToCart" asp-route-honeyId="@honey.Id" asp-route-quantity="1" style="display: inline;">
+                                                <button type="submit" class="btn-sm-modern btn-primary-sm">
+                                                    <i class="fas fa-shopping-cart"></i> Купи
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="no-honeys">
+                            <i class="fas fa-seedling"></i>
+                            <h3>Все още няма добавени медове</h3>
+                            <p>Този пчелар все още не е добавил медове в каталога.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

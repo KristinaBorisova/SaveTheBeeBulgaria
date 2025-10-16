@@ -24,6 +24,20 @@
         [MaxLength(255)]
         public string HiveFarmPicturePaths { get; set; }
 
+        [MaxLength(500)]
+        public string? Story { get; set; }
+
+        [MaxLength(100)]
+        public string? Region { get; set; }
+
+        public int? NumberOfHives { get; set; }
+
+        [MaxLength(100)]
+        public string? ExperienceYears { get; set; }
+
+        [MaxLength(500)]
+        public string? Specialties { get; set; }
+
         public Guid UserId { get; set; }
 
         public virtual ApplicationUser User { get; set; } = null!;

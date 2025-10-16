@@ -1,24 +1,27 @@
 ﻿namespace HoneyWebPlatform.Web.Controllers
 {
-    using Microsoft.AspNetCore.Authorization;
-    using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
-    using Infrastructure.Extensions;
-    using Services.Data.Interfaces;
-    using ViewModels.Beekeeper;
+using Infrastructure.Extensions;
+using Services.Data.Interfaces;
+using ViewModels.Beekeeper;
+using ViewModels.Honey;
 
-    using static Common.NotificationMessagesConstants;
+using static Common.NotificationMessagesConstants;
 
     [Authorize]
     public class BeekeeperController : Controller
     {
         private readonly IBeekeeperService beekeeperService;
         private readonly IWebHostEnvironment webHostEnvironment;
+        private readonly IHoneyService honeyService;
 
-        public BeekeeperController(IBeekeeperService beekeeperService, IWebHostEnvironment webHostEnvironment)
+        public BeekeeperController(IBeekeeperService beekeeperService, IWebHostEnvironment webHostEnvironment, IHoneyService honeyService)
         {
             this.beekeeperService = beekeeperService;
             this.webHostEnvironment = webHostEnvironment;
+            this.honeyService = honeyService;
         }
 
         [HttpGet]
@@ -86,6 +89,45 @@
             return RedirectToAction("All", "Honey");
         }
 
+        [HttpGet]
+        [AllowAnonymous]
+        public async Task<IActionResult> Profile(string id)
+        {
+            try
+            {
+                var beekeeper = await beekeeperService.GetBeekeeperProfileByIdAsync(id);
+                if (beekeeper == null)
+                {
+                    TempData[ErrorMessage] = "Пчеларът не е намерен!";
+                    return RedirectToAction("All", "Honey");
+                }
 
+                var ownedHoneys = await honeyService.AllByBeekeeperIdAsync(id);
+                
+                var viewModel = new BeekeeperProfileViewModel
+                {
+                    Id = beekeeper.Id.ToString(),
+                    FullName = beekeeper.User.FirstName + " " + beekeeper.User.LastName,
+                    Email = beekeeper.User.Email!,
+                    PhoneNumber = beekeeper.PhoneNumber,
+                    Story = beekeeper.Story,
+                    Region = beekeeper.Region,
+                    NumberOfHives = beekeeper.NumberOfHives,
+                    ExperienceYears = beekeeper.ExperienceYears,
+                    Specialties = beekeeper.Specialties,
+                    HiveFarmPicturePaths = beekeeper.HiveFarmPicturePaths,
+                    OwnedHoneys = ownedHoneys,
+                    TotalHoneys = ownedHoneys.Count(),
+                    JoinedDate = beekeeper.User.CreatedOn
+                };
+
+                return View(viewModel);
+            }
+            catch (Exception)
+            {
+                TempData[ErrorMessage] = "Възникна грешка при зареждането на профила!";
+                return RedirectToAction("All", "Honey");
+            }
+        }
     }
 }

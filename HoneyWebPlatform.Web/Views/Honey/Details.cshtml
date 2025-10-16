@@ -10,47 +10,323 @@
 }
 
 @{
-    ViewBag.Title = "Детайли на Меда";
+    ViewBag.Title = Model.Title;
 }
 
-<h2 class="text-center">@ViewBag.Title</h2>
-<hr />
+<style>
+    .modern-honey-details {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        min-height: 100vh;
+        padding: 2rem 0;
+    }
 
-<div class="container" style="display:inline">
-    <div class="row">
-        <div class="col-4">
-            <img class="card-img-top" style="width: 20rem;"
-                 src="@Model.ImageUrl" alt="Honey Image">
-        </div>
-        <div class="card col-8 border-0">
-            <p style="font-size:25px;"><u>@Model.Title</u></p>
-            <p>Намиращ се в: <b>@Model.Origin</b></p>
-            <p>
-                Цена:
-                <b>@($"{Model.Price:f2}") лева</b>
-            </p>
-            <p>@Model.Description</p>
-            <p>Категория: <b>@Model.Category</b></p>
-            <div class="form-inline">
-                @if (User.Identity?.IsAuthenticated ?? false)
-                {
-                    @if ((isUserBeekeeper && isBeekeperOwnerOfTheHoney) || User.IsAdmin())
-                    {
-                        <a class="btn btn-warning" asp-controller="Honey" asp-action="Edit"
-                           asp-route-id="@Model.Id"> Редактирай</a>
-                        <a class="ml-2 btn btn-danger" asp-controller="Honey" asp-action="Delete"
-                           asp-route-id="@Model.Id"> Изтрий</a>
-                    }
-                }
-            </div>
-            <p></p>
-            <div class="card" style="width: 18rem;">
-                <div class="card-body">
-                    <h5 class="card-title">Информация на Пчеларя</h5>
-                    <p class="card-text">Пълно Име: @Model.Beekeeper.FullName</p>
-                    <p class="card-text">Имейл:  @Model.Beekeeper.Email</p>
-                    <p class="card-text">Телефонен Номер: @Model.Beekeeper.PhoneNumber</p>
+    .honey-hero-section {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        margin-bottom: 3rem;
+    }
+
+    .honey-image-container {
+        position: relative;
+        background: linear-gradient(135deg, #fff8f0 0%, #fef3e0 100%);
+        padding: 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 400px;
+    }
+
+    .honey-main-image {
+        max-width: 100%;
+        max-height: 350px;
+        object-fit: contain;
+        border-radius: 15px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        transition: transform 0.3s ease;
+    }
+
+    .honey-main-image:hover {
+        transform: scale(1.05);
+    }
+
+    .honey-info-section {
+        padding: 2.5rem;
+        background: white;
+    }
+
+    .honey-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+        line-height: 1.2;
+    }
+
+    .honey-subtitle {
+        font-size: 1.1rem;
+        color: #F59F0A;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+    }
+
+    .honey-price {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #F59F0A;
+        margin-bottom: 1.5rem;
+    }
+
+    .honey-description {
+        font-size: 1.1rem;
+        line-height: 1.6;
+        color: #495057;
+        margin-bottom: 2rem;
+    }
+
+    .honey-specs {
+        background: #f8f9fa;
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .spec-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    .spec-item:last-child {
+        border-bottom: none;
+    }
+
+    .spec-label {
+        font-weight: 600;
+        color: #495057;
+    }
+
+    .spec-value {
+        color: #2c3e50;
+        font-weight: 500;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-bottom: 2rem;
+    }
+
+    .btn-modern {
+        padding: 12px 24px;
+        border-radius: 25px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-primary-modern {
+        background: linear-gradient(135deg, #F59F0A 0%, #f39c12 100%);
+        color: white;
+        box-shadow: 0 4px 15px rgba(245, 159, 10, 0.3);
+    }
+
+    .btn-primary-modern:hover {
+        background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(245, 159, 10, 0.4);
+        color: white;
+    }
+
+    .btn-secondary-modern {
+        background: white;
+        color: #F59F0A;
+        border: 2px solid #F59F0A;
+    }
+
+    .btn-secondary-modern:hover {
+        background: #F59F0A;
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .beekeeper-card {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        margin-top: 2rem;
+    }
+
+    .beekeeper-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .beekeeper-info {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+    }
+
+    .beekeeper-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #495057;
+    }
+
+    .beekeeper-item i {
+        color: #F59F0A;
+        width: 20px;
+    }
+
+    @@media (max-width: 768px) {
+        .honey-hero-section {
+            margin: 1rem;
+            border-radius: 15px;
+        }
+
+        .honey-image-container {
+            padding: 1rem;
+            min-height: 300px;
+        }
+
+        .honey-info-section {
+            padding: 1.5rem;
+        }
+
+        .honey-title {
+            font-size: 2rem;
+        }
+
+        .honey-price {
+            font-size: 1.5rem;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .btn-modern {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .beekeeper-info {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="modern-honey-details">
+    <div class="container">
+        <div class="honey-hero-section">
+            <div class="row g-0">
+                <div class="col-lg-6">
+                    <div class="honey-image-container">
+                        <img src="@Model.ImageUrl" alt="@Model.Title" class="honey-main-image">
+                    </div>
                 </div>
+                <div class="col-lg-6">
+                    <div class="honey-info-section">
+                        <h1 class="honey-title">@Model.Title</h1>
+                        <p class="honey-subtitle">@Model.Origin</p>
+                        
+                        <div class="honey-price">@($"{Model.Price:F2}") лв</div>
+                        
+                        <div class="honey-description">
+                            @Model.Description
+                        </div>
+
+                        <div class="honey-specs">
+                            <div class="spec-item">
+                                <span class="spec-label">Категория</span>
+                                <span class="spec-value">@Model.Category</span>
+                            </div>
+                            <div class="spec-item">
+                                <span class="spec-label">Произход</span>
+                                <span class="spec-value">@Model.Origin</span>
+                            </div>
+                            <div class="spec-item">
+                                <span class="spec-label">Тегло</span>
+                                <span class="spec-value">500г</span>
+                            </div>
+                            <div class="spec-item">
+                                <span class="spec-label">Състояние</span>
+                                <span class="spec-value">Натурален</span>
+                            </div>
+                        </div>
+
+                        <div class="action-buttons">
+                            <form method="post" asp-area="" asp-controller="User" asp-action="AddToCart" asp-route-honeyId="@Model.Id" asp-route-quantity="1">
+                                <button type="submit" class="btn-modern btn-primary-modern">
+                                    <i class="fas fa-shopping-cart"></i> Добави в количката
+                                </button>
+                            </form>
+                            
+                            <a href="/Home#order-section" class="btn-modern btn-secondary-modern">
+                                <i class="fas fa-phone"></i> Поръчай сега
+                            </a>
+
+                            @if (User.Identity?.IsAuthenticated ?? false)
+                            {
+                                @if ((isUserBeekeeper && isBeekeperOwnerOfTheHoney) || User.IsAdmin())
+                                {
+                                    <a class="btn-modern btn-secondary-modern" asp-controller="Honey" asp-action="Edit" asp-route-id="@Model.Id">
+                                        <i class="fas fa-edit"></i> Редактирай
+                                    </a>
+                                    <a class="btn-modern btn-secondary-modern" asp-controller="Honey" asp-action="Delete" asp-route-id="@Model.Id">
+                                        <i class="fas fa-trash"></i> Изтрий
+                                    </a>
+                                }
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="beekeeper-card">
+            <h3 class="beekeeper-title">
+                <i class="fas fa-user-tie"></i> Пчелар
+            </h3>
+            <div class="beekeeper-info">
+                <div class="beekeeper-item">
+                    <i class="fas fa-user"></i>
+                    <span>@Model.Beekeeper.FullName</span>
+                </div>
+                <div class="beekeeper-item">
+                    <i class="fas fa-envelope"></i>
+                    <span>@Model.Beekeeper.Email</span>
+                </div>
+                <div class="beekeeper-item">
+                    <i class="fas fa-phone"></i>
+                    <span>@Model.Beekeeper.PhoneNumber</span>
+                </div>
+                <div class="beekeeper-item">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span>@Model.Origin</span>
+                </div>
+            </div>
+            <div class="text-center mt-3">
+                <a href="@Url.Action("Profile", "Beekeeper", new { id = Model.Beekeeper.Id })" class="btn-modern btn-secondary-modern">
+                    <i class="fas fa-user-circle"></i> Виж профила на пчеларя
+                </a>
             </div>
         </div>
     </div>

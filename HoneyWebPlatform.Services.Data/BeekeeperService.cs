@@ -118,5 +118,13 @@
             propolisId = propolisId.ToLower();
             return beekeeper.OwnedPropolis.Any(h => h.Id.ToString() == propolisId);
         }
+
+        public async Task<Beekeeper?> GetBeekeeperProfileByIdAsync(string beekeeperId)
+        {
+            return await dbContext
+                .Beekeepers
+                .Include(b => b.User)
+                .FirstOrDefaultAsync(b => b.Id.ToString() == beekeeperId);
+        }
     }
 }

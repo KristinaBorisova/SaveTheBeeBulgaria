@@ -1,6 +1,7 @@
 ﻿namespace HoneyWebPlatform.Services.Data.Interfaces
 {
     using Web.ViewModels.Beekeeper;
+using Data.Models;
 
     public interface IBeekeeperService
     {
@@ -19,5 +20,7 @@
         Task<bool> HasHoneyWithIdAsync(string? userId, string honeyId);
 
         Task<bool> HasPropolisWithIdAsync(string? userId, string propolisId);
+
+        Task<Beekeeper?> GetBeekeeperProfileByIdAsync(string beekeeperId);
     }
 }

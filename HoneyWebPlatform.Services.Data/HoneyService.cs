@@ -168,6 +168,8 @@
                 Category = honey.Category.Name,
                 Beekeeper = new BeekeeperInfoOnHoneyViewModel()
                 {
+                    Id = honey.Beekeeper.Id.ToString(),
+                    FullName = $"{honey.Beekeeper.User.FirstName} {honey.Beekeeper.User.LastName}",
                     Email = honey.Beekeeper.User.Email,
                     PhoneNumber = honey.Beekeeper.PhoneNumber
                 }

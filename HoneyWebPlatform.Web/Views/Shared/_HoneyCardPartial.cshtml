@@ -29,8 +29,11 @@
         </div>
         
         <div class="honey-card-actions">
+            <a asp-area="" asp-controller="Honey" asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-primary btn-sm me-2">
+                <i class="fas fa-eye"></i> Детайли
+            </a>
             <form method="post" asp-area="" asp-controller="User" asp-action="AddToCart" asp-route-honeyId="@Model.Id" asp-route-quantity="1" class="d-inline">
-                <button type="submit" class="btn btn-success btn-sm">
+                <button type="submit" class="btn btn-warning btn-sm">
                     <i class="fas fa-shopping-cart"></i> Купи
                 </button>
             </form>
@@ -66,23 +69,25 @@
 .honey-card {
     background: #fff;
     border-radius: 15px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
     overflow: hidden;
     transition: all 0.3s ease;
+    border: 1px solid #e9ecef;
     height: 100%;
     display: flex;
     flex-direction: column;
 }
 
 .honey-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    transform: translateY(-8px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
 }
 
 .honey-card-image {
     position: relative;
-    height: 200px;
+    height: 220px;
     overflow: hidden;
+    background: linear-gradient(135deg, #fff5f0 0%, #ffe8d6 100%);
 }
 
 .honey-card-image img {
@@ -139,29 +144,65 @@
 
 .honey-card-origin i {
     margin-right: 5px;
-    color: #e74c3c;
+    color: #ff6b35;
 }
 
 .honey-card-price {
-    margin-bottom: 15px;
+    margin-bottom: 20px;
 }
 
 .price {
     font-size: 1.5rem;
     font-weight: 700;
-    color: #27ae60;
+    color: #ff6b35;
 }
 
 .honey-card-actions {
     margin-top: auto;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
 }
 
 .honey-card-actions .btn {
-    margin-right: 5px;
-    margin-bottom: 5px;
-    border-radius: 20px;
+    flex: 1;
+    min-width: 80px;
     font-size: 0.85rem;
-    padding: 8px 16px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    text-decoration: none;
+}
+
+.honey-card-actions .btn:hover {
+    transform: translateY(-1px);
+    text-decoration: none;
+}
+
+.honey-card-actions .btn-outline-primary {
+    color: #ff6b35;
+    border-color: #ff6b35;
+    background: transparent;
+}
+
+.honey-card-actions .btn-outline-primary:hover {
+    background: #ff6b35;
+    color: white;
+    border-color: #ff6b35;
+}
+
+.honey-card-actions .btn-warning {
+    background: #ff6b35;
+    border-color: #ff6b35;
+    color: white;
+}
+
+.honey-card-actions .btn-warning:hover {
+    background: #e55a2b;
+    border-color: #e55a2b;
+    color: white;
 }
 
 .admin-actions {
@@ -171,6 +212,34 @@
 }
 
 /* Responsive adjustments */
+@@media (max-width: 1200px) {
+    .honey-card-image {
+        height: 200px;
+    }
+    
+    .honey-card-body {
+        padding: 18px;
+    }
+}
+
+@@media (max-width: 992px) {
+    .honey-card-image {
+        height: 190px;
+    }
+    
+    .honey-card-body {
+        padding: 16px;
+    }
+    
+    .honey-card-title {
+        font-size: 1.2rem;
+    }
+    
+    .price {
+        font-size: 1.4rem;
+    }
+}
+
 @@media (max-width: 768px) {
     .honey-card-image {
         height: 180px;
@@ -186,6 +255,55 @@
     
     .price {
         font-size: 1.3rem;
+    }
+    
+    .honey-card-actions {
+        flex-direction: column;
+        gap: 6px;
+    }
+    
+    .honey-card-actions .btn {
+        flex: none;
+        width: 100%;
+        margin-bottom: 0;
+    }
+    
+    .admin-actions {
+        flex-direction: column;
+        gap: 4px;
+    }
+    
+    .admin-actions .btn {
+        flex: none;
+        width: 100%;
+        margin-bottom: 0;
+    }
+}
+
+@@media (max-width: 576px) {
+    .honey-card-image {
+        height: 160px;
+    }
+    
+    .honey-card-body {
+        padding: 12px;
+    }
+    
+    .honey-card-title {
+        font-size: 1rem;
+    }
+    
+    .honey-card-origin {
+        font-size: 0.85rem;
+    }
+    
+    .price {
+        font-size: 1.2rem;
+    }
+    
+    .honey-card-actions .btn {
+        font-size: 0.8rem;
+        padding: 6px 10px;
     }
 }
 

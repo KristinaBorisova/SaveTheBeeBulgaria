@@ -33,6 +33,18 @@
                 .To<HoneyAllViewModel>()
                 .ToArrayAsync();
 
+            // If no promoted honeys exist, return any active honeys as fallback
+            if (!lastThreeHoneys.Any())
+            {
+                lastThreeHoneys = await dbContext
+                    .Honeys
+                    .Where(h => h.IsActive)
+                    .OrderByDescending(h => h.CreatedOn)
+                    .Take(6)
+                    .To<HoneyAllViewModel>()
+                    .ToArrayAsync();
+            }
+
             return lastThreeHoneys;
         }
 

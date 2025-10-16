@@ -75,12 +75,12 @@
 
             if (!string.IsNullOrWhiteSpace(queryModel.SearchString))
             {
-                string wildCard = $"%{queryModel.SearchString.ToLower()}%";
+                string searchTerm = queryModel.SearchString.ToLower();
 
                 honeysQuery = honeysQuery
-                    .Where(h => EF.Functions.Like(h.Title, wildCard) ||
-                                EF.Functions.Like(h.Origin, wildCard) ||
-                                EF.Functions.Like(h.Description, wildCard));
+                    .Where(h => h.Title.ToLower().Contains(searchTerm) ||
+                                h.Origin.ToLower().Contains(searchTerm) ||
+                                h.Description.ToLower().Contains(searchTerm));
             }
 
             honeysQuery = queryModel.HoneySorting switch

@@ -7,7 +7,14 @@
 
 @if (!Model.Honeys.Any())
 {
-    <h2 class="text-center">Няма намерени медове с този критерии!</h2>
+    <div class="no-results">
+        <i class="fas fa-search"></i>
+        <h3>Няма намерени медове</h3>
+        <p>Опитайте с различни критерии за търсене или се върнете към всички продукти.</p>
+        <a href="@Url.Action("All", "Honey")" class="btn btn-primary modern-btn">
+            <i class="fas fa-refresh"></i> Покажи всички медове
+        </a>
+    </div>
 }
 
 <section class="breadcrumb breadcrumb_bg">
@@ -34,50 +41,45 @@
                 </div>
             </div>
             <div class="col-lg-6">
-                <form method="get">
+                <form method="get" class="modern-search-form">
                     <div class="row">
-                        <div class="form-group col-md-3 d-flex">
-                            <div class="form-group">
-                                <label asp-for="Category"> Категория</label>
-                                <select asp-for="Category" class="form-control">
-                                    <option value="">Всички</option>
-                                    @foreach (var category in Model.Categories)
-                                    {
-                                        <option value="@category">@category</option>
-                                    }
-                                </select>
-                            </div>
-
-                            @*<div class="form-group">
-                                <label asp-for="HoneysPerPage">Медове на Страница</label>
-                                <select asp-for="HoneysPerPage" class="form-control">
-                                    <option value="3">3</option>
-                                    <option value="6">6</option>
-                                    <option value="9">9</option>
-                                </select>
-                            </div>*@
+                        <div class="form-group col-md-3">
+                            <label asp-for="Category" class="form-label">
+                                <i class="fas fa-filter"></i> Категория
+                            </label>
+                            <select asp-for="Category" class="form-control modern-select">
+                                <option value="">Всички</option>
+                                @foreach (var category in Model.Categories)
+                                {
+                                    <option value="@category">@category</option>
+                                }
+                            </select>
                         </div>
 
                         <div class="form-group col-md-3">
-                            <label asp-for="SearchString"> Търси</label>
-                            <input asp-for="SearchString" class="form-control" placeholder="...">
+                            <label asp-for="SearchString" class="form-label">
+                                <i class="fas fa-search"></i> Търси
+                            </label>
+                            <input asp-for="SearchString" class="form-control modern-input" placeholder="Търси мед...">
                         </div>
 
                         <div class="form-group col-md-3">
-                            <div class="form-group">
-                                <label asp-for="HoneySorting">Подреди по</label>
-                                <select asp-for="HoneySorting" class="form-control">
-                                    <option value="0">Новост</option>
-                                    <option value="1">Старост</option>
-                                    <option value="2">Евтиност</option>
-                                    <option value="3">Скъпост</option>
-                                </select>
-                            </div>
+                            <label asp-for="HoneySorting" class="form-label">
+                                <i class="fas fa-sort"></i> Подреди по
+                            </label>
+                            <select asp-for="HoneySorting" class="form-control modern-select">
+                                <option value="0">Новост</option>
+                                <option value="1">Старост</option>
+                                <option value="2">Евтиност</option>
+                                <option value="3">Скъпост</option>
+                            </select>
                         </div>
 
                         <div class="col-md-3">
-                            <div class="form-group mt-4 p-2">
-                                <input type="submit" value="Търси" class="btn btn-primary" />
+                            <div class="form-group mt-4">
+                                <button type="submit" class="btn btn-primary modern-btn">
+                                    <i class="fas fa-search"></i> Търси
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -86,13 +88,13 @@
             <div class="col-lg-12">
                 <div class="tab-content" id="myTabContent">
                     <div class="tab-pane fade show active single-member">
-                        <div class="row">
-                            <div class="col-sm-6 col-lg-6">
-                                @foreach (var honey in Model.Honeys)
-                                {
-                                    <partial name="_HoneyPartial" model="@honey" />
-                                }
-                            </div>
+                        <div class="row honey-grid">
+                            @foreach (var honey in Model.Honeys)
+                            {
+                                <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
+                                    <partial name="_HoneyCardPartial" model="@honey" />
+                                </div>
+                            }
                         </div>
                     </div>
                 </div>
@@ -121,3 +123,129 @@
         </div>
     </section>
 }
+
+<style>
+/* Modern Search Form Styling */
+.modern-search-form {
+    background: #fff;
+    padding: 25px;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    margin-bottom: 30px;
+}
+
+.modern-search-form .form-label {
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+}
+
+.modern-search-form .form-label i {
+    margin-right: 8px;
+    color: #e74c3c;
+    font-size: 0.9rem;
+}
+
+.modern-input,
+.modern-select {
+    border: 2px solid #ecf0f1;
+    border-radius: 10px;
+    padding: 12px 15px;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    background: #f8f9fa;
+}
+
+.modern-input:focus,
+.modern-select:focus {
+    border-color: #e74c3c;
+    box-shadow: 0 0 0 0.2rem rgba(231, 76, 60, 0.25);
+    background: #fff;
+    outline: none;
+}
+
+.modern-btn {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    border: none;
+    border-radius: 25px;
+    padding: 12px 25px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+}
+
+.modern-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4);
+    background: linear-gradient(135deg, #c0392b, #a93226);
+}
+
+.modern-btn:active {
+    transform: translateY(0);
+}
+
+/* Section Title Enhancement */
+.section_tittle h2 {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 700;
+    font-size: 2.5rem;
+}
+
+.section_tittle p {
+    color: #7f8c8d;
+    font-size: 1.1rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .modern-search-form {
+        padding: 20px 15px;
+    }
+    
+    .modern-search-form .form-group {
+        margin-bottom: 15px;
+    }
+    
+    .section_tittle h2 {
+        font-size: 2rem;
+    }
+}
+
+/* Loading state for cards */
+.honey-grid.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+/* Empty state styling */
+.no-results {
+    text-align: center;
+    padding: 60px 20px;
+    color: #7f8c8d;
+}
+
+.no-results i {
+    font-size: 4rem;
+    color: #bdc3c7;
+    margin-bottom: 20px;
+}
+
+.no-results h3 {
+    color: #2c3e50;
+    margin-bottom: 10px;
+}
+
+.no-results p {
+    font-size: 1.1rem;
+}
+</style>

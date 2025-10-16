@@ -61,19 +61,58 @@
             var form = document.querySelector('form[enctype="multipart/form-data"]');
             if (form) {
                 form.addEventListener('submit', function(e) {
+                    var errors = [];
+                    
+                    // Check file input
                     var fileInput = document.getElementById('HoneyPicture');
                     if (!fileInput.files || fileInput.files.length === 0) {
-                        e.preventDefault();
-                        alert('Моля изберете снимка на меда!');
-                        return false;
+                        errors.push('Моля изберете снимка на меда!');
+                    } else {
+                        // Check file size
+                        var file = fileInput.files[0];
+                        var maxSize = 2 * 1024 * 1024; // 2MB
+                        if (file.size > maxSize) {
+                            errors.push('Файлът е твърде голям! Максималният размер е 2MB.');
+                        }
                     }
                     
-                    // Check file size
-                    var file = fileInput.files[0];
-                    var maxSize = 2 * 1024 * 1024; // 2MB
-                    if (file.size > maxSize) {
+                    // Check required text fields
+                    var title = document.querySelector('input[name="Title"]');
+                    if (!title.value.trim()) {
+                        errors.push('Моля въведете наименование!');
+                    }
+                    
+                    var origin = document.querySelector('input[name="Origin"]');
+                    if (!origin.value.trim()) {
+                        errors.push('Моля въведете произход!');
+                    }
+                    
+                    var description = document.querySelector('textarea[name="Description"]');
+                    if (!description.value.trim()) {
+                        errors.push('Моля въведете описание!');
+                    }
+                    
+                    // Check NetWeight
+                    var netWeight = document.querySelector('input[name="NetWeight"]');
+                    if (!netWeight.value || parseInt(netWeight.value) <= 0) {
+                        errors.push('Моля въведете валидно тегло!');
+                    }
+                    
+                    // Check YearMade
+                    var yearMade = document.querySelector('input[name="YearMade"]');
+                    if (!yearMade.value || parseInt(yearMade.value) < 2020 || parseInt(yearMade.value) > 2024) {
+                        errors.push('Моля въведете валидна година на производство (2020-2024)!');
+                    }
+                    
+                    // Check Price
+                    var price = document.querySelector('input[name="Price"]');
+                    if (!price.value || parseFloat(price.value) <= 0) {
+                        errors.push('Моля въведете валидна цена!');
+                    }
+                    
+                    if (errors.length > 0) {
                         e.preventDefault();
-                        alert('Файлът е твърде голям! Максималният размер е 2MB.');
+                        alert('Моля поправете следните грешки:\n\n' + errors.join('\n'));
                         return false;
                     }
                 });

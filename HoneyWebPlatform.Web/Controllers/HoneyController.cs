@@ -98,6 +98,18 @@
                 ModelState.AddModelError(nameof(model.HoneyPicture), "Моля добавете снимка на меда!");
             }
 
+            // Validate NetWeight
+            if (model.NetWeight <= 0)
+            {
+                ModelState.AddModelError(nameof(model.NetWeight), "Моля въведете валидно тегло!");
+            }
+
+            // Validate YearMade
+            if (model.YearMade < 2020 || model.YearMade > 2024)
+            {
+                ModelState.AddModelError(nameof(model.YearMade), "Моля въведете валидна година на производство!");
+            }
+
             if (!ModelState.IsValid)
             {
                 model.Categories = await categoryService.AllCategoriesAsync();

@@ -219,8 +219,8 @@ namespace HoneyWebPlatform.Web.Controllers
 
         private async Task<IEnumerable<HoneyTypeViewModel>> GetHoneyTypesAsync()
         {
-            // Filter to only include the specified honey types
-            var allowedHoneyTypes = new[] { "Linden", "Bio", "Sunflower" };
+            // Filter to only include the specified honey types (using Bulgarian names from database)
+            var allowedHoneyTypes = new[] { "Липов", "Слънчогледов", "Билков" };
             var categories = await categoryService.AllCategoriesAsync();
             
             return categories
@@ -228,7 +228,7 @@ namespace HoneyWebPlatform.Web.Controllers
                 .Select(c => new HoneyTypeViewModel
                 {
                     Id = c.Id,
-                    Name = GetBulgarianHoneyName(c.Name),
+                    Name = c.Name, // Use the Bulgarian name directly from database
                     Price = GetHoneyPriceByCategory(c.Name),
                     Description = GetHoneyDescriptionByCategory(c.Name)
                 });
@@ -268,31 +268,25 @@ namespace HoneyWebPlatform.Web.Controllers
         {
             return categoryName switch
             {
-                "Linden" => 15.50m,
-                "Bio" => 18.00m,
-                "Sunflower" => 12.00m,
+                "Липов" => 15.50m,
+                "Билков" => 18.00m,
+                "Слънчогледов" => 12.00m,
+                "Акациев" => 16.00m,
+                "Горски" => 20.00m,
                 _ => 15.00m
             };
         }
 
-        private string GetBulgarianHoneyName(string categoryName)
-        {
-            return categoryName switch
-            {
-                "Linden" => "Липов мед",
-                "Bio" => "Билков мед",
-                "Sunflower" => "Слънчогледов мед",
-                _ => categoryName
-            };
-        }
 
         private string GetHoneyDescriptionByCategory(string categoryName)
         {
             return categoryName switch
             {
-                "Linden" => "Нежен липов мед с цветен аромат",
-                "Bio" => "Билков мед от различни лечебни билки",
-                "Sunflower" => "Слънчогледов мед с богат вкус",
+                "Липов" => "Нежен липов мед с цветен аромат",
+                "Билков" => "Билков мед от различни лечебни билки",
+                "Слънчогледов" => "Слънчогледов мед с богат вкус",
+                "Акациев" => "Светъл акациев мед с мека сладост",
+                "Горски" => "Тъмен горски мед с богат вкус",
                 _ => "Висококачествен български мед"
             };
         }

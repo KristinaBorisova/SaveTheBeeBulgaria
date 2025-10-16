@@ -64,6 +64,7 @@
         {
             IQueryable<Honey> honeysQuery = dbContext
                 .Honeys
+                .Where(h => h.IsActive) // Filter for active honeys only
                 .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(queryModel.Category))

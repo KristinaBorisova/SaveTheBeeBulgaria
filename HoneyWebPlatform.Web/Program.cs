@@ -160,6 +160,7 @@ namespace HoneyWebPlatform.Web
                 });
 
             builder.Services.AddTransient<IEmailSender, EmailSender>();
+            builder.Services.AddTransient<IOrderEmailService, OrderEmailService>();
 
             // Add health checks
             builder.Services.AddHealthChecks()

@@ -153,7 +153,14 @@ namespace HoneyWebPlatform.Web.Controllers
                 // Get honey type details
                 var honeyTypes = await GetHoneyTypesAsync();
                 var selectedHoneyType = honeyTypes.FirstOrDefault(h => h.Id == model.HoneyTypeId);
-                var honeyPrice = selectedHoneyType?.Price ?? 0m;
+                
+                if (selectedHoneyType == null)
+                {
+                    TempData[ErrorMessage] = "Избраният вид мед не е валиден.";
+                    return RedirectToAction("Index", "Home");
+                }
+
+                var honeyPrice = selectedHoneyType.Price;
 
                 // Calculate total price
                 var totalPrice = honeyPrice * model.Quantity;
@@ -175,6 +182,14 @@ namespace HoneyWebPlatform.Web.Controllers
                 using (var scope = HttpContext.RequestServices.CreateScope())
                 {
                     var dbContext = scope.ServiceProvider.GetRequiredService<HoneyWebPlatformDbContext>();
+                    
+                    // Get actual honey product from database using category ID
+                    var actualHoney = await dbContext.Honeys
+                        .Where(h => h.IsActive && h.CategoryId == selectedHoneyType.Id)
+                        .FirstOrDefaultAsync();
+                    
+                    var productId = actualHoney?.Id ?? Guid.NewGuid(); // Fallback to random GUID if not found
+                    
                     dbContext.Orders.Add(order);
                     await dbContext.SaveChangesAsync();
 
@@ -182,8 +197,8 @@ namespace HoneyWebPlatform.Web.Controllers
                     var orderItem = new OrderItem
                     {
                         Id = Guid.NewGuid(),
-                        ProductId = Guid.NewGuid(), // This would be the actual honey product ID
-                        ProductName = selectedHoneyType?.Name ?? "Мед",
+                        ProductId = productId,
+                        ProductName = selectedHoneyType.Name,
                         Quantity = model.Quantity,
                         Price = honeyPrice,
                         OrderId = order.Id
@@ -193,11 +208,27 @@ namespace HoneyWebPlatform.Web.Controllers
                     await dbContext.SaveChangesAsync();
                 }
 
-                // Send order confirmation email
-                await orderEmailService.SendOrderConfirmationEmailAsync(model.Email, order, model.FullName);
+                // Send order confirmation email (with error handling)
+                try
+                {
+                    await orderEmailService.SendOrderConfirmationEmailAsync(model.Email, order, model.FullName);
+                }
+                catch (Exception emailEx)
+                {
+                    // Log email error but don't fail the order
+                    Console.WriteLine($"Failed to send order confirmation email: {emailEx.Message}");
+                }
                 
-                // Send admin notification
-                await orderEmailService.SendAdminOrderNotificationAsync(order, model.FullName);
+                // Send admin notification (with error handling)
+                try
+                {
+                    await orderEmailService.SendAdminOrderNotificationAsync(order, model.FullName);
+                }
+                catch (Exception emailEx)
+                {
+                    // Log email error but don't fail the order
+                    Console.WriteLine($"Failed to send admin notification email: {emailEx.Message}");
+                }
 
                 TempData[SuccessMessage] = $"Успешно създадена поръчка с номер {order.Id}. Проверете имейла си за потвърждение!";
 
@@ -205,6 +236,10 @@ namespace HoneyWebPlatform.Web.Controllers
             }
             catch (Exception ex)
             {
+                // Log the full error for debugging
+                Console.WriteLine($"Order creation error: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                
                 TempData[ErrorMessage] = $"Грешка при създаване на поръчка: {ex.Message}";
                 return RedirectToAction("Index", "Home");
             }

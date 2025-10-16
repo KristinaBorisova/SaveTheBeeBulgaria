@@ -141,6 +141,7 @@
     margin-bottom: 8px;
     display: flex;
     align-items: center;
+    white-space: nowrap;
 }
 
 .modern-search-form .form-label i {
@@ -162,13 +163,48 @@
 }
 
 .modern-select {
-    min-width: 160px;
+    min-width: 180px;
     cursor: pointer;
+    white-space: nowrap;
+    overflow: visible;
+    text-overflow: ellipsis;
 }
 
 .modern-select option {
-    padding: 8px 12px;
-    font-size: 0.9rem;
+    padding: 10px 15px;
+    font-size: 0.95rem;
+    line-height: 1.4;
+    white-space: normal;
+    word-wrap: break-word;
+    background: #fff;
+    color: #2c3e50;
+    border: none;
+}
+
+.modern-select option:hover {
+    background: #f8f9fa;
+    color: #F59F0A;
+}
+
+.modern-select option:checked {
+    background: #F59F0A;
+    color: white;
+}
+
+/* Ensure dropdown visibility */
+.modern-search-form {
+    position: relative;
+    z-index: 1;
+}
+
+.modern-select {
+    position: relative;
+    z-index: 10;
+}
+
+/* Improve dropdown appearance */
+.modern-select:focus {
+    z-index: 20;
 }
 
 .modern-input:focus,
@@ -242,7 +278,12 @@
     }
     
     .modern-select {
-        min-width: 150px;
+        min-width: 170px;
+    }
+    
+    .modern-select option {
+        padding: 8px 12px;
+        font-size: 0.9rem;
     }
 }
 

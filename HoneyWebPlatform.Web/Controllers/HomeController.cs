@@ -124,6 +124,20 @@ namespace HoneyWebPlatform.Web.Controllers
             return Json(orderFormData);
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetBeekeepersByHoneyType(int categoryId)
+        {
+            try
+            {
+                var beekeepers = await GetBeekeepersByCategoryAsync(categoryId);
+                return Json(beekeepers);
+            }
+            catch (Exception ex)
+            {
+                return Json(new { error = ex.Message });
+            }
+        }
+
         [HttpPost]
         public async Task<IActionResult> PlaceOrderFromHomepage(OrderFormViewModel model)
         {
@@ -262,6 +276,50 @@ namespace HoneyWebPlatform.Web.Controllers
                     PhoneNumber = "+359888345678"
                 }
             };
+        }
+
+        private async Task<IEnumerable<BeekeeperViewModel>> GetBeekeepersByCategoryAsync(int categoryId)
+        {
+            // Get beekeepers who have honey products in the specified category
+            using (var scope = HttpContext.RequestServices.CreateScope())
+            {
+                var dbContext = scope.ServiceProvider.GetRequiredService<HoneyWebPlatformDbContext>();
+                
+                var beekeepers = await dbContext.Beekeepers
+                    .Where(b => b.OwnedHoney.Any(h => h.CategoryId == categoryId && h.IsActive))
+                    .Select(b => new BeekeeperViewModel
+                    {
+                        Id = b.Id,
+                        FullName = b.User.FirstName + " " + b.User.LastName,
+                        Location = "България", // You might want to add location to beekeeper model
+                        PhoneNumber = b.PhoneNumber
+                    })
+                    .ToListAsync();
+
+                // If no beekeepers found in database, return sample data
+                if (!beekeepers.Any())
+                {
+                    return new List<BeekeeperViewModel>
+                    {
+                        new BeekeeperViewModel
+                        {
+                            Id = Guid.NewGuid(),
+                            FullName = "Ивайло Борисов",
+                            Location = "Враца",
+                            PhoneNumber = "+359886612263"
+                        },
+                        new BeekeeperViewModel
+                        {
+                            Id = Guid.NewGuid(),
+                            FullName = "Мария Петрова",
+                            Location = "Пловдив",
+                            PhoneNumber = "+359888234567"
+                        }
+                    };
+                }
+
+                return beekeepers;
+            }
         }
 
         private decimal GetHoneyPriceByCategory(string categoryName)

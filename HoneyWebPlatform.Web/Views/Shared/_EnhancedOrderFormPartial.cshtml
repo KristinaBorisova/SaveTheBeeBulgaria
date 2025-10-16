@@ -47,14 +47,8 @@
         <!-- Beekeeper Selection -->
         <div class="form-group col-md-6">
             <label asp-for="BeekeeperId">Пчелар *</label>
-            <select asp-for="BeekeeperId" class="form-control" required>
-                <option value="">Изберете пчелар</option>
-                @foreach (var beekeeper in Model.AvailableBeekeepers)
-                {
-                    <option value="@beekeeper.Id">
-                        @beekeeper.FullName - @beekeeper.Location
-                    </option>
-                }
+            <select asp-for="BeekeeperId" class="form-control" required id="beekeeperSelect">
+                <option value="">Първо изберете вид мед</option>
             </select>
             <span asp-validation-for="BeekeeperId" class="small text-danger"></span>
         </div>
@@ -98,6 +92,7 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const honeyTypeSelect = document.getElementById('honeyTypeSelect');
+    const beekeeperSelect = document.getElementById('beekeeperSelect');
     const quantitySelect = document.getElementById('quantitySelect');
     const totalPriceElement = document.getElementById('totalPrice');
     const honeyDescriptionElement = document.getElementById('honeyDescription');
@@ -115,7 +110,47 @@ document.addEventListener('DOMContentLoaded', function() {
         honeyDescriptionElement.textContent = description;
     }
 
-    honeyTypeSelect.addEventListener('change', updatePrice);
+    function loadBeekeepers(categoryId) {
+        // Clear existing options
+        beekeeperSelect.innerHTML = '<option value="">Зареждане...</option>';
+        
+        // Fetch beekeepers for the selected honey type
+        fetch(`/Home/GetBeekeepersByHoneyType?categoryId=${categoryId}`)
+            .then(response => response.json())
+            .then(data => {
+                beekeeperSelect.innerHTML = '<option value="">Изберете пчелар</option>';
+                
+                if (data.error) {
+                    beekeeperSelect.innerHTML = '<option value="">Грешка при зареждане</option>';
+                    return;
+                }
+                
+                data.forEach(beekeeper => {
+                    const option = document.createElement('option');
+                    option.value = beekeeper.id;
+                    option.textContent = `${beekeeper.fullName} - ${beekeeper.location}`;
+                    beekeeperSelect.appendChild(option);
+                });
+            })
+            .catch(error => {
+                console.error('Error loading beekeepers:', error);
+                beekeeperSelect.innerHTML = '<option value="">Грешка при зареждане</option>';
+            });
+    }
+
+    honeyTypeSelect.addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        const categoryId = selectedOption.value;
+        
+        if (categoryId) {
+            loadBeekeepers(categoryId);
+        } else {
+            beekeeperSelect.innerHTML = '<option value="">Първо изберете вид мед</option>';
+        }
+        
+        updatePrice();
+    });
+
     quantitySelect.addEventListener('change', updatePrice);
 });
 </script>

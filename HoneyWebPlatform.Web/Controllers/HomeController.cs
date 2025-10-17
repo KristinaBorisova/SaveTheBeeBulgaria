@@ -146,26 +146,33 @@ namespace HoneyWebPlatform.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> PlaceOrderFromHomepage(OrderFormViewModel model)
         {
-            // Debug: Log model state
-            Console.WriteLine($"DEBUG: ModelState.IsValid: {ModelState.IsValid}");
-            if (!ModelState.IsValid)
-            {
-                foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
-                {
-                    Console.WriteLine($"DEBUG: Validation Error: {error.ErrorMessage}");
-                }
-                
-                // Collect all validation errors for display
-                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
-                TempData[ErrorMessage] = $"Моля, коригирайте следните грешки: {string.Join(", ", errors)}";
-                return RedirectToAction("Index", "Home");
-            }
-
             try
             {
+                // Debug: Log that the method was called
+                Console.WriteLine($"DEBUG: PlaceOrderFromHomepage called with model: {model?.FullName ?? "NULL"}");
+                
+                // Debug: Log model state
+                Console.WriteLine($"DEBUG: ModelState.IsValid: {ModelState.IsValid}");
+                if (!ModelState.IsValid)
+                {
+                    foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
+                    {
+                        Console.WriteLine($"DEBUG: Validation Error: {error.ErrorMessage}");
+                    }
+                    
+                    // Collect all validation errors for display
+                    var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+                    TempData[ErrorMessage] = $"Моля, коригирайте следните грешки: {string.Join(", ", errors)}";
+                    return RedirectToAction("Index", "Home");
+                }
                 // Debug: Log form data
                 Console.WriteLine($"DEBUG: Form Data - FullName: {model.FullName}, Email: {model.Email}, Phone: {model.PhoneNumber}, Address: {model.Address}");
                 Console.WriteLine($"DEBUG: Form Data - HoneyTypeId: {model.HoneyTypeId}, BeekeeperId: {model.BeekeeperId}, Quantity: {model.Quantity}");
+                
+                // Simple test - just return success for now
+                TempData[SuccessMessage] = "Тестова поръчка получена успешно!";
+                Console.WriteLine("DEBUG: Test order received successfully");
+                return RedirectToAction("Index", "Home");
                 
                 // Get honey type details
                 var honeyTypes = await GetHoneyTypesAsync();
@@ -294,8 +301,19 @@ namespace HoneyWebPlatform.Web.Controllers
                     Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
                 }
                 
-                TempData[ErrorMessage] = $"Грешка при създаване на поръчка: {ex.Message}. Моля, опитайте отново или се свържете с нас.";
-                return RedirectToAction("Index", "Home");
+                // Set a simple error message and redirect
+                TempData[ErrorMessage] = "Възникна грешка при създаване на поръчката. Моля, опитайте отново.";
+                
+                try
+                {
+                    return RedirectToAction("Index", "Home");
+                }
+                catch (Exception redirectEx)
+                {
+                    Console.WriteLine($"Redirect error: {redirectEx.Message}");
+                    // Fallback to a simple redirect
+                    return Redirect("/");
+                }
             }
         }
 

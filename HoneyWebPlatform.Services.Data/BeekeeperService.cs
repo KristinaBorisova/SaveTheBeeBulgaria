@@ -27,31 +27,39 @@
 
         public async Task<string> BeekeeperFullnameByHoneyIdAsync(string honeyId)
         {
-            Honey? honey = await dbContext
+            var honey = await dbContext
                 .Honeys
+                .Include(h => h.Beekeeper)
+                .ThenInclude(b => b.User)
                 .FirstOrDefaultAsync(h => h.Id.ToString() == honeyId);
 
-            Beekeeper beekeeper = honey!.Beekeeper;
+            if (honey?.Beekeeper?.User == null)
+            {
+                return "Неизвестен пчелар";
+            }
 
-            ApplicationUser? user = await dbContext
-                .Users
-                .FirstOrDefaultAsync(a => a.Id.ToString() == beekeeper.UserId.ToString());
-
-            return $"{user!.FirstName} {user!.LastName}";
+            var firstName = honey.Beekeeper.User.FirstName ?? "";
+            var lastName = honey.Beekeeper.User.LastName ?? "";
+            
+            return $"{firstName} {lastName}".Trim();
         }
         public async Task<string> BeekeeperFullnameByPropolisIdAsync(string propolisId)
         {
-            Propolis? propolis = await dbContext
+            var propolis = await dbContext
                 .Propolises
+                .Include(p => p.Beekeeper)
+                .ThenInclude(b => b.User)
                 .FirstOrDefaultAsync(h => h.Id.ToString() == propolisId);
 
-            Beekeeper beekeeper = propolis!.Beekeeper;
+            if (propolis?.Beekeeper?.User == null)
+            {
+                return "Неизвестен пчелар";
+            }
 
-            ApplicationUser? user = await dbContext
-                .Users
-                .FirstOrDefaultAsync(a => a.Id.ToString() == beekeeper.UserId.ToString());
-
-            return $"{user!.FirstName} {user!.LastName}";
+            var firstName = propolis.Beekeeper.User.FirstName ?? "";
+            var lastName = propolis.Beekeeper.User.LastName ?? "";
+            
+            return $"{firstName} {lastName}".Trim();
         }
 
         public async Task<bool> BeekeeperExistsByPhoneNumberAsync(string phoneNumber)

@@ -144,12 +144,12 @@ using static Common.GeneralApplicationConstants;
             builder.Services.AddMemoryCache();
             builder.Services.AddResponseCaching();
 
-            // Configure Data Protection to prevent constant reloading in production
-            // Temporarily disabled to test if it's causing the reloading issue
-            // if (builder.Environment.IsProduction())
-            // {
-            //     builder.Services.AddDataProtection();
-            // }
+            // Configure Data Protection with persistent keys to prevent antiforgery token issues
+            if (builder.Environment.IsProduction())
+            {
+                builder.Services.AddDataProtection()
+                    .PersistKeysToFileSystem(new DirectoryInfo("/app/DataProtection-Keys"));
+            }
 
             builder.Services.AddSignalR();
 

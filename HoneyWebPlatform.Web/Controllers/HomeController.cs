@@ -42,7 +42,6 @@ namespace HoneyWebPlatform.Web.Controllers
 
         public async Task<IActionResult> Index()
         {
-            Console.WriteLine($"DEBUG: Index action called at {DateTime.Now}");
             
             if (this.User.IsInRole(AdminRoleName))
             {
@@ -159,15 +158,10 @@ namespace HoneyWebPlatform.Web.Controllers
         {
             try
             {
-                // Debug: Log that the method was called
-                Console.WriteLine($"DEBUG: PlaceOrderFromHomepage called - ModelState.IsValid: {ModelState.IsValid}");
-                Console.WriteLine($"DEBUG: Model data - FullName: {model?.FullName}, Email: {model?.Email}, HoneyTypeId: {model?.HoneyTypeId}");
-                
                 if (!ModelState.IsValid)
                 {
                     // Collect all validation errors for display
                     var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
-                    Console.WriteLine($"DEBUG: Validation errors: {string.Join(", ", errors)}");
                     TempData[ErrorMessage] = $"Моля, коригирайте следните грешки: {string.Join(", ", errors)}";
                     return RedirectToAction("Index", "Home");
                 }

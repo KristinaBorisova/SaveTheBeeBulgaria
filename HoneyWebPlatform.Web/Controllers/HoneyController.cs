@@ -176,8 +176,6 @@
             {
                 HoneyDetailsViewModel viewModel = await honeyService
                     .GetDetailsByIdAsync(id);
-                viewModel.Beekeeper.FullName =
-                    await beekeeperService.BeekeeperFullnameByHoneyIdAsync(id);
 
                 return View(viewModel);
             }

@@ -195,7 +195,7 @@ namespace HoneyWebPlatform.Web.Controllers
                 // Create a new order directly from homepage form
                 var order = new Order
                 {
-                    Id = Guid.NewGuid(),
+                    // Let Entity Framework handle ID generation
                     UserId = Guid.NewGuid(), // Generate a temporary user ID for guest orders
                     PhoneNumber = model.PhoneNumber ?? "N/A",
                     CreatedOn = DateTime.Now,
@@ -226,14 +226,17 @@ namespace HoneyWebPlatform.Web.Controllers
                     catch (Exception dbEx)
                     {
                         Console.WriteLine($"DEBUG: Error saving order: {dbEx.Message}");
+                        Console.WriteLine($"DEBUG: Inner Exception: {dbEx.InnerException?.Message}");
+                        Console.WriteLine($"DEBUG: Stack Trace: {dbEx.StackTrace}");
                         Console.WriteLine($"DEBUG: Order data - Email: '{order.Email}', Address: '{order.Address}', Phone: '{order.PhoneNumber}'");
-                        throw;
+                        TempData[ErrorMessage] = $"Грешка при създаване на поръчка: {dbEx.Message}";
+                        return RedirectToAction("Index", "Home");
                     }
 
                     // Add order items
                     var orderItem = new OrderItem
                     {
-                        Id = Guid.NewGuid(),
+                        // Let Entity Framework handle ID generation
                         ProductId = productId,
                         ProductName = selectedHoneyType.Name ?? "Unknown Product",
                         Quantity = model.Quantity,

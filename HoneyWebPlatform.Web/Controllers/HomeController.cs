@@ -26,8 +26,9 @@ namespace HoneyWebPlatform.Web.Controllers
         private readonly IOrderEmailService orderEmailService;
         private readonly ICategoryService categoryService;
         private readonly IBeekeeperService beekeeperService;
+        private readonly IServiceProvider serviceProvider;
 
-        public HomeController(IHoneyService honeyService, IPostService postService, IEmailSender emailSender, IOrderEmailService orderEmailService, ICategoryService categoryService, IBeekeeperService beekeeperService)
+        public HomeController(IHoneyService honeyService, IPostService postService, IEmailSender emailSender, IOrderEmailService orderEmailService, ICategoryService categoryService, IBeekeeperService beekeeperService, IServiceProvider serviceProvider)
         {
             this.honeyService = honeyService;
             // this.propolisService = propolisService; // Commented out - propolis functionality disabled
@@ -36,6 +37,7 @@ namespace HoneyWebPlatform.Web.Controllers
             this.orderEmailService = orderEmailService;
             this.categoryService = categoryService;
             this.beekeeperService = beekeeperService;
+            this.serviceProvider = serviceProvider;
         }
 
         public async Task<IActionResult> Index()
@@ -306,31 +308,37 @@ namespace HoneyWebPlatform.Web.Controllers
                     Console.WriteLine($"DEBUG: Success message set: {TempData[SuccessMessage]}");
                     Console.WriteLine($"DEBUG: Redirecting to Index page");
 
-                    // Send emails in background (non-blocking)
-                    _ = Task.Run(async () =>
-                    {
-                        try
-                        {
-                            Console.WriteLine($"DEBUG: Background - Attempting to send order confirmation email to {model.Email}");
-                            await orderEmailService.SendOrderConfirmationEmailAsync(model.Email, order, model.FullName);
-                            Console.WriteLine($"DEBUG: Background - Order confirmation email sent successfully to: {model.Email}");
-                        }
-                        catch (Exception emailEx)
-                        {
-                            Console.WriteLine($"DEBUG: Background - Failed to send order confirmation email: {emailEx.Message}");
-                        }
-                        
-                        try
-                        {
-                            Console.WriteLine("DEBUG: Background - Attempting to send admin notification email");
-                            await orderEmailService.SendAdminOrderNotificationAsync(order, model.FullName);
-                            Console.WriteLine("DEBUG: Background - Admin notification email sent successfully");
-                        }
-                        catch (Exception emailEx)
-                        {
-                            Console.WriteLine($"DEBUG: Background - Failed to send admin notification email: {emailEx.Message}");
-                        }
-                    });
+        // Send emails in background (non-blocking)
+        _ = Task.Run(async () =>
+        {
+            // Create a new scope for background email sending
+            using (var scope = serviceProvider.CreateScope())
+            {
+                var backgroundOrderEmailService = scope.ServiceProvider.GetRequiredService<IOrderEmailService>();
+                
+                try
+                {
+                    Console.WriteLine($"DEBUG: Background - Attempting to send order confirmation email to {model.Email}");
+                    await backgroundOrderEmailService.SendOrderConfirmationEmailAsync(model.Email, order, model.FullName);
+                    Console.WriteLine($"DEBUG: Background - Order confirmation email sent successfully to: {model.Email}");
+                }
+                catch (Exception emailEx)
+                {
+                    Console.WriteLine($"DEBUG: Background - Failed to send order confirmation email: {emailEx.Message}");
+                }
+                
+                try
+                {
+                    Console.WriteLine("DEBUG: Background - Attempting to send admin notification email");
+                    await backgroundOrderEmailService.SendAdminOrderNotificationAsync(order, model.FullName);
+                    Console.WriteLine("DEBUG: Background - Admin notification email sent successfully");
+                }
+                catch (Exception emailEx)
+                {
+                    Console.WriteLine($"DEBUG: Background - Failed to send admin notification email: {emailEx.Message}");
+                }
+            }
+        });
 
                     return RedirectToAction("Index", "Home");
                 }

@@ -154,7 +154,10 @@ namespace HoneyWebPlatform.Web.Controllers
                 {
                     Console.WriteLine($"DEBUG: Validation Error: {error.ErrorMessage}");
                 }
-                TempData[ErrorMessage] = "Моля, попълнете всички задължителни полета.";
+                
+                // Collect all validation errors for display
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+                TempData[ErrorMessage] = $"Моля, коригирайте следните грешки: {string.Join(", ", errors)}";
                 return RedirectToAction("Index", "Home");
             }
 
@@ -166,11 +169,21 @@ namespace HoneyWebPlatform.Web.Controllers
                 
                 // Get honey type details
                 var honeyTypes = await GetHoneyTypesAsync();
-                var selectedHoneyType = honeyTypes.FirstOrDefault(h => h.Id == model.HoneyTypeId);
+                var honeyTypesList = honeyTypes.ToList();
+                
+                Console.WriteLine($"DEBUG: Available honey types count: {honeyTypesList.Count}");
+                
+                if (!honeyTypesList.Any())
+                {
+                    TempData[ErrorMessage] = "Няма налични видове мед. Моля, свържете се с администратор.";
+                    return RedirectToAction("Index", "Home");
+                }
+                
+                var selectedHoneyType = honeyTypesList.FirstOrDefault(h => h.Id == model.HoneyTypeId);
                 
                 if (selectedHoneyType == null)
                 {
-                    TempData[ErrorMessage] = "Избраният вид мед не е валиден.";
+                    TempData[ErrorMessage] = $"Избраният вид мед (ID: {model.HoneyTypeId}) не е валиден. Моля, изберете от списъка.";
                     return RedirectToAction("Index", "Home");
                 }
 
@@ -253,8 +266,12 @@ namespace HoneyWebPlatform.Web.Controllers
                 // Log the full error for debugging
                 Console.WriteLine($"Order creation error: {ex.Message}");
                 Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                if (ex.InnerException != null)
+                {
+                    Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
+                }
                 
-                TempData[ErrorMessage] = $"Грешка при създаване на поръчка: {ex.Message}";
+                TempData[ErrorMessage] = $"Грешка при създаване на поръчка: {ex.Message}. Моля, опитайте отново или се свържете с нас.";
                 return RedirectToAction("Index", "Home");
             }
         }

@@ -149,13 +149,18 @@
 
         public async Task<HoneyDetailsViewModel> GetDetailsByIdAsync(string honeyId)
         {
-            Honey honey = await dbContext
+            var honey = await dbContext
                 .Honeys
                 .Include(h => h.Category)
                 .Include(h => h.Beekeeper)
                 .ThenInclude(a => a.User)
                 .Where(h => h.IsActive)
-                .FirstAsync(h => h.Id.ToString() == honeyId);
+                .FirstOrDefaultAsync(h => h.Id.ToString() == honeyId);
+
+            if (honey == null)
+            {
+                throw new ArgumentException($"Honey with ID {honeyId} not found or not active.");
+            }
 
             return new HoneyDetailsViewModel()
             {
@@ -165,24 +170,31 @@
                 ImageUrl = honey.ImageUrl,
                 Price = honey.Price,
                 Description = honey.Description,
-                Category = honey.Category.Name,
+                Category = honey.Category?.Name ?? "Неопределена",
                 Beekeeper = new BeekeeperInfoOnHoneyViewModel()
                 {
-                    Id = honey.Beekeeper.Id.ToString(),
-                    FullName = $"{honey.Beekeeper.User.FirstName} {honey.Beekeeper.User.LastName}",
-                    Email = honey.Beekeeper.User.Email,
-                    PhoneNumber = honey.Beekeeper.PhoneNumber
+                    Id = honey.Beekeeper?.Id.ToString() ?? Guid.Empty.ToString(),
+                    FullName = honey.Beekeeper?.User != null 
+                        ? $"{honey.Beekeeper.User.FirstName ?? ""} {honey.Beekeeper.User.LastName ?? ""}".Trim()
+                        : "Неизвестен пчелар",
+                    Email = honey.Beekeeper?.User?.Email ?? "",
+                    PhoneNumber = honey.Beekeeper?.PhoneNumber ?? ""
                 }
             };
         }
 
         public async Task<HoneyFormModel> GetHoneyForEditByIdAsync(string honeyId)
         {
-            Honey honey = await dbContext
+            var honey = await dbContext
                 .Honeys
-            .Include(h => h.Category)
+                .Include(h => h.Category)
                 .Where(h => h.IsActive)
-                .FirstAsync(h => h.Id.ToString() == honeyId);
+                .FirstOrDefaultAsync(h => h.Id.ToString() == honeyId);
+
+            if (honey == null)
+            {
+                throw new ArgumentException($"Honey with ID {honeyId} not found or not active.");
+            }
 
             return new HoneyFormModel()
             {
@@ -197,20 +209,25 @@
 
         public async Task<bool> IsBeekeeperWithIdOwnerOfHoneyWithIdAsync(string honeyId, string beekeeperId)
         {
-            Honey honey = await dbContext
+            var honey = await dbContext
                 .Honeys
                 .Where(h => h.IsActive)
-                .FirstAsync(h => h.Id.ToString() == honeyId);
+                .FirstOrDefaultAsync(h => h.Id.ToString() == honeyId);
 
-            return honey.BeekeeperId.ToString() == beekeeperId;
+            return honey?.BeekeeperId.ToString() == beekeeperId;
         }
 
         public async Task EditHoneyByIdAndFormModelAsync(string honeyId, HoneyFormModel formModel)
         {
-            Honey honey = await dbContext
+            var honey = await dbContext
                 .Honeys
                 .Where(h => h.IsActive)
-                .FirstAsync(h => h.Id.ToString() == honeyId);
+                .FirstOrDefaultAsync(h => h.Id.ToString() == honeyId);
+
+            if (honey == null)
+            {
+                throw new ArgumentException($"Honey with ID {honeyId} not found or not active.");
+            }
 
             honey.Title = formModel.Title;
             honey.Origin = formModel.Origin;
@@ -224,10 +241,15 @@
 
         public async Task<HoneyPreDeleteDetailsViewModel> GetHoneyForDeleteByIdAsync(string honeyId)
         {
-            Honey honey = await dbContext
+            var honey = await dbContext
                 .Honeys
                 .Where(h => h.IsActive)
-                .FirstAsync(h => h.Id.ToString() == honeyId);
+                .FirstOrDefaultAsync(h => h.Id.ToString() == honeyId);
+
+            if (honey == null)
+            {
+                throw new ArgumentException($"Honey with ID {honeyId} not found or not active.");
+            }
 
             return new HoneyPreDeleteDetailsViewModel()
             {
@@ -239,10 +261,15 @@
 
         public async Task DeleteHoneyByIdAsync(string honeyId)
         {
-            Honey honeyToDelete = await dbContext
+            var honeyToDelete = await dbContext
                 .Honeys
                 .Where(h => h.IsActive)
-                .FirstAsync(h => h.Id.ToString() == honeyId);
+                .FirstOrDefaultAsync(h => h.Id.ToString() == honeyId);
+
+            if (honeyToDelete == null)
+            {
+                throw new ArgumentException($"Honey with ID {honeyId} not found or not active.");
+            }
 
             honeyToDelete.IsActive = false;
 

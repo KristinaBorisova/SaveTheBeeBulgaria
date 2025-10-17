@@ -29,7 +29,7 @@ public class EmailSender : IEmailSender
                 UseDefaultCredentials = false,
                 Credentials = new NetworkCredential(_emailSettings.SmtpUsername, _emailSettings.SmtpPassword),
                 DeliveryMethod = SmtpDeliveryMethod.Network,
-                Timeout = 30000 // 30 seconds timeout
+                Timeout = 10000 // 10 seconds timeout
             };
 
             var mailMessage = new MailMessage(from: _emailSettings.SmtpUsername,
@@ -46,7 +46,7 @@ public class EmailSender : IEmailSender
             try
             {
                 Console.WriteLine($"DEBUG: EmailSender - Starting SendMailAsync with timeout...");
-                using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30)))
+                using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10)))
                 {
                     await client.SendMailAsync(mailMessage, cts.Token);
                 }
@@ -54,7 +54,7 @@ public class EmailSender : IEmailSender
             }
             catch (OperationCanceledException)
             {
-                Console.WriteLine($"DEBUG: EmailSender - Email sending timed out after 30 seconds");
+                Console.WriteLine($"DEBUG: EmailSender - Email sending timed out after 10 seconds");
                 throw new TimeoutException("Email sending timed out");
             }
             catch (Exception smtpEx)

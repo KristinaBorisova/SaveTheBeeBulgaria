@@ -300,38 +300,37 @@ namespace HoneyWebPlatform.Web.Controllers
                         throw;
                     }
                     
-                    // Send order confirmation email (with error handling)
-                    try
-                    {
-                        Console.WriteLine($"DEBUG: Attempting to send order confirmation email to {model.Email}");
-                        await orderEmailService.SendOrderConfirmationEmailAsync(model.Email, order, model.FullName);
-                        Console.WriteLine("DEBUG: Order confirmation email sent successfully");
-                    }
-                    catch (Exception emailEx)
-                    {
-                        // Log email error but don't fail the order
-                        Console.WriteLine($"DEBUG: Failed to send order confirmation email: {emailEx.Message}");
-                        Console.WriteLine($"DEBUG: Email error stack trace: {emailEx.StackTrace}");
-                    }
-                    
-                    // Send admin notification (with error handling)
-                    try
-                    {
-                        Console.WriteLine("DEBUG: Attempting to send admin notification email");
-                        await orderEmailService.SendAdminOrderNotificationAsync(order, model.FullName);
-                        Console.WriteLine("DEBUG: Admin notification email sent successfully");
-                    }
-                    catch (Exception emailEx)
-                    {
-                        // Log email error but don't fail the order
-                        Console.WriteLine($"DEBUG: Failed to send admin notification email: {emailEx.Message}");
-                        Console.WriteLine($"DEBUG: Admin email error stack trace: {emailEx.StackTrace}");
-                    }
-
+                    // Set success message first (before email sending)
                     Console.WriteLine($"DEBUG: Setting success message for order {order.Id}");
                     TempData[SuccessMessage] = $"Успешно създадена поръчка с номер {order.Id}. Проверете имейла си за потвърждение!";
                     Console.WriteLine($"DEBUG: Success message set: {TempData[SuccessMessage]}");
                     Console.WriteLine($"DEBUG: Redirecting to Index page");
+
+                    // Send emails in background (non-blocking)
+                    _ = Task.Run(async () =>
+                    {
+                        try
+                        {
+                            Console.WriteLine($"DEBUG: Background - Attempting to send order confirmation email to {model.Email}");
+                            await orderEmailService.SendOrderConfirmationEmailAsync(model.Email, order, model.FullName);
+                            Console.WriteLine($"DEBUG: Background - Order confirmation email sent successfully to: {model.Email}");
+                        }
+                        catch (Exception emailEx)
+                        {
+                            Console.WriteLine($"DEBUG: Background - Failed to send order confirmation email: {emailEx.Message}");
+                        }
+                        
+                        try
+                        {
+                            Console.WriteLine("DEBUG: Background - Attempting to send admin notification email");
+                            await orderEmailService.SendAdminOrderNotificationAsync(order, model.FullName);
+                            Console.WriteLine("DEBUG: Background - Admin notification email sent successfully");
+                        }
+                        catch (Exception emailEx)
+                        {
+                            Console.WriteLine($"DEBUG: Background - Failed to send admin notification email: {emailEx.Message}");
+                        }
+                    });
 
                     return RedirectToAction("Index", "Home");
                 }

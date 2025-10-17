@@ -144,6 +144,12 @@ using static Common.GeneralApplicationConstants;
             builder.Services.AddMemoryCache();
             builder.Services.AddResponseCaching();
 
+            // Configure Data Protection to prevent constant reloading in production
+            if (builder.Environment.IsProduction())
+            {
+                builder.Services.AddDataProtection();
+            }
+
             builder.Services.AddSignalR();
 
             builder.Services.ConfigureApplicationCookie(cfg =>
@@ -274,12 +280,6 @@ using static Common.GeneralApplicationConstants;
             app.UseRouting();
 
             app.UseResponseCaching();
-
-            // Configure Data Protection to use a fixed key in production to prevent reloading
-            if (builder.Environment.IsProduction())
-            {
-                builder.Services.AddDataProtection();
-            }
 
             app.UseAuthentication();
             app.UseAuthorization();

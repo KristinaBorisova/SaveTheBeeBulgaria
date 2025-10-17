@@ -42,12 +42,6 @@ namespace HoneyWebPlatform.Web.Controllers
 
         public async Task<IActionResult> Index()
         {
-            // Debug TempData
-            Console.WriteLine($"DEBUG: Index action - TempData contains SuccessMessage: {TempData.ContainsKey(SuccessMessage)}");
-            if (TempData.ContainsKey(SuccessMessage))
-            {
-                Console.WriteLine($"DEBUG: Index action - SuccessMessage value: {TempData[SuccessMessage]}");
-            }
             
             if (this.User.IsInRole(AdminRoleName))
             {
@@ -163,54 +157,31 @@ namespace HoneyWebPlatform.Web.Controllers
         {
             try
             {
-                // Debug: Log that the method was called
-                Console.WriteLine($"DEBUG: PlaceOrderFromHomepage called with model: {model?.FullName ?? "NULL"}");
-                
-                // Debug: Log model state
-                Console.WriteLine($"DEBUG: ModelState.IsValid: {ModelState.IsValid}");
                 if (!ModelState.IsValid)
                 {
-                    foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
-                    {
-                        Console.WriteLine($"DEBUG: Validation Error: {error.ErrorMessage}");
-                    }
-                    
                     // Collect all validation errors for display
                     var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
                     TempData[ErrorMessage] = $"Моля, коригирайте следните грешки: {string.Join(", ", errors)}";
                     return RedirectToAction("Index", "Home");
                 }
-                // Debug: Log form data
-                Console.WriteLine($"DEBUG: Form Data - FullName: {model.FullName}, Email: {model.Email}, Phone: {model.PhoneNumber}, Address: {model.Address}");
-                Console.WriteLine($"DEBUG: Form Data - HoneyTypeId: {model.HoneyTypeId}, BeekeeperId: {model.BeekeeperId}, Quantity: {model.Quantity}");
                 
                 // Get honey type details
                 var honeyTypes = await GetHoneyTypesAsync();
                 var honeyTypesList = honeyTypes.ToList();
                 
-                Console.WriteLine($"DEBUG: Available honey types count: {honeyTypesList.Count}");
-                
                 if (!honeyTypesList.Any())
                 {
-                    Console.WriteLine("DEBUG: No honey types available, redirecting with error");
                     TempData[ErrorMessage] = "Няма налични видове мед. Моля, свържете се с администратор.";
                     return RedirectToAction("Index", "Home");
                 }
-                
-                // Check if we have the required data for order creation
-                Console.WriteLine("DEBUG: Checking required data for order creation");
                 
                 var selectedHoneyType = honeyTypesList.FirstOrDefault(h => h.Id == model.HoneyTypeId);
                 
                 if (selectedHoneyType == null)
                 {
-                    Console.WriteLine($"DEBUG: Selected honey type not found. HoneyTypeId: {model.HoneyTypeId}");
-                    Console.WriteLine($"DEBUG: Available honey types: {string.Join(", ", honeyTypesList.Select(h => $"{h.Id}:{h.Name}"))}");
                     TempData[ErrorMessage] = $"Избраният вид мед (ID: {model.HoneyTypeId}) не е валиден. Моля, изберете от списъка.";
                     return RedirectToAction("Index", "Home");
                 }
-                
-                Console.WriteLine($"DEBUG: Selected honey type: {selectedHoneyType.Name} (ID: {selectedHoneyType.Id})");
 
                 var honeyPrice = selectedHoneyType.Price;
 
@@ -229,13 +200,10 @@ namespace HoneyWebPlatform.Web.Controllers
                     
                     if (guestUserId == Guid.Empty)
                     {
-                        Console.WriteLine("DEBUG: No users found in database, creating guest order with random ID");
                         // If no users exist, we'll need to handle this differently
                         TempData[ErrorMessage] = "Системата не е настроена правилно. Моля, свържете се с администратор.";
                         return RedirectToAction("Index", "Home");
                     }
-                    
-                    Console.WriteLine($"DEBUG: Using guest user ID: {guestUserId}");
                     
                     // Create a new order directly from homepage form
                     var order = new Order
@@ -259,25 +227,11 @@ namespace HoneyWebPlatform.Web.Controllers
                     
                     try
                     {
-                        Console.WriteLine($"DEBUG: Attempting to save order with ID: {order.Id}");
-                        Console.WriteLine($"DEBUG: Order details - Email: '{order.Email}', Address: '{order.Address}', Phone: '{order.PhoneNumber}', TotalPrice: {order.TotalPrice}");
-                        
                         dbContext.Orders.Add(order);
                         await dbContext.SaveChangesAsync();
-                        Console.WriteLine($"DEBUG: Order saved successfully with ID: {order.Id}");
                     }
                     catch (Exception dbEx)
                     {
-                        Console.WriteLine($"DEBUG: Error saving order: {dbEx.Message}");
-                        Console.WriteLine($"DEBUG: Inner Exception: {dbEx.InnerException?.Message}");
-                        Console.WriteLine($"DEBUG: Stack Trace: {dbEx.StackTrace}");
-                        Console.WriteLine($"DEBUG: Order data - Email: '{order.Email}', Address: '{order.Address}', Phone: '{order.PhoneNumber}'");
-                        
-                        // Try to get more specific error information
-                        if (dbEx.InnerException != null)
-                        {
-                            Console.WriteLine($"DEBUG: Inner exception details: {dbEx.InnerException.Message}");
-                        }
                         
                         TempData[ErrorMessage] = $"Грешка при създаване на поръчка: {dbEx.InnerException?.Message ?? dbEx.Message}";
                         return RedirectToAction("Index", "Home");
@@ -298,20 +252,14 @@ namespace HoneyWebPlatform.Web.Controllers
                     {
                         dbContext.OrderItems.Add(orderItem);
                         await dbContext.SaveChangesAsync();
-                        Console.WriteLine($"DEBUG: OrderItem saved successfully with ID: {orderItem.Id}");
                     }
                     catch (Exception dbEx)
                     {
-                        Console.WriteLine($"DEBUG: Error saving order item: {dbEx.Message}");
-                        Console.WriteLine($"DEBUG: OrderItem data - ProductName: '{orderItem.ProductName}', ProductId: '{orderItem.ProductId}'");
                         throw;
                     }
                     
                     // Set success message first (before email sending)
-                    Console.WriteLine($"DEBUG: Setting success message for order {order.Id}");
                     TempData[SuccessMessage] = $"Успешно създадена поръчка с номер {order.Id}. Проверете имейла си за потвърждение!";
-                    Console.WriteLine($"DEBUG: Success message set: {TempData[SuccessMessage]}");
-                    Console.WriteLine($"DEBUG: Redirecting to Index page");
 
         // Send emails in background (non-blocking)
         _ = Task.Run(async () =>
@@ -323,24 +271,20 @@ namespace HoneyWebPlatform.Web.Controllers
                 
                 try
                 {
-                    Console.WriteLine($"DEBUG: Background - Attempting to send order confirmation email to {model.Email}");
                     await backgroundOrderEmailService.SendOrderConfirmationEmailAsync(model.Email, order, model.FullName);
-                    Console.WriteLine($"DEBUG: Background - Order confirmation email sent successfully to: {model.Email}");
                 }
                 catch (Exception emailEx)
                 {
-                    Console.WriteLine($"DEBUG: Background - Failed to send order confirmation email: {emailEx.Message}");
+                    // Email sending failed, but order was created successfully
                 }
                 
                 try
                 {
-                    Console.WriteLine("DEBUG: Background - Attempting to send admin notification email");
                     await backgroundOrderEmailService.SendAdminOrderNotificationAsync(order, model.FullName);
-                    Console.WriteLine("DEBUG: Background - Admin notification email sent successfully");
                 }
                 catch (Exception emailEx)
                 {
-                    Console.WriteLine($"DEBUG: Background - Failed to send admin notification email: {emailEx.Message}");
+                    // Email sending failed, but order was created successfully
                 }
             }
         });

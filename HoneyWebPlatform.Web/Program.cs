@@ -7,18 +7,19 @@ namespace HoneyWebPlatform.Web
     using Microsoft.EntityFrameworkCore;
     using Microsoft.Extensions.Diagnostics.HealthChecks;
 
-    using HoneyWebPlatform.Services.Data.Models;
-    using HoneyWebPlatform.Web.Areas.Hubs;
-    using Hubs;
-    using Data;
-    using Data.Models;
-    using Infrastructure.Extensions;
-    using Infrastructure.ModelBinders;
-    using Services.Data.Interfaces;
-    using Services.Data;
-    using Services.Mapping;
-    using ViewModels.Home;
-    using static Common.GeneralApplicationConstants;
+using HoneyWebPlatform.Services.Data.Models;
+using HoneyWebPlatform.Web.Areas.Hubs;
+using Hubs;
+using Data;
+using Data.Models;
+using Infrastructure.Extensions;
+using Infrastructure.ModelBinders;
+using Services.Data.Interfaces;
+using Services.Data;
+using Services.Mapping;
+using ViewModels.Home;
+using static Common.GeneralApplicationConstants;
+using Resend;
 
     public class Program
     {
@@ -160,8 +161,20 @@ namespace HoneyWebPlatform.Web
                     options.Filters.Add<AutoValidateAntiforgeryTokenAttribute>();
                 });
 
+            // Configure Resend email service
+            builder.Services.AddOptions();
+            builder.Services.AddHttpClient<ResendClient>();
+            builder.Services.Configure<ResendClientOptions>(options =>
+            {
+                options.ApiToken = builder.Configuration["Resend:ApiKey"] ?? Environment.GetEnvironmentVariable("RESEND_API_KEY") ?? "";
+            });
+            builder.Services.AddTransient<IResend, ResendClient>();
+
+            // Use Resend for order emails (more reliable)
+            builder.Services.AddTransient<IOrderEmailService, ResendOrderEmailService>();
+            
+            // Keep existing email services for other functionality
             builder.Services.AddTransient<IEmailSender, EmailSender>();
-            builder.Services.AddTransient<IOrderEmailService, OrderEmailService>();
 
             // Add health checks
             builder.Services.AddHealthChecks()

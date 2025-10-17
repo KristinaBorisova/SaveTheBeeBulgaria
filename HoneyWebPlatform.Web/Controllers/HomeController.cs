@@ -154,6 +154,7 @@ namespace HoneyWebPlatform.Web.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> PlaceOrderFromHomepage(OrderFormViewModel model)
         {
             try

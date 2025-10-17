@@ -145,10 +145,11 @@ using static Common.GeneralApplicationConstants;
             builder.Services.AddResponseCaching();
 
             // Configure Data Protection to prevent constant reloading in production
-            if (builder.Environment.IsProduction())
-            {
-                builder.Services.AddDataProtection();
-            }
+            // Temporarily disabled to test if it's causing the reloading issue
+            // if (builder.Environment.IsProduction())
+            // {
+            //     builder.Services.AddDataProtection();
+            // }
 
             builder.Services.AddSignalR();
 

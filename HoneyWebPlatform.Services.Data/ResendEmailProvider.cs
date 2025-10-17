@@ -26,7 +26,7 @@ namespace HoneyWebPlatform.Services.Data
         {
             try
             {
-                Console.WriteLine($"DEBUG: ResendEmailService - Attempting to send order confirmation email to {customerEmail}");
+                Console.WriteLine($"DEBUG: ResendEmailProvider - Attempting to send order confirmation email to {customerEmail}");
                 
                 var subject = "Потвърждение за поръчка - Save The Bee Bulgaria";
                 
@@ -111,17 +111,17 @@ namespace HoneyWebPlatform.Services.Data
                 
                 if (response.IsSuccessStatusCode)
                 {
-                    Console.WriteLine($"DEBUG: ResendEmailService - Order confirmation email sent successfully to: {customerEmail}");
+                    Console.WriteLine($"DEBUG: ResendEmailProvider - Order confirmation email sent successfully to: {customerEmail}");
                 }
                 else
                 {
-                    Console.WriteLine($"DEBUG: ResendEmailService - Failed to send email. Status: {response.StatusCode}, Response: {responseContent}");
+                    Console.WriteLine($"DEBUG: ResendEmailProvider - Failed to send email. Status: {response.StatusCode}, Response: {responseContent}");
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"DEBUG: ResendEmailService - Failed to send order confirmation email: {ex.Message}");
-                Console.WriteLine($"DEBUG: ResendEmailService - Error details: {ex.StackTrace}");
+                Console.WriteLine($"DEBUG: ResendEmailProvider - Failed to send order confirmation email: {ex.Message}");
+                Console.WriteLine($"DEBUG: ResendEmailProvider - Error details: {ex.StackTrace}");
                 // Don't throw - let the order creation succeed even if email fails
             }
         }
@@ -130,7 +130,7 @@ namespace HoneyWebPlatform.Services.Data
         {
             try
             {
-                Console.WriteLine($"DEBUG: ResendEmailService - Attempting to send order status update email to {customerEmail}");
+                Console.WriteLine($"DEBUG: ResendEmailProvider - Attempting to send order status update email to {customerEmail}");
                 
                 var subject = $"Обновление на статуса на поръчка {order.Id} - Save The Bee Bulgaria";
                 
@@ -183,17 +183,17 @@ Save The Bee Bulgaria
                 
                 if (response.IsSuccessStatusCode)
                 {
-                    Console.WriteLine($"DEBUG: ResendEmailService - Order status update email sent successfully to: {customerEmail}");
+                    Console.WriteLine($"DEBUG: ResendEmailProvider - Order status update email sent successfully to: {customerEmail}");
                 }
                 else
                 {
-                    Console.WriteLine($"DEBUG: ResendEmailService - Failed to send status update email. Status: {response.StatusCode}, Response: {responseContent}");
+                    Console.WriteLine($"DEBUG: ResendEmailProvider - Failed to send status update email. Status: {response.StatusCode}, Response: {responseContent}");
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"DEBUG: ResendEmailService - Failed to send order status update email: {ex.Message}");
-                Console.WriteLine($"DEBUG: ResendEmailService - Error details: {ex.StackTrace}");
+                Console.WriteLine($"DEBUG: ResendEmailProvider - Failed to send order status update email: {ex.Message}");
+                Console.WriteLine($"DEBUG: ResendEmailProvider - Error details: {ex.StackTrace}");
                 // Don't throw - let the order update succeed even if email fails
             }
         }
@@ -202,7 +202,7 @@ Save The Bee Bulgaria
         {
             try
             {
-                Console.WriteLine($"DEBUG: ResendEmailService - Attempting to send admin notification email");
+                Console.WriteLine($"DEBUG: ResendEmailProvider - Attempting to send admin notification email");
                 
                 var subject = $"Нова поръчка #{order.Id} - Save The Bee Bulgaria Admin";
                 
@@ -288,17 +288,17 @@ Save The Bee Bulgaria
                 
                 if (response.IsSuccessStatusCode)
                 {
-                    Console.WriteLine($"DEBUG: ResendEmailService - Admin notification email sent successfully");
+                    Console.WriteLine($"DEBUG: ResendEmailProvider - Admin notification email sent successfully");
                 }
                 else
                 {
-                    Console.WriteLine($"DEBUG: ResendEmailService - Failed to send admin notification email. Status: {response.StatusCode}, Response: {responseContent}");
+                    Console.WriteLine($"DEBUG: ResendEmailProvider - Failed to send admin notification email. Status: {response.StatusCode}, Response: {responseContent}");
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"DEBUG: ResendEmailService - Failed to send admin notification email: {ex.Message}");
-                Console.WriteLine($"DEBUG: ResendEmailService - Error details: {ex.StackTrace}");
+                Console.WriteLine($"DEBUG: ResendEmailProvider - Failed to send admin notification email: {ex.Message}");
+                Console.WriteLine($"DEBUG: ResendEmailProvider - Error details: {ex.StackTrace}");
                 // Don't throw - let the order creation succeed even if email fails
             }
         }

@@ -1,18 +1,24 @@
 using HoneyWebPlatform.Services.Data.Interfaces;
 using Microsoft.Extensions.Options;
-using Resend;
 using HoneyWebPlatform.Services.Data.Models;
 using HoneyWebPlatform.Data.Models;
+using System.Text;
+using System.Text.Json;
 
 namespace HoneyWebPlatform.Services.Data
 {
     public class ResendEmailService : IOrderEmailService
     {
-        private readonly ResendClient _resendClient;
+        private readonly HttpClient _httpClient;
+        private readonly string _apiKey;
 
-        public ResendEmailService(ResendClient resendClient)
+        public ResendEmailService(HttpClient httpClient, IConfiguration configuration)
         {
-            _resendClient = resendClient;
+            _httpClient = httpClient;
+            _apiKey = configuration["Resend:ApiKey"] ?? Environment.GetEnvironmentVariable("RESEND_API_KEY") ?? "";
+            
+            _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {_apiKey}");
+            _httpClient.BaseAddress = new Uri("https://api.resend.com/");
         }
 
         public async Task SendOrderConfirmationEmailAsync(string customerEmail, Order order, string customerName)
@@ -88,16 +94,28 @@ namespace HoneyWebPlatform.Services.Data
 </body>
 </html>";
 
-                var message = new EmailMessage
+                var emailData = new
                 {
-                    From = "Save The Bee Bulgaria <noreply@savethebeebulgaria.com>",
-                    To = new List<string> { customerEmail },
-                    Subject = subject,
-                    HtmlBody = emailBody
+                    from = "Save The Bee Bulgaria <noreply@savethebeebulgaria.com>",
+                    to = new[] { customerEmail },
+                    subject = subject,
+                    html = emailBody
                 };
 
-                await _resendClient.Emails.SendAsync(message);
-                Console.WriteLine($"DEBUG: ResendEmailService - Order confirmation email sent successfully to: {customerEmail}");
+                var json = JsonSerializer.Serialize(emailData);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                var response = await _httpClient.PostAsync("emails", content);
+                var responseContent = await response.Content.ReadAsStringAsync();
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    Console.WriteLine($"DEBUG: ResendEmailService - Order confirmation email sent successfully to: {customerEmail}");
+                }
+                else
+                {
+                    Console.WriteLine($"DEBUG: ResendEmailService - Failed to send email. Status: {response.StatusCode}, Response: {responseContent}");
+                }
             }
             catch (Exception ex)
             {
@@ -148,16 +166,28 @@ Save The Bee Bulgaria
 📞 Телефон: +359888000000
 ";
 
-                var message = new EmailMessage
+                var emailData = new
                 {
-                    From = "Save The Bee Bulgaria <noreply@savethebeebulgaria.com>",
-                    To = new List<string> { customerEmail },
-                    Subject = subject,
-                    TextBody = emailBody
+                    from = "Save The Bee Bulgaria <noreply@savethebeebulgaria.com>",
+                    to = new[] { customerEmail },
+                    subject = subject,
+                    text = emailBody
                 };
 
-                await _resendClient.Emails.SendAsync(message);
-                Console.WriteLine($"DEBUG: ResendEmailService - Order status update email sent successfully to: {customerEmail}");
+                var json = JsonSerializer.Serialize(emailData);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                var response = await _httpClient.PostAsync("emails", content);
+                var responseContent = await response.Content.ReadAsStringAsync();
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    Console.WriteLine($"DEBUG: ResendEmailService - Order status update email sent successfully to: {customerEmail}");
+                }
+                else
+                {
+                    Console.WriteLine($"DEBUG: ResendEmailService - Failed to send status update email. Status: {response.StatusCode}, Response: {responseContent}");
+                }
             }
             catch (Exception ex)
             {
@@ -241,16 +271,28 @@ Save The Bee Bulgaria
 </body>
 </html>";
 
-                var message = new EmailMessage
+                var emailData = new
                 {
-                    From = "Save The Bee Bulgaria <noreply@savethebeebulgaria.com>",
-                    To = new List<string> { "savethebeebulgaria@gmail.com" },
-                    Subject = subject,
-                    HtmlBody = emailBody
+                    from = "Save The Bee Bulgaria <noreply@savethebeebulgaria.com>",
+                    to = new[] { "savethebeebulgaria@gmail.com" },
+                    subject = subject,
+                    html = emailBody
                 };
 
-                await _resendClient.Emails.SendAsync(message);
-                Console.WriteLine($"DEBUG: ResendEmailService - Admin notification email sent successfully");
+                var json = JsonSerializer.Serialize(emailData);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                var response = await _httpClient.PostAsync("emails", content);
+                var responseContent = await response.Content.ReadAsStringAsync();
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    Console.WriteLine($"DEBUG: ResendEmailService - Admin notification email sent successfully");
+                }
+                else
+                {
+                    Console.WriteLine($"DEBUG: ResendEmailService - Failed to send admin notification email. Status: {response.StatusCode}, Response: {responseContent}");
+                }
             }
             catch (Exception ex)
             {

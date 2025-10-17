@@ -221,7 +221,7 @@
         </div>
         <div class="row">
             <div class="col-sm-6 col-lg-4">
-                <div class="single_blog_item">
+                <div class="single_blog_item" style="cursor: pointer;" onclick="goToBeekeeperProfile()">
                     <div class="single_blog_img">
                         <img src="dingo-master/dingo-master/img/team/chefs_1.png" alt="">
                     </div>
@@ -403,5 +403,20 @@
 {
     <script>statistics();</script>
 
-
+    <script>
+        function goToBeekeeperProfile() {
+            @if (!string.IsNullOrEmpty(Model.IvayloBorisovBeekeeperId))
+            {
+                <text>
+                window.location.href = '@Url.Action("Profile", "Beekeeper", new { id = Model.IvayloBorisovBeekeeperId })';
+                </text>
+            }
+            else
+            {
+                <text>
+                alert('Профилът на пчеларя все още не е наличен. Моля опитайте по-късно.');
+                </text>
+            }
+        }
+    </script>
 }

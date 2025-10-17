@@ -54,11 +54,15 @@ namespace HoneyWebPlatform.Web.Controllers
             IEnumerable<PostIndexViewModel> postIndexViewModel =
                 await postService.LastThreePostsAsync();
 
+            // Get Ивайло Борисов's beekeeper ID
+            string? ivayloBorisovId = await GetIvayloBorisovBeekeeperIdAsync();
+
             var viewModel = new IndexViewModel
             {
                 Honeys = honeyIndexViewModel,
                 Propolises = new List<PropolisAllViewModel>(), // Empty list instead of propolis data
-                Posts = postIndexViewModel
+                Posts = postIndexViewModel,
+                IvayloBorisovBeekeeperId = ivayloBorisovId
             };
 
             // Populate order form data
@@ -342,9 +346,16 @@ namespace HoneyWebPlatform.Web.Controllers
                     })
                     .ToListAsync();
 
-                // If no beekeepers found in database, return sample data
+                // If no beekeepers found in database, try to get Ивайло Борисов specifically
                 if (!beekeepers.Any())
                 {
+                    var ivayloBorisov = await GetIvayloBorisovBeekeeperAsync(dbContext);
+                    if (ivayloBorisov != null)
+                    {
+                        return new List<BeekeeperViewModel> { ivayloBorisov };
+                    }
+                    
+                    // Fallback to sample data if Ивайло Борисов not found
                     return new List<BeekeeperViewModel>
                     {
                         new BeekeeperViewModel
@@ -365,6 +376,37 @@ namespace HoneyWebPlatform.Web.Controllers
                 }
 
                 return beekeepers ?? new List<BeekeeperViewModel>();
+            }
+        }
+
+        private async Task<BeekeeperViewModel?> GetIvayloBorisovBeekeeperAsync(HoneyWebPlatformDbContext dbContext)
+        {
+            var beekeeper = await dbContext.Beekeepers
+                .Where(b => b.User.FirstName == "Ивайло" && b.User.LastName == "Борисов")
+                .Select(b => new BeekeeperViewModel
+                {
+                    Id = b.Id,
+                    FullName = b.User.FirstName + " " + b.User.LastName,
+                    Location = "Враца",
+                    PhoneNumber = b.PhoneNumber
+                })
+                .FirstOrDefaultAsync();
+
+            return beekeeper;
+        }
+
+        private async Task<string?> GetIvayloBorisovBeekeeperIdAsync()
+        {
+            using (var scope = HttpContext.RequestServices.CreateScope())
+            {
+                var dbContext = scope.ServiceProvider.GetRequiredService<HoneyWebPlatformDbContext>();
+                
+                var beekeeperId = await dbContext.Beekeepers
+                    .Where(b => b.User.FirstName == "Ивайло" && b.User.LastName == "Борисов")
+                    .Select(b => b.Id.ToString())
+                    .FirstOrDefaultAsync();
+
+                return beekeeperId;
             }
         }
 

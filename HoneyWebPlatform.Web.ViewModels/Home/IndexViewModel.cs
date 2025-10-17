@@ -8,6 +8,7 @@ namespace HoneyWebPlatform.Web.ViewModels.Home
         public IEnumerable<HoneyAllViewModel> Honeys { get; set; } = null!;
         public IEnumerable<PropolisAllViewModel> Propolises { get; set; } = null!;
         public IEnumerable<PostIndexViewModel> Posts { get; set; } = null!;
+        public string? IvayloBorisovBeekeeperId { get; set; }
 
     }
 }

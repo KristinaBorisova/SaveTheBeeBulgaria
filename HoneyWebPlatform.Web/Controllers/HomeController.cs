@@ -190,32 +190,51 @@ namespace HoneyWebPlatform.Web.Controllers
                 
                 if (selectedHoneyType == null)
                 {
+                    Console.WriteLine($"DEBUG: Selected honey type not found. HoneyTypeId: {model.HoneyTypeId}");
+                    Console.WriteLine($"DEBUG: Available honey types: {string.Join(", ", honeyTypesList.Select(h => $"{h.Id}:{h.Name}"))}");
                     TempData[ErrorMessage] = $"Избраният вид мед (ID: {model.HoneyTypeId}) не е валиден. Моля, изберете от списъка.";
                     return RedirectToAction("Index", "Home");
                 }
+                
+                Console.WriteLine($"DEBUG: Selected honey type: {selectedHoneyType.Name} (ID: {selectedHoneyType.Id})");
 
                 var honeyPrice = selectedHoneyType.Price;
 
                 // Calculate total price
                 var totalPrice = honeyPrice * model.Quantity;
 
-                // Create a new order directly from homepage form
-                var order = new Order
-                {
-                    // Let Entity Framework handle ID generation
-                    UserId = Guid.NewGuid(), // Generate a temporary user ID for guest orders
-                    PhoneNumber = model.PhoneNumber ?? "N/A",
-                    CreatedOn = DateTime.Now,
-                    Email = model.Email ?? "N/A",
-                    Address = model.Address ?? "N/A",
-                    TotalPrice = totalPrice,
-                    Status = OrderStatus.Обработван
-                };
-
                 // Add order to database
                 using (var scope = HttpContext.RequestServices.CreateScope())
                 {
                     var dbContext = scope.ServiceProvider.GetRequiredService<HoneyWebPlatformDbContext>();
+                    
+                    // Get the first available user ID (or create a guest user)
+                    var guestUserId = await dbContext.Users
+                        .Select(u => u.Id)
+                        .FirstOrDefaultAsync();
+                    
+                    if (guestUserId == Guid.Empty)
+                    {
+                        Console.WriteLine("DEBUG: No users found in database, creating guest order with random ID");
+                        // If no users exist, we'll need to handle this differently
+                        TempData[ErrorMessage] = "Системата не е настроена правилно. Моля, свържете се с администратор.";
+                        return RedirectToAction("Index", "Home");
+                    }
+                    
+                    Console.WriteLine($"DEBUG: Using guest user ID: {guestUserId}");
+                    
+                    // Create a new order directly from homepage form
+                    var order = new Order
+                    {
+                        // Let Entity Framework handle ID generation
+                        UserId = guestUserId, // Use valid user ID for guest orders
+                        PhoneNumber = model.PhoneNumber ?? "N/A",
+                        CreatedOn = DateTime.Now,
+                        Email = model.Email ?? "N/A",
+                        Address = model.Address ?? "N/A",
+                        TotalPrice = totalPrice,
+                        Status = OrderStatus.Обработван
+                    };
                     
                     // Get actual honey product from database using category ID
                     var actualHoney = await dbContext.Honeys
@@ -226,6 +245,9 @@ namespace HoneyWebPlatform.Web.Controllers
                     
                     try
                     {
+                        Console.WriteLine($"DEBUG: Attempting to save order with ID: {order.Id}");
+                        Console.WriteLine($"DEBUG: Order details - Email: '{order.Email}', Address: '{order.Address}', Phone: '{order.PhoneNumber}', TotalPrice: {order.TotalPrice}");
+                        
                         dbContext.Orders.Add(order);
                         await dbContext.SaveChangesAsync();
                         Console.WriteLine($"DEBUG: Order saved successfully with ID: {order.Id}");
@@ -236,7 +258,14 @@ namespace HoneyWebPlatform.Web.Controllers
                         Console.WriteLine($"DEBUG: Inner Exception: {dbEx.InnerException?.Message}");
                         Console.WriteLine($"DEBUG: Stack Trace: {dbEx.StackTrace}");
                         Console.WriteLine($"DEBUG: Order data - Email: '{order.Email}', Address: '{order.Address}', Phone: '{order.PhoneNumber}'");
-                        TempData[ErrorMessage] = $"Грешка при създаване на поръчка: {dbEx.Message}";
+                        
+                        // Try to get more specific error information
+                        if (dbEx.InnerException != null)
+                        {
+                            Console.WriteLine($"DEBUG: Inner exception details: {dbEx.InnerException.Message}");
+                        }
+                        
+                        TempData[ErrorMessage] = $"Грешка при създаване на поръчка: {dbEx.InnerException?.Message ?? dbEx.Message}";
                         return RedirectToAction("Index", "Home");
                     }
 

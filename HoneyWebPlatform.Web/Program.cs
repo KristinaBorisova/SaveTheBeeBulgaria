@@ -19,7 +19,6 @@ using Services.Data;
 using Services.Mapping;
 using ViewModels.Home;
 using static Common.GeneralApplicationConstants;
-using Resend;
 
     public class Program
     {
@@ -161,20 +160,9 @@ using Resend;
                     options.Filters.Add<AutoValidateAntiforgeryTokenAttribute>();
                 });
 
-            // Configure Resend email service
-            builder.Services.AddOptions();
-            builder.Services.AddHttpClient<ResendClient>();
-            builder.Services.Configure<ResendClientOptions>(options =>
-            {
-                options.ApiToken = builder.Configuration["Resend:ApiKey"] ?? Environment.GetEnvironmentVariable("RESEND_API_KEY") ?? "";
-            });
-            builder.Services.AddTransient<IResend, ResendClient>();
-
-            // Use Resend for order emails (more reliable)
-            builder.Services.AddTransient<IOrderEmailService, ResendOrderEmailService>();
-            
-            // Keep existing email services for other functionality
+            // Configure email services
             builder.Services.AddTransient<IEmailSender, EmailSender>();
+            builder.Services.AddTransient<IOrderEmailService, OrderEmailService>();
 
             // Add health checks
             builder.Services.AddHealthChecks()

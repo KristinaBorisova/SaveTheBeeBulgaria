@@ -40,6 +40,13 @@ namespace HoneyWebPlatform.Web.Controllers
 
         public async Task<IActionResult> Index()
         {
+            // Debug TempData
+            Console.WriteLine($"DEBUG: Index action - TempData contains SuccessMessage: {TempData.ContainsKey(SuccessMessage)}");
+            if (TempData.ContainsKey(SuccessMessage))
+            {
+                Console.WriteLine($"DEBUG: Index action - SuccessMessage value: {TempData[SuccessMessage]}");
+            }
+            
             if (this.User.IsInRole(AdminRoleName))
             {
                 return this.RedirectToAction("Index", "Home", new { Area = AdminAreaName });
@@ -321,7 +328,10 @@ namespace HoneyWebPlatform.Web.Controllers
                         Console.WriteLine($"DEBUG: Admin email error stack trace: {emailEx.StackTrace}");
                     }
 
+                    Console.WriteLine($"DEBUG: Setting success message for order {order.Id}");
                     TempData[SuccessMessage] = $"Успешно създадена поръчка с номер {order.Id}. Проверете имейла си за потвърждение!";
+                    Console.WriteLine($"DEBUG: Success message set: {TempData[SuccessMessage]}");
+                    Console.WriteLine($"DEBUG: Redirecting to Index page");
 
                     return RedirectToAction("Index", "Home");
                 }

@@ -45,8 +45,17 @@ public class EmailSender : IEmailSender
             
             try
             {
-                await client.SendMailAsync(mailMessage);
+                Console.WriteLine($"DEBUG: EmailSender - Starting SendMailAsync with timeout...");
+                using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30)))
+                {
+                    await client.SendMailAsync(mailMessage, cts.Token);
+                }
                 Console.WriteLine($"DEBUG: EmailSender - Email sent successfully to: {email}");
+            }
+            catch (OperationCanceledException)
+            {
+                Console.WriteLine($"DEBUG: EmailSender - Email sending timed out after 30 seconds");
+                throw new TimeoutException("Email sending timed out");
             }
             catch (Exception smtpEx)
             {

@@ -170,6 +170,11 @@ namespace HoneyWebPlatform.Web.Controllers
                 Console.WriteLine($"DEBUG: Form Data - FullName: {model.FullName}, Email: {model.Email}, Phone: {model.PhoneNumber}, Address: {model.Address}");
                 Console.WriteLine($"DEBUG: Form Data - HoneyTypeId: {model.HoneyTypeId}, BeekeeperId: {model.BeekeeperId}, Quantity: {model.Quantity}");
                 
+                // Simple test - return success immediately to test redirect
+                Console.WriteLine("DEBUG: Returning simple success message");
+                TempData[SuccessMessage] = $"Тестова поръчка получена за {model.FullName}! Ще се свържем с Вас скоро.";
+                return RedirectToAction("Index", "Home");
+                
                 // Get honey type details
                 var honeyTypes = await GetHoneyTypesAsync();
                 var honeyTypesList = honeyTypes.ToList();
@@ -302,21 +307,14 @@ namespace HoneyWebPlatform.Web.Controllers
                 if (ex.InnerException != null)
                 {
                     Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
+                    Console.WriteLine($"Inner exception stack trace: {ex.InnerException.StackTrace}");
                 }
                 
                 // Set a simple error message and redirect
-                TempData[ErrorMessage] = "Възникна грешка при създаване на поръчката. Моля, опитайте отново.";
+                TempData[ErrorMessage] = $"Грешка при създаване на поръчка: {ex.Message}";
                 
-                try
-                {
-                    return RedirectToAction("Index", "Home");
-                }
-                catch (Exception redirectEx)
-                {
-                    Console.WriteLine($"Redirect error: {redirectEx.Message}");
-                    // Fallback to a simple redirect
-                    return Redirect("/");
-                }
+                // Always try to redirect to home page
+                return RedirectToAction("Index", "Home");
             }
         }
 

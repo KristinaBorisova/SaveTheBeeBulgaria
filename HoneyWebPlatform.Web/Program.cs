@@ -144,12 +144,8 @@ using static Common.GeneralApplicationConstants;
             builder.Services.AddMemoryCache();
             builder.Services.AddResponseCaching();
 
-            // Configure Data Protection with persistent keys to prevent antiforgery token issues
-            if (builder.Environment.IsProduction())
-            {
-                builder.Services.AddDataProtection()
-                    .PersistKeysToFileSystem(new DirectoryInfo("/app/DataProtection-Keys"));
-            }
+            // Configure Data Protection to prevent antiforgery token issues
+            builder.Services.AddDataProtection();
 
             builder.Services.AddSignalR();
 

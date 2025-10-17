@@ -4,7 +4,11 @@
 {
     <a asp-area="" asp-controller="Honey" asp-action="Details" asp-route-id="@item.Id">
         <div class="single_food_item media">
-            <img src="@item.ImageUrl" class="mr-3" alt="..." style="width: 150px; height: 150px;">
+            <img src="@item.ImageUrl" 
+                 class="mr-3" 
+                 alt="@item.Title" 
+                 style="width: 150px; height: 150px; object-fit: cover;"
+                 onerror="this.src='/img/icon/honey-placeholder.jpg'; this.alt='Мед';">
             <div class="media-body align-self-center">
                 <h3>@item.Title</h3>
                 <p>@item.Origin</p>

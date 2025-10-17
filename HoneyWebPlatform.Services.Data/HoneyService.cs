@@ -28,12 +28,26 @@
                 .Honeys
                 .Where(h => h.IsActive)
                 .Where(h => h.IsPromoted)
+                .Where(h => !string.IsNullOrEmpty(h.ImageUrl)) // Only get honeys with valid image URLs
                 .OrderByDescending(h => h.CreatedOn)
                 .Take(6)
                 .To<HoneyAllViewModel>()
                 .ToArrayAsync();
 
-            // If no promoted honeys exist, return any active honeys as fallback
+            // If no promoted honeys with valid images exist, return any active honeys with valid images as fallback
+            if (!lastThreeHoneys.Any())
+            {
+                lastThreeHoneys = await dbContext
+                    .Honeys
+                    .Where(h => h.IsActive)
+                    .Where(h => !string.IsNullOrEmpty(h.ImageUrl)) // Only get honeys with valid image URLs
+                    .OrderByDescending(h => h.CreatedOn)
+                    .Take(6)
+                    .To<HoneyAllViewModel>()
+                    .ToArrayAsync();
+            }
+
+            // If still no honeys with valid images, return honeys with fallback images
             if (!lastThreeHoneys.Any())
             {
                 lastThreeHoneys = await dbContext
@@ -41,7 +55,14 @@
                     .Where(h => h.IsActive)
                     .OrderByDescending(h => h.CreatedOn)
                     .Take(6)
-                    .To<HoneyAllViewModel>()
+                    .Select(h => new HoneyAllViewModel
+                    {
+                        Id = h.Id.ToString(),
+                        Title = h.Title,
+                        Origin = h.Origin,
+                        ImageUrl = string.IsNullOrEmpty(h.ImageUrl) ? "/img/icon/honey-placeholder.jpg" : h.ImageUrl,
+                        Price = h.Price
+                    })
                     .ToArrayAsync();
             }
 

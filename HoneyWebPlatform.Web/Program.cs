@@ -162,7 +162,15 @@ using static Common.GeneralApplicationConstants;
 
             // Configure email services
             builder.Services.AddTransient<IEmailSender, EmailSender>();
-            builder.Services.AddTransient<IOrderEmailService, OrderEmailService>();
+            
+            // Configure Resend
+            builder.Services.AddResend(options =>
+            {
+                options.ApiKey = builder.Configuration["Resend:ApiKey"] ?? Environment.GetEnvironmentVariable("RESEND_API_KEY") ?? "";
+            });
+            
+            // Use Resend for order emails
+            builder.Services.AddTransient<IOrderEmailService, ResendEmailService>();
 
             // Add health checks
             builder.Services.AddHealthChecks()

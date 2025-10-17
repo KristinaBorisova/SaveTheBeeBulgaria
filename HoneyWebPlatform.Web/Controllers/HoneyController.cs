@@ -132,14 +132,7 @@
                 Console.WriteLine($"BeekeeperId: {beekeeperId}");
                 Console.WriteLine($"Model data: Title={model.Title}, CategoryId={model.CategoryId}, Price={model.Price}");
 
-                // Validate category exists
-                bool categoryExists = await categoryService.ExistsByIdAsync(model.CategoryId);
-                if (!categoryExists)
-                {
-                    ModelState.AddModelError(nameof(model.CategoryId), "Избраната категория не съществува! Моля изберете валидна категория.");
-                    model.Categories = await categoryService.AllCategoriesAsync();
-                    return View(model);
-                }
+                // Category validation was already done above, no need to repeat
 
                 // Picture saving logic - we already validated this exists above
                 // Ensure the uploads directory exists

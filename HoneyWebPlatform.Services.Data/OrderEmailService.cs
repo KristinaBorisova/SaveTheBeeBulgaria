@@ -90,12 +90,14 @@ namespace HoneyWebPlatform.Services.Data
 </html>";
 
                 await _emailSender.SendEmailAsync(customerEmail, subject, emailBody, order.PhoneNumber);
+                Console.WriteLine($"DEBUG: OrderEmailService - Order confirmation email sent successfully to: {customerEmail}");
             }
             catch (Exception ex)
             {
                 // Log the error but don't fail the order creation
                 Console.WriteLine($"Failed to send order confirmation email: {ex.Message}");
-                throw;
+                Console.WriteLine($"Email error stack trace: {ex.StackTrace}");
+                // Don't throw - let the order creation succeed even if email fails
             }
         }
 
@@ -143,7 +145,8 @@ Email: savethebeebulgaria@gmail.com
             catch (Exception ex)
             {
                 Console.WriteLine($"Failed to send order status update email: {ex.Message}");
-                throw;
+                Console.WriteLine($"Email error stack trace: {ex.StackTrace}");
+                // Don't throw - let the order update succeed even if email fails
             }
         }
 
@@ -220,11 +223,13 @@ Email: savethebeebulgaria@gmail.com
 </html>";
 
                 await _emailSender.SendEmailAsync("savethebeebulgaria@gmail.com", subject, emailBody, order.PhoneNumber);
+                Console.WriteLine($"DEBUG: OrderEmailService - Admin notification email sent successfully");
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Failed to send admin order notification: {ex.Message}");
-                throw;
+                Console.WriteLine($"Email error stack trace: {ex.StackTrace}");
+                // Don't throw - let the order creation succeed even if email fails
             }
         }
     }

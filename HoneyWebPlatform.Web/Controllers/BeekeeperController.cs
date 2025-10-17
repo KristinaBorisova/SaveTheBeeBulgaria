@@ -110,11 +110,11 @@ using static Common.NotificationMessagesConstants;
                     FullName = beekeeper.User.FirstName + " " + beekeeper.User.LastName,
                     Email = beekeeper.User.Email!,
                     PhoneNumber = beekeeper.PhoneNumber,
-                    Story = beekeeper.Story,
-                    Region = beekeeper.Region,
-                    NumberOfHives = beekeeper.NumberOfHives,
-                    ExperienceYears = beekeeper.ExperienceYears,
-                    Specialties = beekeeper.Specialties,
+                    Story = "Информацията ще бъде добавена скоро", // Default value until database migration
+                    Region = "България", // Default value until database migration
+                    NumberOfHives = 0, // Default value until database migration
+                    ExperienceYears = "Опит", // Default value until database migration
+                    Specialties = "Различни видове мед", // Default value until database migration
                     HiveFarmPicturePaths = beekeeper.HiveFarmPicturePaths,
                     OwnedHoneys = ownedHoneys,
                     TotalHoneys = ownedHoneys.Count(),

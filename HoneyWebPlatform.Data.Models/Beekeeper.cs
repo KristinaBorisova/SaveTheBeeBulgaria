@@ -24,19 +24,20 @@
         [MaxLength(255)]
         public string? HiveFarmPicturePaths { get; set; }
 
-        [MaxLength(500)]
-        public string? Story { get; set; }
+        // Temporarily commented out until database migration is applied
+        // [MaxLength(500)]
+        // public string? Story { get; set; }
 
-        [MaxLength(100)]
-        public string? Region { get; set; }
+        // [MaxLength(100)]
+        // public string? Region { get; set; }
 
-        public int? NumberOfHives { get; set; }
+        // public int? NumberOfHives { get; set; }
 
-        [MaxLength(100)]
-        public string? ExperienceYears { get; set; }
+        // [MaxLength(100)]
+        // public string? ExperienceYears { get; set; }
 
-        [MaxLength(500)]
-        public string? Specialties { get; set; }
+        // [MaxLength(500)]
+        // public string? Specialties { get; set; }
 
         public Guid UserId { get; set; }
 

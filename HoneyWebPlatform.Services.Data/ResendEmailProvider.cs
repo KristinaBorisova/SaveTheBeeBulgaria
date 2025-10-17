@@ -97,7 +97,7 @@ namespace HoneyWebPlatform.Services.Data
 
                 var emailData = new
                 {
-                    from = "Save The Bee Bulgaria <noreply@savethebeebulgaria.com>",
+                    from = "Save The Bee Bulgaria <onboarding@resend.dev>",
                     to = new[] { customerEmail },
                     subject = subject,
                     html = emailBody
@@ -169,7 +169,7 @@ Save The Bee Bulgaria
 
                 var emailData = new
                 {
-                    from = "Save The Bee Bulgaria <noreply@savethebeebulgaria.com>",
+                    from = "Save The Bee Bulgaria <onboarding@resend.dev>",
                     to = new[] { customerEmail },
                     subject = subject,
                     text = emailBody
@@ -274,7 +274,7 @@ Save The Bee Bulgaria
 
                 var emailData = new
                 {
-                    from = "Save The Bee Bulgaria <noreply@savethebeebulgaria.com>",
+                    from = "Save The Bee Bulgaria <onboarding@resend.dev>",
                     to = new[] { "savethebeebulgaria@gmail.com" },
                     subject = subject,
                     html = emailBody

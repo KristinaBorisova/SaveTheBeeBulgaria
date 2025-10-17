@@ -170,11 +170,6 @@ namespace HoneyWebPlatform.Web.Controllers
                 Console.WriteLine($"DEBUG: Form Data - FullName: {model.FullName}, Email: {model.Email}, Phone: {model.PhoneNumber}, Address: {model.Address}");
                 Console.WriteLine($"DEBUG: Form Data - HoneyTypeId: {model.HoneyTypeId}, BeekeeperId: {model.BeekeeperId}, Quantity: {model.Quantity}");
                 
-                // Simple test - return success immediately to test redirect
-                Console.WriteLine("DEBUG: Returning simple success message");
-                TempData[SuccessMessage] = $"Тестова поръчка получена за {model.FullName}! Ще се свържем с Вас скоро.";
-                return RedirectToAction("Index", "Home");
-                
                 // Get honey type details
                 var honeyTypes = await GetHoneyTypesAsync();
                 var honeyTypesList = honeyTypes.ToList();
@@ -187,6 +182,9 @@ namespace HoneyWebPlatform.Web.Controllers
                     TempData[ErrorMessage] = "Няма налични видове мед. Моля, свържете се с администратор.";
                     return RedirectToAction("Index", "Home");
                 }
+                
+                // Check if we have the required data for order creation
+                Console.WriteLine("DEBUG: Checking required data for order creation");
                 
                 var selectedHoneyType = honeyTypesList.FirstOrDefault(h => h.Id == model.HoneyTypeId);
                 

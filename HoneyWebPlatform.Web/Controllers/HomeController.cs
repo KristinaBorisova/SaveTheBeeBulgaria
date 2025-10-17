@@ -1,4 +1,5 @@
 ﻿using System.Text.RegularExpressions;
+using System.Linq;
 using HoneyWebPlatform.Web.ViewModels.Honey;
 using HoneyWebPlatform.Web.ViewModels.Propolis;
 
@@ -26,7 +27,7 @@ namespace HoneyWebPlatform.Web.Controllers
         private readonly ICategoryService categoryService;
         private readonly IBeekeeperService beekeeperService;
 
-        public HomeController(IHoneyService honeyService, IPropolisService propolisService, IPostService postService, IEmailSender emailSender, IOrderEmailService orderEmailService, ICategoryService categoryService, IBeekeeperService beekeeperService)
+        public HomeController(IHoneyService honeyService, IPostService postService, IEmailSender emailSender, IOrderEmailService orderEmailService, ICategoryService categoryService, IBeekeeperService beekeeperService)
         {
             this.honeyService = honeyService;
             // this.propolisService = propolisService; // Commented out - propolis functionality disabled

@@ -279,7 +279,6 @@ using static Common.GeneralApplicationConstants;
             if (builder.Environment.IsProduction())
             {
                 builder.Services.AddDataProtection()
-                    .SetDefaultKeyLifetime(TimeSpan.FromDays(365))
                     .UseCryptographicAlgorithms(new Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.AuthenticatedEncryptorConfiguration()
                     {
                         EncryptionAlgorithm = Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.EncryptionAlgorithm.AES_256_CBC,

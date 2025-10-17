@@ -122,8 +122,24 @@
                 string? beekeeperId =
                     await beekeeperService.GetBeekeeperIdByUserIdAsync(User.GetId()!);
 
+                if (string.IsNullOrEmpty(beekeeperId))
+                {
+                    ModelState.AddModelError(string.Empty, "Не сте регистрирани като пчелар! Моля регистрирайте се като пчелар първо.");
+                    model.Categories = await categoryService.AllCategoriesAsync();
+                    return View(model);
+                }
+
                 Console.WriteLine($"BeekeeperId: {beekeeperId}");
                 Console.WriteLine($"Model data: Title={model.Title}, CategoryId={model.CategoryId}, Price={model.Price}");
+
+                // Validate category exists
+                bool categoryExists = await categoryService.ExistsByIdAsync(model.CategoryId);
+                if (!categoryExists)
+                {
+                    ModelState.AddModelError(nameof(model.CategoryId), "Избраната категория не съществува! Моля изберете валидна категория.");
+                    model.Categories = await categoryService.AllCategoriesAsync();
+                    return View(model);
+                }
 
                 // Picture saving logic - we already validated this exists above
                 // Ensure the uploads directory exists
@@ -147,18 +163,25 @@
                 Console.WriteLine($"HoneyPicturePath set to: {model.HoneyPicturePath}");
 
                 string honeyId =
-                    await honeyService.CreateAndReturnIdAsync(model, beekeeperId!);
+                    await honeyService.CreateAndReturnIdAsync(model, beekeeperId);
 
                 TempData[SuccessMessage] = "Успешно добавихте мед!";
 
                 return RedirectToAction("Details", "Honey", new { id = honeyId });
+            }
+            catch (ArgumentException argEx)
+            {
+                Console.WriteLine($"Validation error in HoneyController.Add: {argEx.Message}");
+                ModelState.AddModelError(string.Empty, $"Грешка при валидацията: {argEx.Message}");
+                model.Categories = await categoryService.AllCategoriesAsync();
+                return View(model);
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error in HoneyController.Add: {ex.Message}");
                 Console.WriteLine($"Stack trace: {ex.StackTrace}");
                 
-                ModelState.AddModelError(string.Empty, "Неочакван проблем стана докато опитвахме да добавим Вашия мед! Моля опитайте пак след малко или се свържете с администратор!");
+                ModelState.AddModelError(string.Empty, $"Неочакван проблем стана докато опитвахме да добавим Вашия мед! Детайли: {ex.Message}");
                 model.Categories = await categoryService.AllCategoriesAsync();
 
                 return View(model);

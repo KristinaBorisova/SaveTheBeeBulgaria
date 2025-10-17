@@ -51,7 +51,7 @@ namespace HoneyWebPlatform.Services.Data
                 Id = Guid.NewGuid(),
                 UserId = cart.UserInformation.Id,
                 PhoneNumber = cart.UserInformation.PhoneNumber ?? "N/A",
-                CreatedOn = DateTime.Now,
+                CreatedOn = DateTime.UtcNow,
                 Email = cart.UserInformation.Email,
                 Address = cart.UserInformation.Address ?? "N/A",
                 TotalPrice = cart.Honeys.Sum(honey => honey.TotalPrice) + cart.Propolises.Sum(propolis => propolis.TotalPrice),

@@ -229,7 +229,7 @@ namespace HoneyWebPlatform.Web.Controllers
                         // Let Entity Framework handle ID generation
                         UserId = guestUserId, // Use valid user ID for guest orders
                         PhoneNumber = model.PhoneNumber ?? "N/A",
-                        CreatedOn = DateTime.Now,
+                        CreatedOn = DateTime.UtcNow, // Use UTC time for PostgreSQL
                         Email = model.Email ?? "N/A",
                         Address = model.Address ?? "N/A",
                         TotalPrice = totalPrice,

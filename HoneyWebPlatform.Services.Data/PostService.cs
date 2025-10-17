@@ -233,7 +233,7 @@ namespace HoneyWebPlatform.Services.Data
             {
                 Content = content,
                 AuthorId = Guid.Parse(authorId),
-                CreatedOn = DateTime.Now,
+                CreatedOn = DateTime.UtcNow,
                 IsActive = true,
                 ParentPostId = post.Id
             };

@@ -40,7 +40,7 @@
             comment = new Comment()
             {
                 Content = "This is the first comment on the first post!",
-                CreatedOn = DateTime.Now,
+                CreatedOn = DateTime.UtcNow,
                 IsActive = true,
                 ParentPostId = Guid.Parse("7B55A828-68BE-45E8-9991-0F19CEE32622"),
                 AuthorId = Guid.Parse("BD56FE08-BD10-4384-89BE-63A211FBBC61")

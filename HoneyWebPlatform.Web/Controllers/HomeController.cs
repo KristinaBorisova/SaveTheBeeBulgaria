@@ -199,7 +199,7 @@ namespace HoneyWebPlatform.Web.Controllers
                     UserId = Guid.NewGuid(), // Generate a temporary user ID for guest orders
                     PhoneNumber = model.PhoneNumber ?? "N/A",
                     CreatedOn = DateTime.Now,
-                    Email = model.Email,
+                    Email = model.Email ?? "N/A",
                     Address = model.Address ?? "N/A",
                     TotalPrice = totalPrice,
                     Status = OrderStatus.Обработван
@@ -217,22 +217,42 @@ namespace HoneyWebPlatform.Web.Controllers
                     
                     var productId = actualHoney?.Id ?? Guid.NewGuid(); // Fallback to random GUID if not found
                     
-                    dbContext.Orders.Add(order);
-                    await dbContext.SaveChangesAsync();
+                    try
+                    {
+                        dbContext.Orders.Add(order);
+                        await dbContext.SaveChangesAsync();
+                        Console.WriteLine($"DEBUG: Order saved successfully with ID: {order.Id}");
+                    }
+                    catch (Exception dbEx)
+                    {
+                        Console.WriteLine($"DEBUG: Error saving order: {dbEx.Message}");
+                        Console.WriteLine($"DEBUG: Order data - Email: '{order.Email}', Address: '{order.Address}', Phone: '{order.PhoneNumber}'");
+                        throw;
+                    }
 
                     // Add order items
                     var orderItem = new OrderItem
                     {
                         Id = Guid.NewGuid(),
                         ProductId = productId,
-                        ProductName = selectedHoneyType.Name,
+                        ProductName = selectedHoneyType.Name ?? "Unknown Product",
                         Quantity = model.Quantity,
                         Price = honeyPrice,
                         OrderId = order.Id
                     };
 
-                    dbContext.OrderItems.Add(orderItem);
-                    await dbContext.SaveChangesAsync();
+                    try
+                    {
+                        dbContext.OrderItems.Add(orderItem);
+                        await dbContext.SaveChangesAsync();
+                        Console.WriteLine($"DEBUG: OrderItem saved successfully with ID: {orderItem.Id}");
+                    }
+                    catch (Exception dbEx)
+                    {
+                        Console.WriteLine($"DEBUG: Error saving order item: {dbEx.Message}");
+                        Console.WriteLine($"DEBUG: OrderItem data - ProductName: '{orderItem.ProductName}', ProductId: '{orderItem.ProductId}'");
+                        throw;
+                    }
                 }
 
                 // Send order confirmation email (with error handling)

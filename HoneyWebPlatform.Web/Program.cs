@@ -278,12 +278,7 @@ using static Common.GeneralApplicationConstants;
             // Configure Data Protection to use a fixed key in production to prevent reloading
             if (builder.Environment.IsProduction())
             {
-                builder.Services.AddDataProtection()
-                    .UseCryptographicAlgorithms(new Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.AuthenticatedEncryptorConfiguration()
-                    {
-                        EncryptionAlgorithm = Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.EncryptionAlgorithm.AES_256_CBC,
-                        ValidationAlgorithm = Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ValidationAlgorithm.HMACSHA256
-                    });
+                builder.Services.AddDataProtection();
             }
 
             app.UseAuthentication();

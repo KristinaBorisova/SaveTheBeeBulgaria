@@ -1,0 +1,31 @@
+@{
+    ViewData["Title"] = "Test Page";
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Page - No Reloading</title>
+</head>
+<body>
+    <h1>Test Page</h1>
+    <p>This is a simple test page to check if the reloading issue is specific to the Index page.</p>
+    
+    <div id="counter">Page loads: 0</div>
+    
+    <script>
+        let count = 0;
+        count++;
+        document.getElementById('counter').textContent = 'Page loads: ' + count;
+        
+        console.log('Test page loaded, count:', count);
+        
+        // Check if page is reloading
+        if (count > 1) {
+            console.error('PAGE IS RELOADING! Count:', count);
+        }
+    </script>
+    
+    <p><a href="/">Back to Home</a></p>
+</body>
+</html>

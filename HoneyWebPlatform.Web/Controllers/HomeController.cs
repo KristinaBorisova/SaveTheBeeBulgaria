@@ -90,6 +90,11 @@ namespace HoneyWebPlatform.Web.Controllers
             return View();
         }
 
+        public IActionResult Test()
+        {
+            return View();
+        }
+
         public IActionResult Unsubscribe()
         {
             return View();

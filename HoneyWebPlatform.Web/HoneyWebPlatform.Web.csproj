@@ -35,6 +35,7 @@
     <PackageReference Include="AspNetCore.HealthChecks.Npgsql" Version="6.0.2" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.18.1" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="6.0.16" />
+    <PackageReference Include="Resend" Version="1.0.0" />
   </ItemGroup>
 
   <ItemGroup>

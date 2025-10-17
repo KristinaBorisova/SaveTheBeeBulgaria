@@ -8,6 +8,11 @@
     ViewData["Title"] = "Начална Страница";
 
     var honeys = Model.Honeys.ToList();
+}
+
+@await Html.PartialAsync("_NotificationsPartial")
+
+@{
     var propolises = Model.Propolises.ToList();
     var posts = Model.Posts.ToList();
 

@@ -38,6 +38,7 @@ public class EmailSender : IEmailSender
                 IsBodyHtml = true
             };
 
+            Console.WriteLine($"DEBUG: EmailSender - About to send email...");
             await client.SendMailAsync(mailMessage);
             Console.WriteLine($"DEBUG: EmailSender - Email sent successfully to: {email}");
         }

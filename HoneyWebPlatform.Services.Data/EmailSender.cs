@@ -27,7 +27,9 @@ public class EmailSender : IEmailSender
             {
                 EnableSsl = true,
                 UseDefaultCredentials = false,
-                Credentials = new NetworkCredential(_emailSettings.SmtpUsername, _emailSettings.SmtpPassword)
+                Credentials = new NetworkCredential(_emailSettings.SmtpUsername, _emailSettings.SmtpPassword),
+                DeliveryMethod = SmtpDeliveryMethod.Network,
+                Timeout = 30000 // 30 seconds timeout
             };
 
             var mailMessage = new MailMessage(from: _emailSettings.SmtpUsername,
@@ -39,8 +41,19 @@ public class EmailSender : IEmailSender
             };
 
             Console.WriteLine($"DEBUG: EmailSender - About to send email...");
-            await client.SendMailAsync(mailMessage);
-            Console.WriteLine($"DEBUG: EmailSender - Email sent successfully to: {email}");
+            Console.WriteLine($"DEBUG: EmailSender - From: {_emailSettings.SmtpUsername}, To: {email}, Subject: {subject}");
+            
+            try
+            {
+                await client.SendMailAsync(mailMessage);
+                Console.WriteLine($"DEBUG: EmailSender - Email sent successfully to: {email}");
+            }
+            catch (Exception smtpEx)
+            {
+                Console.WriteLine($"DEBUG: EmailSender - SMTP Error: {smtpEx.Message}");
+                Console.WriteLine($"DEBUG: EmailSender - SMTP Error Type: {smtpEx.GetType().Name}");
+                throw;
+            }
         }
         catch (Exception ex)
         {

@@ -50,14 +50,28 @@
 
         public async Task<string> CreateAndReturnIdAsync(HoneyFormModel formModel, string beekeeperId)
         {
-            Honey newHoney = AutoMapperConfig.MapperInstance.Map<Honey>(formModel);
-            newHoney.BeekeeperId = Guid.Parse(beekeeperId);
-            newHoney.ImageUrl = formModel.HoneyPicturePath; // Set the image URL manually
+            try
+            {
+                Honey newHoney = AutoMapperConfig.MapperInstance.Map<Honey>(formModel);
+                newHoney.BeekeeperId = Guid.Parse(beekeeperId);
+                newHoney.ImageUrl = formModel.HoneyPicturePath; // Set the image URL manually
+                newHoney.CreatedOn = DateTime.UtcNow; // Ensure CreatedOn is set
+                newHoney.IsActive = true; // Ensure IsActive is set
 
-            await dbContext.Honeys.AddAsync(newHoney);
-            await dbContext.SaveChangesAsync();
+                Console.WriteLine($"Creating honey: Title={newHoney.Title}, CategoryId={newHoney.CategoryId}, BeekeeperId={newHoney.BeekeeperId}");
 
-            return newHoney.Id.ToString();
+                await dbContext.Honeys.AddAsync(newHoney);
+                await dbContext.SaveChangesAsync();
+
+                Console.WriteLine($"Honey created successfully with ID: {newHoney.Id}");
+                return newHoney.Id.ToString();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error creating honey: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                throw;
+            }
         }
 
         public async Task<AllHoneysFilteredAndPagedServiceModel> AllAsync(AllHoneysQueryModel queryModel)

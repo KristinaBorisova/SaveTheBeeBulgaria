@@ -122,6 +122,9 @@
                 string? beekeeperId =
                     await beekeeperService.GetBeekeeperIdByUserIdAsync(User.GetId()!);
 
+                Console.WriteLine($"BeekeeperId: {beekeeperId}");
+                Console.WriteLine($"Model data: Title={model.Title}, CategoryId={model.CategoryId}, Price={model.Price}");
+
                 // Picture saving logic - we already validated this exists above
                 // Ensure the uploads directory exists
                 var uploadsFolder = Path.Combine(webHostEnvironment.WebRootPath, "uploads", "HoneyPictures");
@@ -150,8 +153,11 @@
 
                 return RedirectToAction("Details", "Honey", new { id = honeyId });
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Console.WriteLine($"Error in HoneyController.Add: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                
                 ModelState.AddModelError(string.Empty, "Неочакван проблем стана докато опитвахме да добавим Вашия мед! Моля опитайте пак след малко или се свържете с администратор!");
                 model.Categories = await categoryService.AllCategoriesAsync();
 

@@ -8,12 +8,12 @@ using System.Text.Json;
 
 namespace HoneyWebPlatform.Services.Data
 {
-    public class ResendEmailService : IOrderEmailService
+    public class ResendEmailProvider : IOrderEmailService
     {
         private readonly HttpClient _httpClient;
         private readonly string _apiKey;
 
-        public ResendEmailService(HttpClient httpClient, IConfiguration configuration)
+        public ResendEmailProvider(HttpClient httpClient, IConfiguration configuration)
         {
             _httpClient = httpClient;
             _apiKey = configuration["Resend:ApiKey"] ?? Environment.GetEnvironmentVariable("RESEND_API_KEY") ?? "";

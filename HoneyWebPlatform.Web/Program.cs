@@ -163,11 +163,9 @@ using static Common.GeneralApplicationConstants;
             // Configure email services
             builder.Services.AddTransient<IEmailSender, EmailSender>();
             
-            // Configure HttpClient for Resend
-            builder.Services.AddHttpClient<ResendEmailService>();
-            
-            // Use Resend for order emails
-            builder.Services.AddTransient<IOrderEmailService, ResendEmailService>();
+            // Configure HttpClient for Resend and register ResendEmailProvider
+            builder.Services.AddHttpClient<ResendEmailProvider>();
+            builder.Services.AddTransient<IOrderEmailService, ResendEmailProvider>();
 
             // Add health checks
             builder.Services.AddHealthChecks()

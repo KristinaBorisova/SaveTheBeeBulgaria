@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Page</title>
+</head>
+<body>
+    <h1>Debug Page - No Reloading Issues</h1>
+    <p>This page should load without any reloading issues.</p>
+    
+    <script>
+        console.log('Debug page loaded at:', new Date().toISOString());
+        
+        // Track any potential reloading
+        let reloadCount = 0;
+        window.addEventListener('beforeunload', function() {
+            reloadCount++;
+            console.log('Page is about to reload. Count:', reloadCount);
+        });
+        
+        // Track any location changes
+        let originalLocation = window.location.href;
+        setInterval(function() {
+            if (window.location.href !== originalLocation) {
+                console.log('Location changed from', originalLocation, 'to', window.location.href);
+                originalLocation = window.location.href;
+            }
+        }, 1000);
+        
+        // Track any JavaScript errors
+        window.addEventListener('error', function(e) {
+            console.error('JavaScript error:', e.error, e.message, e.filename, e.lineno);
+        });
+        
+        console.log('Debug page initialized successfully');
+    </script>
+</body>
+</html>

@@ -405,6 +405,36 @@
 @section Scripts
 {
     <script>
+        // Debug: Track page loading and potential reloading issues
+        console.log('Index page loaded at:', new Date().toISOString());
+        console.log('Current URL:', window.location.href);
+        
+        // Track any potential reloading
+        let reloadCount = 0;
+        window.addEventListener('beforeunload', function() {
+            reloadCount++;
+            console.log('Page is about to reload. Count:', reloadCount);
+        });
+        
+        // Track any location changes
+        let originalLocation = window.location.href;
+        setInterval(function() {
+            if (window.location.href !== originalLocation) {
+                console.log('Location changed from', originalLocation, 'to', window.location.href);
+                originalLocation = window.location.href;
+            }
+        }, 1000);
+        
+        // Track any JavaScript errors
+        window.addEventListener('error', function(e) {
+            console.error('JavaScript error:', e.error, e.message, e.filename, e.lineno);
+        });
+        
+        // Track any unhandled promise rejections
+        window.addEventListener('unhandledrejection', function(e) {
+            console.error('Unhandled promise rejection:', e.reason);
+        });
+        
         function goToBeekeeperProfile() {
             @if (!string.IsNullOrEmpty(Model.IvayloBorisovBeekeeperId))
             {
@@ -419,5 +449,7 @@
                 </text>
             }
         }
+        
+        console.log('Index page JavaScript initialized successfully');
     </script>
 }

@@ -155,7 +155,7 @@ namespace HoneyWebPlatform.Web.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
+        // Temporarily removed [ValidateAntiForgeryToken] to test if it's causing the reloading issue
         public async Task<IActionResult> PlaceOrderFromHomepage(OrderFormViewModel model)
         {
             try

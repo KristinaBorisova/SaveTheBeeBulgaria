@@ -8,5 +8,11 @@
     "startCommand": "dotnet HoneyWebPlatform.Web.dll",
     "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 10
-  }
+  },
+  "volumes": [
+    {
+      "name": "uploads",
+      "mountPath": "/app/wwwroot/uploads"
+    }
+  ]
 }

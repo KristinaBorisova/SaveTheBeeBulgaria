@@ -218,6 +218,25 @@ using static Common.GeneralApplicationConstants;
 
             WebApplication app = builder.Build();
 
+            // Ensure upload directories exist for persistent storage
+            var uploadPaths = new[]
+            {
+                Path.Combine(app.Environment.WebRootPath, "uploads", "HoneyPictures"),
+                Path.Combine(app.Environment.WebRootPath, "uploads", "PropolisPictures"),
+                Path.Combine(app.Environment.WebRootPath, "uploads", "PostPictures"),
+                Path.Combine(app.Environment.WebRootPath, "uploads", "HivePictures"),
+                Path.Combine(app.Environment.WebRootPath, "uploads", "UsersProfilePictures")
+            };
+
+            foreach (var path in uploadPaths)
+            {
+                if (!Directory.Exists(path))
+                {
+                    Directory.CreateDirectory(path);
+                    Console.WriteLine($"Created upload directory: {path}");
+                }
+            }
+
             // Ensure database is created and migrated
             using (var scope = app.Services.CreateScope())
             {

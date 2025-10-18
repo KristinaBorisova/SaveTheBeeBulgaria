@@ -35,4 +35,12 @@ FROM base AS final
 WORKDIR /app
 
 COPY --from=build /app/publish .
+
+# Create upload directories for persistent storage
+RUN mkdir -p /app/wwwroot/uploads/HoneyPictures
+RUN mkdir -p /app/wwwroot/uploads/PropolisPictures
+RUN mkdir -p /app/wwwroot/uploads/PostPictures
+RUN mkdir -p /app/wwwroot/uploads/HivePictures
+RUN mkdir -p /app/wwwroot/uploads/UsersProfilePictures
+
 ENTRYPOINT ["dotnet", "HoneyWebPlatform.Web.dll"]

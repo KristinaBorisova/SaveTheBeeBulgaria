@@ -146,8 +146,8 @@ using static Common.GeneralApplicationConstants;
             builder.Services.AddResponseCaching();
 
             // Configure Data Protection for Railway deployment
+            // Use simple configuration that works with .NET 6.0
             builder.Services.AddDataProtection()
-                .PersistKeysToFileSystem(new DirectoryInfo("/app/data-protection-keys"))
                 .SetApplicationName("HoneyWebPlatform")
                 .SetDefaultKeyLifetime(TimeSpan.FromDays(90));
 
@@ -227,8 +227,7 @@ using static Common.GeneralApplicationConstants;
             Path.Combine(app.Environment.WebRootPath, "uploads", "PropolisPictures"),
             Path.Combine(app.Environment.WebRootPath, "uploads", "PostPictures"),
             Path.Combine(app.Environment.WebRootPath, "uploads", "HivePictures"),
-            Path.Combine(app.Environment.WebRootPath, "uploads", "UsersProfilePictures"),
-            "/app/data-protection-keys" // Data protection keys directory
+            Path.Combine(app.Environment.WebRootPath, "uploads", "UsersProfilePictures")
         };
 
             foreach (var path in uploadPaths)

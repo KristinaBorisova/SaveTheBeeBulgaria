@@ -1,6 +1,4 @@
-﻿using Microsoft.IdentityModel.Protocols.OpenIdConnect;
-
-namespace HoneyWebPlatform.Services.Data
+﻿namespace HoneyWebPlatform.Services.Data
 {
     using System;
     using System.Linq;

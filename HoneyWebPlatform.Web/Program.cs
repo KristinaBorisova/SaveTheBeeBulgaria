@@ -146,9 +146,8 @@ using static Common.GeneralApplicationConstants;
             builder.Services.AddResponseCaching();
 
             // Configure Data Protection for Railway deployment
-            // Use /tmp directory for key persistence (survives container restarts)
-            builder.Services.AddDataProtection()
-                .PersistKeysToFileSystem(new DirectoryInfo("/tmp/dataprotection-keys"));
+            // Use simple configuration that works with .NET 6.0
+            builder.Services.AddDataProtection();
 
             builder.Services.AddSignalR();
 

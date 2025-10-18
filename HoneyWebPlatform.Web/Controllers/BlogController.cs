@@ -140,6 +140,11 @@
 
                     input.PostPicturePath = "/uploads/PostPictures/" + uniqueFileName;
                 }
+                else
+                {
+                    // Set default image path if no picture is uploaded
+                    input.PostPicturePath = "/img/icon/post-placeholder.jpg";
+                }
 
                 var postId = await postService.CreateAndReturnIdAsync(input, authorId!);
 

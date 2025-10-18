@@ -1,6 +1,7 @@
 namespace HoneyWebPlatform.Web
 {
     using System.Reflection;
+    using System.IO;
 
     using Microsoft.AspNetCore.Identity;
     using Microsoft.AspNetCore.Mvc;
@@ -145,7 +146,9 @@ using static Common.GeneralApplicationConstants;
             builder.Services.AddResponseCaching();
 
             // Configure Data Protection to prevent antiforgery token issues
-            builder.Services.AddDataProtection();
+            // Use a simple configuration that works with .NET 6.0
+            builder.Services.AddDataProtection()
+                .PersistKeysToFileSystem(new DirectoryInfo("/app/DataProtection-Keys"));
 
             builder.Services.AddSignalR();
 

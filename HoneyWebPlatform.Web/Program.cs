@@ -146,10 +146,8 @@ using static Common.GeneralApplicationConstants;
             builder.Services.AddResponseCaching();
 
             // Configure Data Protection for Railway deployment
-            // Use simple configuration that works with .NET 6.0
-            builder.Services.AddDataProtection()
-                .SetApplicationName("HoneyWebPlatform")
-                .SetDefaultKeyLifetime(TimeSpan.FromDays(90));
+            // Use basic configuration that works with .NET 6.0
+            builder.Services.AddDataProtection();
 
             builder.Services.AddSignalR();
 

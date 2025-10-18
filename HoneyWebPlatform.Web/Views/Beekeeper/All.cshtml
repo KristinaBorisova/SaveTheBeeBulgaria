@@ -1,0 +1,414 @@
+@model AllBeekeepersViewModel
+@{
+    ViewData["Title"] = "Виж всички пчелари";
+}
+
+<style>
+    .beekeepers-hero {
+        background: linear-gradient(135deg, #F59F0A 0%, #f39c12 100%);
+        color: white;
+        padding: 4rem 0;
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+
+    .beekeepers-hero h1 {
+        font-size: 3rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .beekeepers-hero p {
+        font-size: 1.2rem;
+        opacity: 0.9;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .beekeepers-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 2rem;
+        padding: 0 1rem;
+        margin-bottom: 3rem;
+    }
+
+    .beekeeper-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        transition: all 0.3s ease;
+        border: 1px solid #e9ecef;
+        position: relative;
+    }
+
+    .beekeeper-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    }
+
+    .beekeeper-card-header {
+        background: linear-gradient(135deg, #fff8f0 0%, #fef3e0 100%);
+        padding: 2rem;
+        text-align: center;
+        position: relative;
+    }
+
+    .beekeeper-avatar {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid white;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        margin-bottom: 1rem;
+    }
+
+    .beekeeper-name {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+    }
+
+    .beekeeper-location {
+        color: #F59F0A;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .beekeeper-card-body {
+        padding: 2rem;
+    }
+
+    .beekeeper-bio {
+        color: #495057;
+        line-height: 1.6;
+        margin-bottom: 1.5rem;
+        font-size: 0.95rem;
+    }
+
+    .beekeeper-stats {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .stat-item {
+        text-align: center;
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 12px;
+        border: 1px solid #e9ecef;
+    }
+
+    .stat-number {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #F59F0A;
+        display: block;
+    }
+
+    .stat-label {
+        font-size: 0.85rem;
+        color: #6c757d;
+        margin-top: 0.25rem;
+    }
+
+    .beekeeper-rating {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .stars {
+        color: #ffc107;
+        font-size: 1.2rem;
+    }
+
+    .rating-text {
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+
+    .beekeeper-actions {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+    }
+
+    .btn-beekeeper {
+        flex: 1;
+        padding: 0.75rem 1rem;
+        border-radius: 12px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        text-align: center;
+        font-size: 0.9rem;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-primary-beekeeper {
+        background: linear-gradient(135deg, #F59F0A 0%, #f39c12 100%);
+        color: white;
+        box-shadow: 0 4px 15px rgba(245, 159, 10, 0.3);
+    }
+
+    .btn-primary-beekeeper:hover {
+        background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(245, 159, 10, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+
+    .btn-secondary-beekeeper {
+        background: white;
+        color: #F59F0A;
+        border: 2px solid #F59F0A;
+    }
+
+    .btn-secondary-beekeeper:hover {
+        background: #F59F0A;
+        color: white;
+        transform: translateY(-2px);
+        text-decoration: none;
+    }
+
+    .joined-date {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        background: rgba(255, 255, 255, 0.9);
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        color: #6c757d;
+        font-weight: 500;
+    }
+
+    .no-beekeepers {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: #6c757d;
+    }
+
+    .no-beekeepers i {
+        font-size: 4rem;
+        color: #F59F0A;
+        margin-bottom: 1rem;
+    }
+
+    .no-beekeepers h3 {
+        margin-bottom: 1rem;
+        color: #2c3e50;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1200px) {
+        .beekeepers-grid {
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 1.5rem;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .beekeepers-hero {
+            padding: 3rem 0;
+        }
+
+        .beekeepers-hero h1 {
+            font-size: 2.5rem;
+        }
+
+        .beekeepers-hero p {
+            font-size: 1.1rem;
+        }
+
+        .beekeepers-grid {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+            padding: 0 0.5rem;
+        }
+
+        .beekeeper-card-header {
+            padding: 1.5rem;
+        }
+
+        .beekeeper-avatar {
+            width: 100px;
+            height: 100px;
+        }
+
+        .beekeeper-name {
+            font-size: 1.3rem;
+        }
+
+        .beekeeper-card-body {
+            padding: 1.5rem;
+        }
+
+        .beekeeper-stats {
+            grid-template-columns: 1fr;
+            gap: 0.75rem;
+        }
+
+        .beekeeper-actions {
+            flex-direction: column;
+        }
+
+        .btn-beekeeper {
+            flex: none;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .beekeepers-hero h1 {
+            font-size: 2rem;
+        }
+
+        .beekeeper-card-header {
+            padding: 1rem;
+        }
+
+        .beekeeper-card-body {
+            padding: 1rem;
+        }
+
+        .joined-date {
+            position: static;
+            margin-top: 1rem;
+            display: inline-block;
+        }
+    }
+
+    /* Loading Animation */
+    .beekeeper-card {
+        animation: fadeInUp 0.6s ease-out;
+    }
+
+    .beekeeper-card:nth-child(1) { animation-delay: 0.1s; }
+    .beekeeper-card:nth-child(2) { animation-delay: 0.2s; }
+    .beekeeper-card:nth-child(3) { animation-delay: 0.3s; }
+    .beekeeper-card:nth-child(4) { animation-delay: 0.4s; }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
+<div class="beekeepers-hero">
+    <div class="container">
+        <h1>Нашите Пчелари</h1>
+        <p>Запознайте се с опитните български пчелари, които създават най-качествения мед в страната</p>
+    </div>
+</div>
+
+<div class="container">
+    @if (Model.Beekeepers.Any())
+    {
+        <div class="beekeepers-grid">
+            @foreach (var beekeeper in Model.Beekeepers)
+            {
+                <div class="beekeeper-card">
+                    <div class="beekeeper-card-header">
+                        <div class="joined-date">
+                            <i class="fas fa-calendar-alt"></i>
+                            @beekeeper.JoinedDate.ToString("MMM yyyy")
+                        </div>
+                        
+                        @if (!string.IsNullOrEmpty(beekeeper.HivePicturePath))
+                        {
+                            <img src="@beekeeper.HivePicturePath" alt="@beekeeper.FullName" class="beekeeper-avatar">
+                        }
+                        else
+                        {
+                            <div class="beekeeper-avatar" style="background: linear-gradient(135deg, #F59F0A 0%, #f39c12 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem; font-weight: 700;">
+                                @beekeeper.FullName.Substring(0, 1)
+                            </div>
+                        }
+                        
+                        <h3 class="beekeeper-name">@beekeeper.FullName</h3>
+                        <div class="beekeeper-location">
+                            <i class="fas fa-map-marker-alt"></i>
+                            @beekeeper.Location
+                        </div>
+                    </div>
+                    
+                    <div class="beekeeper-card-body">
+                        <p class="beekeeper-bio">@beekeeper.Bio</p>
+                        
+                        <div class="beekeeper-stats">
+                            <div class="stat-item">
+                                <span class="stat-number">@beekeeper.HoneyCount</span>
+                                <div class="stat-label">Медове</div>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number">@beekeeper.PropolisCount</span>
+                                <div class="stat-label">Прополиси</div>
+                            </div>
+                        </div>
+                        
+                        <div class="beekeeper-rating">
+                            <div class="stars">
+                                @for (int i = 0; i < 5; i++)
+                                {
+                                    if (i < Math.Floor(beekeeper.AverageRating))
+                                    {
+                                        <i class="fas fa-star"></i>
+                                    }
+                                    else if (i < beekeeper.AverageRating)
+                                    {
+                                        <i class="fas fa-star-half-alt"></i>
+                                    }
+                                    else
+                                    {
+                                        <i class="far fa-star"></i>
+                                    }
+                                }
+                            </div>
+                            <span class="rating-text">@beekeeper.AverageRating.ToString("F1") рейтинг</span>
+                        </div>
+                        
+                        <div class="beekeeper-actions">
+                            <a asp-controller="Beekeeper" asp-action="Profile" asp-route-id="@beekeeper.Id" class="btn-beekeeper btn-primary-beekeeper">
+                                <i class="fas fa-user"></i> Профил
+                            </a>
+                            <a asp-controller="Honey" asp-action="All" asp-route-beekeeperId="@beekeeper.Id" class="btn-beekeeper btn-secondary-beekeeper">
+                                <i class="fas fa-shopping-cart"></i> Продукти
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="no-beekeepers">
+            <i class="fas fa-users"></i>
+            <h3>Все още няма регистрирани пчелари</h3>
+            <p>Бъдете първият, който се присъединява към нашата платформа!</p>
+            <a asp-controller="Beekeeper" asp-action="Become" class="btn-beekeeper btn-primary-beekeeper" style="display: inline-block; margin-top: 1rem;">
+                <i class="fas fa-plus"></i> Стани Пчелар
+            </a>
+        </div>
+    }
+</div>

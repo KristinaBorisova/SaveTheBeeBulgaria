@@ -134,5 +134,32 @@
                 .Include(b => b.User)
                 .FirstOrDefaultAsync(b => b.Id.ToString() == beekeeperId);
         }
+
+        public async Task<IEnumerable<BeekeeperCardViewModel>> GetAllBeekeepersAsync()
+        {
+            var beekeepers = await dbContext
+                .Beekeepers
+                .Include(b => b.User)
+                .Include(b => b.Honeys)
+                .Include(b => b.Propolises)
+                .Select(b => new BeekeeperCardViewModel
+                {
+                    Id = b.Id.ToString(),
+                    FullName = $"{b.User.FirstName} {b.User.LastName}".Trim(),
+                    Email = b.User.Email ?? "",
+                    PhoneNumber = b.PhoneNumber,
+                    HivePicturePath = b.HivePicturePath,
+                    HoneyCount = b.Honeys.Count(),
+                    PropolisCount = b.Propolises.Count(),
+                    JoinedDate = b.User.CreatedOn,
+                    Location = "България", // Default location, can be enhanced later
+                    Bio = $"Опитен пчелар с {b.Honeys.Count()} меда и {b.Propolises.Count()} прополиса",
+                    AverageRating = 4.5, // Default rating, can be enhanced later
+                    TotalOrders = 0 // Can be enhanced with order tracking
+                })
+                .ToListAsync();
+
+            return beekeepers;
+        }
     }
 }

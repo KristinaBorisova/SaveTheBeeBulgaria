@@ -73,6 +73,7 @@
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Add(HoneyFormModel model)
         {
             bool isBeekeeper =

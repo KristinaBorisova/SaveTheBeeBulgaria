@@ -9,7 +9,7 @@
 
 @inject IBeekeeperService BeekeeperService
 @{
-    bool isUserAgent = await BeekeeperService.BeekeeperExistsByUserIdAsync(User.GetId()!);
+    bool isUserBeekeeper = await BeekeeperService.BeekeeperExistsByUserIdAsync(User.GetId()!);
     string userFullName = await UserService.GetFullNameByEmailAsync(User.Identity?.Name!);
 }
 
@@ -33,7 +33,7 @@
             <a class="btn custom-login-btn d-none d-sm-block" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">Здравей, @userFullName</a>
         </li>
         
-        @if (!isUserAgent)
+        @if (!isUserBeekeeper)
         {
             <li class="menu_btn">
                 <a class="btn custom-login-btn d-none d-sm-block" style="margin-right: 5px;" asp-area="" asp-controller="Beekeeper" asp-action="Become">Стани Пчелар</a>

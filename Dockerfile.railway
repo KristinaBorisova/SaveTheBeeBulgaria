@@ -42,5 +42,6 @@ RUN mkdir -p /app/wwwroot/uploads/PropolisPictures
 RUN mkdir -p /app/wwwroot/uploads/PostPictures
 RUN mkdir -p /app/wwwroot/uploads/HivePictures
 RUN mkdir -p /app/wwwroot/uploads/UsersProfilePictures
+RUN mkdir -p /app/data-protection-keys
 
 ENTRYPOINT ["dotnet", "HoneyWebPlatform.Web.dll"]

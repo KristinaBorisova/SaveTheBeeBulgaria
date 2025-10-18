@@ -10,6 +10,7 @@
         {
             Id = Guid.NewGuid();
             IsPromoted = false; //default value
+            IsActive = true; //default value
         }
 
         [Key]

@@ -146,8 +146,10 @@ using static Common.GeneralApplicationConstants;
             builder.Services.AddResponseCaching();
 
             // Configure Data Protection for Railway deployment
-            // Use simple configuration that works with .NET 6.0
-            builder.Services.AddDataProtection();
+            builder.Services.AddDataProtection()
+                .PersistKeysToFileSystem(new DirectoryInfo("/app/data-protection-keys"))
+                .SetApplicationName("HoneyWebPlatform")
+                .SetDefaultKeyLifetime(TimeSpan.FromDays(90));
 
             builder.Services.AddSignalR();
 
@@ -218,15 +220,16 @@ using static Common.GeneralApplicationConstants;
 
             WebApplication app = builder.Build();
 
-            // Ensure upload directories exist for persistent storage
-            var uploadPaths = new[]
-            {
-                Path.Combine(app.Environment.WebRootPath, "uploads", "HoneyPictures"),
-                Path.Combine(app.Environment.WebRootPath, "uploads", "PropolisPictures"),
-                Path.Combine(app.Environment.WebRootPath, "uploads", "PostPictures"),
-                Path.Combine(app.Environment.WebRootPath, "uploads", "HivePictures"),
-                Path.Combine(app.Environment.WebRootPath, "uploads", "UsersProfilePictures")
-            };
+        // Ensure upload directories exist for persistent storage
+        var uploadPaths = new[]
+        {
+            Path.Combine(app.Environment.WebRootPath, "uploads", "HoneyPictures"),
+            Path.Combine(app.Environment.WebRootPath, "uploads", "PropolisPictures"),
+            Path.Combine(app.Environment.WebRootPath, "uploads", "PostPictures"),
+            Path.Combine(app.Environment.WebRootPath, "uploads", "HivePictures"),
+            Path.Combine(app.Environment.WebRootPath, "uploads", "UsersProfilePictures"),
+            "/app/data-protection-keys" // Data protection keys directory
+        };
 
             foreach (var path in uploadPaths)
             {

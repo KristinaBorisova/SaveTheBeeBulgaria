@@ -123,6 +123,13 @@
                 if (input.PostPicture != null && input.PostPicture.Length > 0)
                 {
                     var uploadsFolder = Path.Combine(webHostEnvironment.WebRootPath, "uploads", "PostPictures");
+                    
+                    // Ensure the uploads directory exists
+                    if (!Directory.Exists(uploadsFolder))
+                    {
+                        Directory.CreateDirectory(uploadsFolder);
+                    }
+                    
                     var uniqueFileName = Guid.NewGuid().ToString() + "_" + input.PostPicture.FileName;
                     var filePath = Path.Combine(uploadsFolder, uniqueFileName);
 

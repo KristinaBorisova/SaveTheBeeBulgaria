@@ -13,6 +13,8 @@
     <partial name="_ValidationScriptsPartial" />
 
     <script>
+        let isSubmitting = false; // Prevent multiple submissions
+        
         function updateFileName(input) {
             console.log('updateFileName called for post');
             console.log('input:', input);
@@ -58,9 +60,16 @@
             }
             
             // Add form validation feedback
-            var form = document.querySelector('form[enctype="multipart/form-data"]');
+            var form = document.getElementById('post-form');
             if (form) {
                 form.addEventListener('submit', function(e) {
+                    // Prevent multiple submissions
+                    if (isSubmitting) {
+                        e.preventDefault();
+                        console.log('Form submission prevented - already submitting');
+                        return false;
+                    }
+                    
                     var errors = [];
                     
                     // Check required text fields
@@ -89,6 +98,16 @@
                         alert('Моля поправете следните грешки:\n\n' + errors.join('\n'));
                         return false;
                     }
+                    
+                    // Mark as submitting and disable submit button
+                    isSubmitting = true;
+                    var submitButton = form.querySelector('input[type="submit"]');
+                    if (submitButton) {
+                        submitButton.disabled = true;
+                        submitButton.value = 'Запазване...';
+                    }
+                    
+                    console.log('Form submitting...');
                 });
             }
         });

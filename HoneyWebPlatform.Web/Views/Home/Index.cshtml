@@ -408,6 +408,8 @@
         // Debug: Track page loading and potential reloading issues
         console.log('Index page loaded at:', new Date().toISOString());
         console.log('Current URL:', window.location.href);
+        console.log('User Agent:', navigator.userAgent);
+        console.log('Document ready state:', document.readyState);
         
         // Track any potential reloading
         let reloadCount = 0;
@@ -434,6 +436,18 @@
         window.addEventListener('unhandledrejection', function(e) {
             console.error('Unhandled promise rejection:', e.reason);
         });
+        
+        // Track form submissions
+        document.addEventListener('submit', function(e) {
+            console.log('Form submitted:', e.target);
+        });
+        
+        // Track any fetch requests
+        const originalFetch = window.fetch;
+        window.fetch = function(...args) {
+            console.log('Fetch request:', args[0]);
+            return originalFetch.apply(this, args);
+        };
         
         function goToBeekeeperProfile() {
             @if (!string.IsNullOrEmpty(Model.IvayloBorisovBeekeeperId))

@@ -1,7 +1,6 @@
 namespace HoneyWebPlatform.Web
 {
     using System.Reflection;
-    using System.IO;
 
     using Microsoft.AspNetCore.Identity;
     using Microsoft.AspNetCore.Mvc;
@@ -147,8 +146,7 @@ using static Common.GeneralApplicationConstants;
 
             // Configure Data Protection to prevent antiforgery token issues
             // Use a simple configuration that works with .NET 6.0
-            builder.Services.AddDataProtection()
-                .PersistKeysToFileSystem(new DirectoryInfo("/app/DataProtection-Keys"));
+            builder.Services.AddDataProtection();
 
             builder.Services.AddSignalR();
 
@@ -163,7 +161,8 @@ using static Common.GeneralApplicationConstants;
                 .AddMvcOptions(options =>
                 {
                     options.ModelBinderProviders.Insert(0, new DecimalModelBinderProvider());
-                    options.Filters.Add<AutoValidateAntiforgeryTokenAttribute>();
+                    // Temporarily disabled AutoValidateAntiforgeryTokenAttribute to test if it's causing reloading issues
+                    // options.Filters.Add<AutoValidateAntiforgeryTokenAttribute>();
                 });
 
             // Configure email services

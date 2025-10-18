@@ -35,8 +35,4 @@ FROM base AS final
 WORKDIR /app
 
 COPY --from=build /app/publish .
-
-# Create DataProtection-Keys directory for persistent antiforgery tokens
-RUN mkdir -p /app/DataProtection-Keys && chmod 755 /app/DataProtection-Keys
-
 ENTRYPOINT ["dotnet", "HoneyWebPlatform.Web.dll"]

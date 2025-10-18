@@ -91,10 +91,6 @@ namespace HoneyWebPlatform.Web.Controllers
             return View();
         }
 
-        public IActionResult Debug()
-        {
-            return View();
-        }
 
         public IActionResult Unsubscribe()
         {

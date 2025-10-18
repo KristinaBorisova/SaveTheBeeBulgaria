@@ -24,9 +24,16 @@ namespace HoneyWebPlatform.Services.Data
 
         public async Task SendOrderConfirmationEmailAsync(string customerEmail, Order order, string customerName)
         {
-            try
+            const int maxRetries = 2;
+            int retryCount = 0;
+            bool emailSent = false;
+
+            while (retryCount < maxRetries && !emailSent)
             {
-                Console.WriteLine($"DEBUG: ResendEmailProvider - Attempting to send order confirmation email to {customerEmail}");
+                try
+                {
+                    retryCount++;
+                    Console.WriteLine($"DEBUG: ResendEmailProvider - Attempting to send order confirmation email to {customerEmail} (Attempt {retryCount}/{maxRetries})");
                 
                 var subject = "Потвърждение за поръчка - Save The Bee Bulgaria";
                 
@@ -109,19 +116,38 @@ namespace HoneyWebPlatform.Services.Data
                 var response = await _httpClient.PostAsync("emails", content);
                 var responseContent = await response.Content.ReadAsStringAsync();
                 
-                if (response.IsSuccessStatusCode)
-                {
-                    Console.WriteLine($"DEBUG: ResendEmailProvider - Order confirmation email sent successfully to: {customerEmail}");
+                    if (response.IsSuccessStatusCode)
+                    {
+                        Console.WriteLine($"DEBUG: ResendEmailProvider - Order confirmation email sent successfully to: {customerEmail} on attempt {retryCount}");
+                        emailSent = true;
+                    }
+                    else
+                    {
+                        Console.WriteLine($"DEBUG: ResendEmailProvider - Failed to send order confirmation email on attempt {retryCount}. Status: {response.StatusCode}, Response: {responseContent}");
+                        
+                        if (retryCount < maxRetries)
+                        {
+                            Console.WriteLine($"DEBUG: ResendEmailProvider - Retrying customer email in 2 seconds...");
+                            await Task.Delay(2000); // Wait 2 seconds before retry
+                        }
+                    }
                 }
-                else
+                catch (Exception ex)
                 {
-                    Console.WriteLine($"DEBUG: ResendEmailProvider - Failed to send email. Status: {response.StatusCode}, Response: {responseContent}");
+                    Console.WriteLine($"DEBUG: ResendEmailProvider - Failed to send order confirmation email on attempt {retryCount}: {ex.Message}");
+                    Console.WriteLine($"DEBUG: ResendEmailProvider - Error details: {ex.StackTrace}");
+                    
+                    if (retryCount < maxRetries)
+                    {
+                        Console.WriteLine($"DEBUG: ResendEmailProvider - Retrying customer email in 2 seconds due to exception...");
+                        await Task.Delay(2000); // Wait 2 seconds before retry
+                    }
                 }
             }
-            catch (Exception ex)
+
+            if (!emailSent)
             {
-                Console.WriteLine($"DEBUG: ResendEmailProvider - Failed to send order confirmation email: {ex.Message}");
-                Console.WriteLine($"DEBUG: ResendEmailProvider - Error details: {ex.StackTrace}");
+                Console.WriteLine($"DEBUG: ResendEmailProvider - FAILED to send order confirmation email after {maxRetries} attempts. Order #{order.Id} - Customer {customerEmail} will not receive confirmation email.");
                 // Don't throw - let the order creation succeed even if email fails
             }
         }
@@ -200,13 +226,20 @@ Save The Bee Bulgaria
 
         public async Task SendAdminOrderNotificationAsync(Order order, string customerName)
         {
-            try
+            const int maxRetries = 2;
+            int retryCount = 0;
+            bool emailSent = false;
+
+            while (retryCount < maxRetries && !emailSent)
             {
-                Console.WriteLine($"DEBUG: ResendEmailProvider - Attempting to send admin notification email");
-                
-                var subject = $"Нова поръчка #{order.Id} - Save The Bee Bulgaria Admin";
-                
-                var emailBody = $@"
+                try
+                {
+                    retryCount++;
+                    Console.WriteLine($"DEBUG: ResendEmailProvider - Attempting to send admin notification email (Attempt {retryCount}/{maxRetries})");
+                    
+                    var subject = $"Нова поръчка #{order.Id} - Save The Bee Bulgaria Admin";
+                    
+                    var emailBody = $@"
 <!DOCTYPE html>
 <html>
 <head>
@@ -272,33 +305,52 @@ Save The Bee Bulgaria
 </body>
 </html>";
 
-                var emailData = new
-                {
-                    from = "Save The Bee Bulgaria <onboarding@resend.dev>",
-                    to = new[] { "savethebeebulgaria@gmail.com" },
-                    subject = subject,
-                    html = emailBody
-                };
+                    var emailData = new
+                    {
+                        from = "Save The Bee Bulgaria <onboarding@resend.dev>",
+                        to = new[] { "savethebeebulgaria@gmail.com" },
+                        subject = subject,
+                        html = emailBody
+                    };
 
-                var json = JsonSerializer.Serialize(emailData);
-                var content = new StringContent(json, Encoding.UTF8, "application/json");
+                    var json = JsonSerializer.Serialize(emailData);
+                    var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-                var response = await _httpClient.PostAsync("emails", content);
-                var responseContent = await response.Content.ReadAsStringAsync();
-                
-                if (response.IsSuccessStatusCode)
-                {
-                    Console.WriteLine($"DEBUG: ResendEmailProvider - Admin notification email sent successfully");
+                    var response = await _httpClient.PostAsync("emails", content);
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    
+                    if (response.IsSuccessStatusCode)
+                    {
+                        Console.WriteLine($"DEBUG: ResendEmailProvider - Admin notification email sent successfully on attempt {retryCount}");
+                        emailSent = true;
+                    }
+                    else
+                    {
+                        Console.WriteLine($"DEBUG: ResendEmailProvider - Failed to send admin notification email on attempt {retryCount}. Status: {response.StatusCode}, Response: {responseContent}");
+                        
+                        if (retryCount < maxRetries)
+                        {
+                            Console.WriteLine($"DEBUG: ResendEmailProvider - Retrying admin email in 2 seconds...");
+                            await Task.Delay(2000); // Wait 2 seconds before retry
+                        }
+                    }
                 }
-                else
+                catch (Exception ex)
                 {
-                    Console.WriteLine($"DEBUG: ResendEmailProvider - Failed to send admin notification email. Status: {response.StatusCode}, Response: {responseContent}");
+                    Console.WriteLine($"DEBUG: ResendEmailProvider - Failed to send admin notification email on attempt {retryCount}: {ex.Message}");
+                    Console.WriteLine($"DEBUG: ResendEmailProvider - Error details: {ex.StackTrace}");
+                    
+                    if (retryCount < maxRetries)
+                    {
+                        Console.WriteLine($"DEBUG: ResendEmailProvider - Retrying admin email in 2 seconds due to exception...");
+                        await Task.Delay(2000); // Wait 2 seconds before retry
+                    }
                 }
             }
-            catch (Exception ex)
+
+            if (!emailSent)
             {
-                Console.WriteLine($"DEBUG: ResendEmailProvider - Failed to send admin notification email: {ex.Message}");
-                Console.WriteLine($"DEBUG: ResendEmailProvider - Error details: {ex.StackTrace}");
+                Console.WriteLine($"DEBUG: ResendEmailProvider - FAILED to send admin notification email after {maxRetries} attempts. Order #{order.Id} - Admin will not be notified via email.");
                 // Don't throw - let the order creation succeed even if email fails
             }
         }

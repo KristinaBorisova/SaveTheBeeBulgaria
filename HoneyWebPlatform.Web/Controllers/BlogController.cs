@@ -99,6 +99,7 @@
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Add(PostFormModel input)
         {
             bool isUser = User.Identity.IsAuthenticated;

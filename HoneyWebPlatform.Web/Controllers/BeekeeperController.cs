@@ -40,6 +40,7 @@ using static Common.NotificationMessagesConstants;
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Become(BecomeBeekeeperFormModel model)
         {
             string? userId = User.GetId();

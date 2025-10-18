@@ -42,6 +42,8 @@ namespace HoneyWebPlatform.Web.Controllers
 
         public async Task<IActionResult> Index()
         {
+            // Debug: Log when Index is called
+            Console.WriteLine($"DEBUG: Index action called at {DateTime.Now}");
             
             if (this.User.IsInRole(AdminRoleName))
             {
@@ -158,6 +160,10 @@ namespace HoneyWebPlatform.Web.Controllers
         {
             try
             {
+                // Debug: Log when PlaceOrderFromHomepage is called
+                Console.WriteLine($"DEBUG: PlaceOrderFromHomepage called at {DateTime.Now}");
+                Console.WriteLine($"DEBUG: ModelState.IsValid: {ModelState.IsValid}");
+                
                 if (!ModelState.IsValid)
                 {
                     // Collect all validation errors for display

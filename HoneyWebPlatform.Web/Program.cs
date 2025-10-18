@@ -145,7 +145,17 @@ using static Common.GeneralApplicationConstants;
             builder.Services.AddResponseCaching();
 
             // Configure Data Protection to prevent antiforgery token issues
-            builder.Services.AddDataProtection();
+            if (builder.Environment.IsProduction())
+            {
+                // In production, use a more robust configuration
+                builder.Services.AddDataProtection()
+                    .SetApplicationName("HoneyWebPlatform");
+            }
+            else
+            {
+                // In development, use simple configuration
+                builder.Services.AddDataProtection();
+            }
 
             builder.Services.AddSignalR();
 

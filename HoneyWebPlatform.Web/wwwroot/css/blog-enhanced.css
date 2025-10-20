@@ -511,12 +511,19 @@
 .blog-enhanced .article-body {
     font-size: var(--font-size-lg);
     line-height: var(--line-height-relaxed);
-    color: var(--text-dark);
+    color: var(--text-dark) !important;
     background: var(--background-white);
     padding: var(--spacing-lg);
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-soft);
     margin: var(--spacing-lg) 0;
+}
+
+.blog-enhanced .article-body p,
+.blog-enhanced .article-body li,
+.blog-enhanced .article-body span,
+.blog-enhanced .article-body div {
+    color: var(--text-dark) !important;
 }
 
 .blog-enhanced .article-body h2 {

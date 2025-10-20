@@ -118,7 +118,7 @@
 
     <!-- Breadcrumb Navigation -->
     <nav class="breadcrumb-enhanced" aria-label="Breadcrumb">
-        <div class="container">
+    <div class="container">
             <div class="breadcrumb-content">
                 <a href="/">Начало</a>
                 <span class="breadcrumb-separator">></span>
@@ -139,7 +139,7 @@
                          itemprop="image"
                          width="800" 
                          height="400">
-                </div>
+    </div>
 
                 <div class="article-content">
                     <header class="article-header">
@@ -162,16 +162,16 @@
                             <div class="meta-item">
                                 <i class="fas fa-clock" aria-hidden="true"></i>
                                 <span>@readingTime мин. четене</span>
-                            </div>
+                        </div>
                             <div class="meta-item">
                                 <i class="fas fa-comments" aria-hidden="true"></i>
                                 <span>
-                                    @if (Model.Comments.Count(c => c.IsActive) == 1)
-                                    {
+                                        @if (Model.Comments.Count(c => c.IsActive) == 1)
+                                        {
                                         <span>1 коментар</span>
-                                    }
-                                    else
-                                    {
+                                        }
+                                        else
+                                        {
                                         <span>@Model.Comments.Count(c => c.IsActive) коментара</span>
                                     }
                                 </span>
@@ -291,7 +291,7 @@
                         <li><a href="#main-content">Основни теми</a></li>
                         <li><a href="#practical-tips">Практически съвети</a></li>
                         <li><a href="#conclusion">Заключение</a></li>
-                    </ul>
+                            </ul>
                 </div>
 
                 <!-- Related Posts -->
@@ -353,13 +353,13 @@
                     </div>
                 }
             </aside>
-        </div>
+                    </div>
 
         <!-- Comments Section -->
         <section class="comments-section">
             <div class="comments-header">
                 <h2>
-                    @if (Model.Comments.Count(c => c.IsActive) == 1)
+                        @if (Model.Comments.Count(c => c.IsActive) == 1)
                     {
                         <span>1 коментар</span>
                     }
@@ -382,58 +382,58 @@
                         {
                             <span>@comment.Author.FirstName.Substring(0, 1)@comment.Author.LastName.Substring(0, 1)</span>
                         }
-                    </div>
+                                        </div>
                     <div class="comment-content">
                         <div class="comment-author">
-                            @if (comment.Author.FirstName == "Guest" && comment.Author.LastName == "Guest")
-                            {
+                                                        @if (comment.Author.FirstName == "Guest" && comment.Author.LastName == "Guest")
+                                                        {
                                 <span>Анонимен Гост</span>
-                            }
-                            else
-                            {
+                                                        }
+                                                        else
+                                                        {
                                 <span>@comment.Author.FirstName @comment.Author.LastName</span>
-                            }
+                                                        }
                         </div>
                         <div class="comment-date">@comment.CreatedOn.ToString("dd.MM.yyyy HH:mm")</div>
                         <div class="comment-text">@comment.Content</div>
-                        
-                        @if (User.Identity.IsAuthenticated)
-                        {
-                            @if (User.IsAdmin() || await postService.IsCommentAuthorWithIdOwnerOfCommentWithIdAsync(comment.Id.ToString(), User.GetId()))
-                            {
+
+                                                    @if (User.Identity.IsAuthenticated)
+                                                    {
+                                                        @if (User.IsAdmin() || await postService.IsCommentAuthorWithIdOwnerOfCommentWithIdAsync(comment.Id.ToString(), User.GetId()))
+                                                        {
                                 <div class="comment-actions">
                                     <form asp-controller="Blog" asp-action="EditComment" method="get" style="display: inline;">
-                                        <input type="hidden" name="commentId" value="@comment.Id" />
+                                                                    <input type="hidden" name="commentId" value="@comment.Id" />
                                         <button type="submit" class="comment-action">Редактирай</button>
-                                    </form>
+                                                                </form>
                                     <form asp-controller="Blog" asp-action="DeleteComment" method="post" style="display: inline;" onsubmit="return confirm('Сигурни ли сте, че искате да изтриете коментара?');">
-                                        <input type="hidden" name="commentId" value="@comment.Id" />
+                                                                    <input type="hidden" name="commentId" value="@comment.Id" />
                                         <button type="submit" class="comment-action">Изтрий</button>
-                                    </form>
+                                                                </form>
+                                                            </div>
+                                                        }
+                                                    }
                                 </div>
-                            }
+                            </div>
                         }
-                    </div>
-                </div>
-            }
 
             <!-- Comment Form -->
             <div class="comment-form">
                 <h3>Сподели мнение</h3>
-                @if (User.Identity.IsAuthenticated)
-                {
+                        @if (User.Identity.IsAuthenticated)
+                        {
                     <form asp-controller="Blog" asp-action="AddComment" method="post">
-                        <input type="hidden" name="postId" value="@Model.Id" />
-                        <div class="form-group">
+                                                <input type="hidden" name="postId" value="@Model.Id" />
+                                    <div class="form-group">
                             <label for="content">Вашият коментар:</label>
                             <textarea name="content" id="content" placeholder="Споделете вашите мисли..." required></textarea>
-                        </div>
+                                    </div>
                         <button type="submit" class="btn-submit">Изпрати коментар</button>
-                    </form>
-                }
-                else
-                {
-                    <p style="margin-bottom: 1.5rem; color: var(--text-light);">
+                                </form>
+                        }
+                        else
+                        {
+                    <p style="margin-bottom: 1.5rem; color: var(--text-dark);">
                         За да коментирате, моля, влезте в своя профил или се регистрирайте. 
                         Ако не желаете да се регистрирате, можете да оставите коментар като анонимен потребител.
                     </p>
@@ -451,8 +451,8 @@
                         <button type="submit" class="btn-submit">Изпрати коментар</button>
                     </form>
                 }
-            </div>
-        </section>
+        </div>
+    </section>
     </main>
 
     <!-- JSON-LD Schema for Article -->

@@ -1,57 +1,221 @@
 ﻿@model HoneyWebPlatform.Web.ViewModels.Blog.AllPostsQueryModel
 
+@{
+    ViewData["Title"] = "Пчелния Блог - Спаси Пчелата България";
+    ViewData["Description"] = "Научете повече за пчеларството в България. Статии, съвети и новини от експерти пчелари.";
+}
 
-<section class="breadcrumb breadcrumb_bg">
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-12">
-                <div class="breadcrumb_iner text-center">
-                    <div class="breadcrumb_iner_item">
-                        <h2>Пчелния Блог</h2>
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <meta name="description" content="@ViewData["Description"]" />
+    
+    <!-- Enhanced Blog Styles -->
+    <link rel="stylesheet" href="~/css/blog-enhanced.css" />
+    
+    <!-- Critical CSS for above-the-fold content -->
+    <style>
+        /* Critical styles for immediate rendering */
+        .blog-enhanced {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #2C3E50;
+            background: linear-gradient(135deg, #fafafa 0%, #f0f8f0 100%);
+            min-height: 100vh;
+        }
+        
+        .blog-enhanced .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        .blog-enhanced .breadcrumb-enhanced {
+            background: linear-gradient(135deg, #2D5016, #8FBC8F);
+            padding: 2rem 0;
+            color: white;
+        }
+        
+        .blog-enhanced .blog-header {
+            text-align: center;
+            margin: 3rem 0;
+        }
+        
+        .blog-enhanced .blog-title {
+            font-size: clamp(2rem, 4vw, 3rem);
+            color: #2D5016;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+        
+        .blog-enhanced .blog-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        
+        .blog-enhanced .blog-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        @media (max-width: 768px) {
+            .blog-enhanced .blog-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body class="blog-enhanced">
+    <!-- Breadcrumb Navigation -->
+    <nav class="breadcrumb-enhanced" aria-label="Breadcrumb">
+        <div class="container">
+            <div class="breadcrumb-content">
+                <a href="/">Начало</a>
+                <span class="breadcrumb-separator">></span>
+                <span>Блог</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Blog Header -->
+    <header class="blog-header">
+        <div class="container">
+            <h1 class="blog-title">Пчелния Блог</h1>
+            <p class="blog-subtitle">Споделяме знания, опит и страст към пчеларството в България</p>
+        </div>
+    </header>
+
+    <!-- Blog Posts Grid -->
+    <main class="container">
+        <section class="blog-grid" role="main" aria-label="Blog posts">
+            @foreach (var post in Model.Posts)
+            {
+                <article class="blog-card" itemscope itemtype="https://schema.org/BlogPosting">
+                    <div class="blog-card-image">
+                        <img src="@post.ImageUrl" 
+                             alt="@post.Title" 
+                             loading="lazy"
+                             width="400" 
+                             height="200"
+                             itemprop="image">
+                        <div class="blog-card-date">
+                            <time datetime="@post.CreatedOn.ToString("yyyy-MM-dd")" itemprop="datePublished">
+                                @post.CreatedOn.ToString("dd.MM.yyyy")
+                            </time>
+                        </div>
                     </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<section class="blog_area section_padding">
-    <div class="container">
-        <div class="row">
-
-            <div class="col-lg-8 mb-5 mb-lg-0">
-                <div class="blog_left_sidebar">
-                    @foreach (var post in Model.Posts)
-                    {
-                        <partial name="_PostPartial" model="post"/>
-                    }
-                </div>
-            </div>
-
-
-            <div class="col-lg-4">
-                <div class="blog_right_sidebar">
-                    <aside class="single_sidebar_widget newsletter_widget">
-                        <h4 class="widget_title">Искаш твой пост?</h4>
-                        <form asp-controller="Blog" asp-action="Add" method="get">
-                            <button class="button rounded-0 primary-bg text-white w-100 btn_4" type="submit"> Създай Пост </button>
-                        </form>
-                    </aside>
                     
-                    <aside class="single_sidebar_widget newsletter_widget">
-                        <h4 class="widget_title">Запишете се за е-вестник</h4>
-                        <form asp-controller="User" asp-action="SubscribeNewsletter" method="post">
-                            <div class="form-group">
-                                <input type="text" name ="email" class="form-control" onfocus="this.placeholder = ''" 
-                                       onblur="this.placeholder = 'Enter email'" placeholder="Въведи е-поща" required="">
-                            </div>
-                            <button class="button rounded-0 primary-bg text-white w-100 btn_4" type="submit">Запиши се</button>
-                        </form>
-                    </aside>
+                    <div class="blog-card-content">
+                        <h2 class="blog-card-title" itemprop="headline">
+                            <a asp-controller="Blog" asp-action="Details" asp-route-id="@post.Id">
+                                @post.Title
+                            </a>
+                        </h2>
+                        
+                        <div class="blog-card-meta">
+                            <span itemprop="author" itemscope itemtype="https://schema.org/Person">
+                                <i class="fas fa-user" aria-hidden="true"></i>
+                                <span itemprop="name">@post.Author.FirstName @post.Author.LastName</span>
+                            </span>
+                            <span>
+                                <i class="fas fa-comments" aria-hidden="true"></i>
+                                @if (post.CommentsCount == 1)
+                                {
+                                    <span>1 коментар</span>
+                                }
+                                else
+                                {
+                                    <span>@post.CommentsCount коментара</span>
+                                }
+                            </span>
+                        </div>
+                        
+                        <div class="blog-card-excerpt" itemprop="description">
+                            <!-- This would be populated with excerpt from post content -->
+                            Споделяме практически съвети за пчеларство, сезонни грижи за кошерите и най-новите тенденции в българското пчеларство...
+                        </div>
+                        
+                        <a href="@Url.Action("Details", "Blog", new { id = post.Id })" 
+                           class="read-more" 
+                           aria-label="Прочети повече за @post.Title">
+                            Прочети повече
+                            <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                        </a>
+                    </div>
+                </article>
+            }
+        </section>
 
-                </div>
-            </div>
-            
-        </div>
-    </div>
-</section>
+        <!-- Newsletter CTA -->
+        <section class="newsletter-cta" aria-label="Newsletter subscription">
+            <h2 class="newsletter-title">Абонирайте се за нашия бюлетин</h2>
+            <p class="newsletter-subtitle">Получавайте най-новите статии и съвети за пчеларство директно в пощенската си кутия</p>
+            <form class="newsletter-form" asp-controller="User" asp-action="SubscribeNewsletter" method="post">
+                <input type="email" 
+                       name="email" 
+                       class="newsletter-input" 
+                       placeholder="Въведете вашия имейл адрес" 
+                       required
+                       aria-label="Имейл адрес за абонамент">
+                <button type="submit" class="newsletter-button">Абонирай се</button>
+            </form>
+        </section>
+
+        <!-- Pagination -->
+        @if (Model.TotalPosts > Model.Posts.Count())
+        {
+            <nav class="pagination" aria-label="Blog pagination">
+                <!-- Pagination logic would go here -->
+                <span class="current">1</span>
+                <a href="#" aria-label="Страница 2">2</a>
+                <a href="#" aria-label="Страница 3">3</a>
+                <a href="#" aria-label="Следваща страница">
+                    <i class="fas fa-chevron-right" aria-hidden="true"></i>
+                </a>
+            </nav>
+        }
+    </main>
+
+    <!-- JSON-LD Schema for Blog List -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Blog",
+        "name": "Пчелния Блог - Спаси Пчелата България",
+        "description": "Блог за пчеларство в България с практически съвети и статии",
+        "inLanguage": "bg-BG",
+        "url": "@Context.Request.Scheme://@Context.Request.Host@Context.Request.Path",
+        "publisher": {
+            "@type": "Organization",
+            "name": "Спаси Пчелата България",
+            "url": "@Context.Request.Scheme://@Context.Request.Host"
+        },
+        "blogPost": [
+            @foreach (var post in Model.Posts)
+            {
+                <text>{
+                    "@type": "BlogPosting",
+                    "headline": "@Html.Raw(post.Title)",
+                    "datePublished": "@post.CreatedOn.ToString("yyyy-MM-ddTHH:mm:ss")",
+                    "author": {
+                        "@type": "Person",
+                        "name": "@post.Author.FirstName @post.Author.LastName"
+                    },
+                    "url": "@Context.Request.Scheme://@Context.Request.Host@Url.Action("Details", "Blog", new { id = post.Id })",
+                    "image": "@post.ImageUrl"
+                }@(post != Model.Posts.Last() ? "," : "")</text>
+            }
+        ]
+    }
+    </script>
+</body>
+</html>

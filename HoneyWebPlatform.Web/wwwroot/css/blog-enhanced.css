@@ -11,9 +11,9 @@
     --cream: #FEFEFE;
     --honey-amber: #FF8C00;
     --bee-yellow: #FFD700;
-    --text-dark: #1a1a1a;
-    --text-medium: #2c2c2c;
-    --text-light: #4a4a4a;
+    --text-dark: #000000;
+    --text-medium: #000000;
+    --text-light: #000000;
     --background-white: #ffffff;
     --background-cream: #fefefe;
     --border-light: #E8E8E8;
@@ -801,11 +801,12 @@
 
 /* Enhanced Comments Section */
 .blog-enhanced .comments-section {
-    background: white;
+    background: var(--background-white);
     border-radius: var(--radius-md);
     padding: var(--spacing-lg);
     margin: var(--spacing-xl) 0;
     box-shadow: var(--shadow-soft);
+    border: 1px solid var(--border-light);
 }
 
 .blog-enhanced .comments-header {
@@ -897,7 +898,7 @@
 }
 
 .blog-enhanced .sidebar-widget {
-    background: white;
+    background: var(--background-white);
     padding: var(--spacing-lg);
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-soft);
@@ -905,7 +906,7 @@
 }
 
 .blog-enhanced .widget-title {
-    color: var(--nature-green);
+    color: var(--text-dark);
     font-size: 1.3rem;
     margin-bottom: var(--spacing-md);
     font-weight: 600;
@@ -1129,14 +1130,14 @@
 
     /* Mobile sidebar styling - clean white design */
     .blog-enhanced .sidebar-widget {
-        background: white;
+        background: var(--background-white);
         border: 1px solid #e8e8e8;
         box-shadow: 0 2px 8px rgba(0,0,0,0.08);
         margin-bottom: var(--spacing-lg);
     }
 
     .blog-enhanced .widget-title {
-        color: #333;
+        color: var(--text-dark);
         font-size: 1.2rem;
         font-weight: 600;
         margin-bottom: var(--spacing-md);

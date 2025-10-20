@@ -219,8 +219,16 @@
                                 @Model.Author.FirstName.Substring(0, 1)@Model.Author.LastName.Substring(0, 1)
                             </div>
                             <div>
-                                <h4>@Model.Author.FirstName @Model.Author.LastName</h4>
+                                <h4>
+                                    <a href="@Url.Action("Details", "Beekeeper", new { id = Model.Author.Id })" class="author-name-link">
+                                        @Model.Author.FirstName @Model.Author.LastName
+                                    </a>
+                                </h4>
                                 <p>Опитен пчелар с над 10 години стаж в отглеждането на пчели. Специализира в органично пчеларство и природни методи за грижа за кошерите.</p>
+                                <a href="@Url.Action("Details", "Beekeeper", new { id = Model.Author.Id })" class="view-profile-btn">
+                                    Виж профила
+                                    <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                                </a>
                             </div>
                         </div>
                     </div>

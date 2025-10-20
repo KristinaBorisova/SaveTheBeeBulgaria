@@ -59,10 +59,22 @@
 .blog-enhanced .btn-submit,
 .blog-enhanced .newsletter-button,
 .blog-enhanced .view-profile-btn,
-.blog-enhanced .share-button,
 .blog-enhanced .breadcrumb a,
 .blog-enhanced .breadcrumb-separator {
     color: inherit !important;
+}
+
+/* Exception for share buttons - keep white text */
+.blog-enhanced .share-button,
+.blog-enhanced .share-facebook,
+.blog-enhanced .share-twitter,
+.blog-enhanced .share-linkedin {
+    color: white !important;
+}
+
+/* Exception for tag hover - make text white on hover */
+.blog-enhanced .tag:hover {
+    color: white !important;
 }
 
 /* Enhanced Blog List Styles */

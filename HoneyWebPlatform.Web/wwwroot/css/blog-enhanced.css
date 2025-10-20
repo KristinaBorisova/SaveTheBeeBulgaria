@@ -49,6 +49,22 @@
     --transition-slow: 0.5s ease;
 }
 
+/* Force all text to be black for maximum readability */
+.blog-enhanced * {
+    color: #000000 !important;
+}
+
+/* Exception for gold accent elements */
+.blog-enhanced .primary-gold,
+.blog-enhanced .btn-submit,
+.blog-enhanced .newsletter-button,
+.blog-enhanced .view-profile-btn,
+.blog-enhanced .share-button,
+.blog-enhanced .breadcrumb a,
+.blog-enhanced .breadcrumb-separator {
+    color: inherit !important;
+}
+
 /* Enhanced Blog List Styles */
 .blog-enhanced {
     font-family: var(--font-primary);
@@ -1314,11 +1330,11 @@
     }
 }
 
-/* Dark Mode Support */
+/* Dark Mode Support - Keep text black for readability */
 @media (prefers-color-scheme: dark) {
     .blog-enhanced {
-        --text-dark: #E8E8E8;
-        --text-light: #B0B0B0;
+        --text-dark: #000000;
+        --text-light: #000000;
         --border-light: #404040;
         background: linear-gradient(135deg, #1a1a1a 0%, #0f1a0f 100%);
     }

@@ -66,9 +66,9 @@
 
 /* Enhanced Breadcrumb */
 .blog-enhanced .breadcrumb-enhanced {
-    background: linear-gradient(135deg, var(--nature-green), var(--light-green));
+    background: linear-gradient(135deg, var(--background-white), var(--secondary-gold));
     padding: var(--spacing-lg) 0;
-    color: white;
+    color: var(--text-dark);
     position: relative;
     overflow: hidden;
 }
@@ -793,6 +793,12 @@
     transform: translateX(5px);
 }
 
+/* Avoid TOC duplication: show inline, hide sidebar on mobile */
+@media (max-width: 768px) {
+    .blog-enhanced .toc-inline { display: block; }
+    .blog-enhanced .sidebar .toc { display: none; }
+}
+
 /* Enhanced Comments Section */
 .blog-enhanced .comments-section {
     background: white;
@@ -1313,7 +1319,7 @@
     .blog-enhanced .article-main,
     .blog-enhanced .sidebar-widget,
     .blog-enhanced .comments-section {
-        background: #2a2a2a;
+        background: #fefefe;
         border-color: var(--border-light);
     }
 

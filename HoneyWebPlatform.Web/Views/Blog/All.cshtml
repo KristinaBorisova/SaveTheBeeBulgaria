@@ -66,7 +66,7 @@
             transition: transform 0.3s ease;
         }
         
-        @media (max-width: 768px) {
+        @@media (max-width: 768px) {
             .blog-enhanced .blog-grid {
                 grid-template-columns: 1fr;
             }
@@ -188,14 +188,14 @@
     <!-- JSON-LD Schema for Blog List -->
     <script type="application/ld+json">
     {
-        "@context": "https://schema.org",
-        "@type": "Blog",
+        "@@context": "https://schema.org",
+        "@@type": "Blog",
         "name": "Пчелния Блог - Спаси Пчелата България",
         "description": "Блог за пчеларство в България с практически съвети и статии",
         "inLanguage": "bg-BG",
         "url": "@Context.Request.Scheme://@Context.Request.Host@Context.Request.Path",
         "publisher": {
-            "@type": "Organization",
+            "@@type": "Organization",
             "name": "Спаси Пчелата България",
             "url": "@Context.Request.Scheme://@Context.Request.Host"
         },
@@ -203,11 +203,11 @@
             @foreach (var post in Model.Posts)
             {
                 <text>{
-                    "@type": "BlogPosting",
+                    "@@type": "BlogPosting",
                     "headline": "@Html.Raw(post.Title)",
                     "datePublished": "@post.CreatedOn.ToString("yyyy-MM-ddTHH:mm:ss")",
                     "author": {
-                        "@type": "Person",
+                        "@@type": "Person",
                         "name": "@post.Author.FirstName @post.Author.LastName"
                     },
                     "url": "@Context.Request.Scheme://@Context.Request.Host@Url.Action("Details", "Blog", new { id = post.Id })",

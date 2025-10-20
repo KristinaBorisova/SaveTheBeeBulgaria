@@ -99,7 +99,7 @@
             margin-bottom: 1rem;
         }
         
-        @media (max-width: 768px) {
+        @@media (max-width: 768px) {
             .blog-enhanced .article-container {
                 grid-template-columns: 1fr;
                 gap: 2rem;
@@ -404,17 +404,17 @@
     <!-- JSON-LD Schema for Article -->
     <script type="application/ld+json">
     {
-        "@context": "https://schema.org",
-        "@type": "Article",
+        "@@context": "https://schema.org",
+        "@@type": "Article",
         "headline": "@Html.Raw(Model.Title)",
         "description": "@Html.Raw(ViewData["Description"])",
         "image": "@Model.ImageUrl",
         "author": {
-            "@type": "Person",
+            "@@type": "Person",
             "name": "@Model.Author.FirstName @Model.Author.LastName"
         },
         "publisher": {
-            "@type": "Organization",
+            "@@type": "Organization",
             "name": "Спаси Пчелата България",
             "url": "@Context.Request.Scheme://@Context.Request.Host"
         },
@@ -423,8 +423,8 @@
         "inLanguage": "bg-BG",
         "url": "@Context.Request.Scheme://@Context.Request.Host@Context.Request.Path",
         "mainEntityOfPage": {
-            "@type": "WebPage",
-            "@id": "@Context.Request.Scheme://@Context.Request.Host@Context.Request.Path"
+            "@@type": "WebPage",
+            "@@id": "@Context.Request.Scheme://@Context.Request.Host@Context.Request.Path"
         },
         "wordCount": "@Model.Content.Split(' ').Length",
         "timeRequired": "PT@(readingTime)M"

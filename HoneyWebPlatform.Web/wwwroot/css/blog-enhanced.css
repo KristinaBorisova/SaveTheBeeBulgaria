@@ -1,3 +1,48 @@
+/* Mobile article body: full-width and comfortable typography */
+@media (max-width: 768px) {
+    .blog-enhanced .article-main {
+        box-shadow: none;
+        border-radius: 0;
+    }
+
+    .blog-enhanced .article-hero {
+        height: 220px;
+    }
+
+    .blog-enhanced .article-body {
+        font-size: 1.125rem; /* ~18px */
+        line-height: 1.8;
+        max-width: 100%;
+        margin: 0;
+        padding: var(--spacing-md);
+        border-radius: 0;
+        box-shadow: none;
+    }
+
+    .blog-enhanced .container {
+        padding: 0 12px;
+    }
+
+    /* Inline images inside article text */
+    .blog-enhanced .article-body img.inline-image {
+        display: block;
+        width: 100%;
+        height: auto;
+        margin: var(--spacing-md) 0;
+        border-radius: 8px;
+    }
+
+    .blog-enhanced .article-body figure.inline-image {
+        margin: var(--spacing-md) 0;
+    }
+
+    .blog-enhanced .article-body figcaption {
+        font-size: 0.9rem;
+        color: var(--text-medium);
+        text-align: center;
+        margin-top: 0.25rem;
+    }
+}
 /* Enhanced Blog Styles with Nature/Beekeeping Theme */
 /* Building upon the existing template with Bulgarian beekeeping focus */
 

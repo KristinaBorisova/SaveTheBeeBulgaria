@@ -120,7 +120,7 @@
 .blog-enhanced .blog-title {
     font-family: var(--font-heading);
     font-size: clamp(2rem, 4vw, 3rem);
-    color: var(--nature-green);
+    color: var(--text-dark);
     margin-bottom: var(--spacing-sm);
     font-weight: 700;
     position: relative;
@@ -280,7 +280,7 @@
 }
 
 .blog-enhanced .read-more:hover {
-    color: var(--nature-green);
+    color: var(--text-dark);
     transform: translateX(5px);
 }
 
@@ -647,7 +647,7 @@
 }
 
 .blog-enhanced .tags h3 {
-    color: var(--nature-green);
+    color: var(--text-dark);
     margin-bottom: var(--spacing-sm);
     font-size: 1.2rem;
     font-weight: 600;
@@ -661,7 +661,7 @@
 
 .blog-enhanced .tag {
     background: var(--secondary-gold);
-    color: var(--nature-green);
+    color: var(--text-dark);
     padding: var(--spacing-xs) var(--spacing-sm);
     border-radius: var(--radius-sm);
     text-decoration: none;
@@ -688,7 +688,7 @@
 }
 
 .blog-enhanced .author-bio h3 {
-    color: var(--nature-green);
+    color: var(--text-dark);
     margin-bottom: var(--spacing-sm);
     font-size: 1.3rem;
     font-weight: 600;
@@ -716,7 +716,7 @@
 }
 
 .blog-enhanced .author-name-link {
-    color: var(--nature-green);
+    color: var(--text-dark);
     text-decoration: none;
     transition: color var(--transition-normal);
 }
@@ -1022,7 +1022,7 @@
 }
 
 .blog-enhanced .toc h3 {
-    color: var(--nature-green);
+    color: var(--text-dark);
     margin-bottom: var(--spacing-sm);
     font-size: 1.2rem;
     font-weight: 600;
@@ -1157,7 +1157,7 @@
     }
 
     .blog-enhanced .toc h3 {
-        color: #333;
+        color: var(--text-dark);
         font-size: 1.2rem;
         font-weight: 600;
         margin-bottom: var(--spacing-md);
@@ -1166,7 +1166,7 @@
     }
 
     .blog-enhanced .toc a {
-        color: #555;
+        color: var(--text-dark);
         text-decoration: none;
         transition: color var(--transition-normal);
         display: block;
@@ -1188,7 +1188,7 @@
     }
 
     .blog-enhanced .newsletter-widget .widget-title {
-        color: #333;
+        color: var(--text-dark);
         font-size: 1.2rem;
         font-weight: 600;
         margin-bottom: var(--spacing-md);
@@ -1197,7 +1197,7 @@
     }
 
     .blog-enhanced .newsletter-widget p {
-        color: #666;
+        color: var(--text-dark);
         margin-bottom: var(--spacing-md);
         line-height: 1.5;
     }
@@ -1205,7 +1205,7 @@
     .blog-enhanced .newsletter-input {
         background: #f8f9fa;
         border: 1px solid #e8e8e8;
-        color: #333;
+        color: var(--text-dark);
         padding: var(--spacing-sm);
         border-radius: var(--radius-sm);
         font-size: 1rem;
@@ -1252,7 +1252,7 @@
     }
 
     .blog-enhanced .related-post-content h4 {
-        color: #333;
+        color: var(--text-dark);
         font-size: 0.95rem;
         line-height: 1.4;
         margin-bottom: var(--spacing-xs);
@@ -1261,7 +1261,7 @@
 
     .blog-enhanced .related-post-date {
         font-size: 0.8rem;
-        color: #666;
+        color: var(--text-dark);
     }
 
     .blog-enhanced .comment {

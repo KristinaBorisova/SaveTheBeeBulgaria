@@ -94,6 +94,7 @@
                                     <ul class="dropdown-menu" aria-labelledby="beekeepersDropdown">
                                         <li>
                                             <a class="dropdown-item nav-link text-dark" asp-area="" asp-controller="Beekeeper" asp-action="All">Виж всички пчелари</a>
+                                            <a class="dropdown-item nav-link text-dark" asp-area="" asp-controller="Beekeeper" asp-action="Map">Интерактивна карта на Пчелари</a>
                                             @if (User.Identity?.IsAuthenticated ?? false && !isUserBeekeeper)
                                             {
                                                 <a class="dropdown-item nav-link text-dark" asp-area="" asp-controller="Beekeeper" asp-action="Become">Стани Пчелар</a>

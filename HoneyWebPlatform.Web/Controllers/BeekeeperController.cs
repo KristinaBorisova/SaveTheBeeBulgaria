@@ -2,6 +2,7 @@
 {
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 
 using Infrastructure.Extensions;
 using Services.Data.Interfaces;
@@ -109,6 +110,93 @@ using static Common.NotificationMessagesConstants;
             {
                 TempData[ErrorMessage] = "Възникна грешка при зареждането на пчеларите!";
                 return RedirectToAction("Index", "Home");
+            }
+        }
+
+        [HttpGet]
+        [AllowAnonymous]
+        public async Task<IActionResult> Map()
+        {
+            try
+            {
+                // Using hardcoded test data for demonstration
+                // TODO: Replace with database query once migration is applied on Railway
+                var beekeepers = new List<BeekeeperCardViewModel>
+                {
+                    new BeekeeperCardViewModel
+                    {
+                        Id = "6d013af5-d0e9-4704-a6a9-877ae0000000",
+                        FullName = "Ивайло Борисов",
+                        Location = "Северозападен",
+                        Latitude = 43.2044,
+                        Longitude = 23.5074,
+                        HoneyCount = 5
+                    },
+                    new BeekeeperCardViewModel
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        FullName = "Мария Петрова",
+                        Location = "Югозападен",
+                        Latitude = 42.6979,
+                        Longitude = 23.3219,
+                        HoneyCount = 3
+                    },
+                    new BeekeeperCardViewModel
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        FullName = "Иван Димитров",
+                        Location = "Южен централен",
+                        Latitude = 42.1354,
+                        Longitude = 24.7453,
+                        HoneyCount = 4
+                    },
+                    new BeekeeperCardViewModel
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        FullName = "Анна Иванова",
+                        Location = "Североизточен",
+                        Latitude = 43.2141,
+                        Longitude = 27.9147,
+                        HoneyCount = 6
+                    },
+                    new BeekeeperCardViewModel
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        FullName = "Георги Станев",
+                        Location = "Югоизточен",
+                        Latitude = 42.5048,
+                        Longitude = 27.4626,
+                        HoneyCount = 8
+                    }
+                };
+                
+                // Mock API key - replace with actual Google Maps API key from configuration
+                var googleMapsApiKey = HttpContext.RequestServices
+                    .GetService<IConfiguration>()?["GoogleMaps:ApiKey"] 
+                    ?? Environment.GetEnvironmentVariable("GOOGLE_MAPS_API_KEY")
+                    ?? "";
+
+                var viewModel = new BeekeepersMapViewModel
+                {
+                    Beekeepers = beekeepers.Select(b => new BeekeeperMapMarker
+                    {
+                        Id = b.Id,
+                        FullName = b.FullName,
+                        Region = b.Location,
+                        Latitude = b.Latitude ?? 42.7339, // Default to Bulgaria center if not set
+                        Longitude = b.Longitude ?? 25.4858,
+                        HoneyTypes = new List<string> { "Липов", "Акациев", "Билков" }, // Test honey types
+                        ProfileUrl = Url.Action("Profile", "Beekeeper", new { id = b.Id }) ?? ""
+                    }),
+                    GoogleMapsApiKey = googleMapsApiKey
+                };
+
+                return View(viewModel);
+            }
+            catch (Exception ex)
+            {
+                TempData[ErrorMessage] = "Възникна грешка при зареждането на картата!";
+                return RedirectToAction("All", "Beekeeper");
             }
         }
 

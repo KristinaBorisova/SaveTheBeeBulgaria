@@ -43,6 +43,11 @@
 
         public virtual ApplicationUser User { get; set; } = null!;
 
+        // Map coordinates for interactive map feature
+        public double? Latitude { get; set; }
+        
+        public double? Longitude { get; set; }
+
         public virtual ICollection<Honey> OwnedHoney { get; set; }
 
         public virtual ICollection<Propolis> OwnedPropolis { get; set; }

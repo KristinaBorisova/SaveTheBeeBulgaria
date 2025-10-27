@@ -30,5 +30,10 @@ namespace HoneyWebPlatform.Web.ViewModels.Beekeeper
         public double AverageRating { get; set; }
         
         public int TotalOrders { get; set; }
+        
+        // Map coordinates for interactive map
+        public double? Latitude { get; set; }
+        
+        public double? Longitude { get; set; }
     }
 }

@@ -219,6 +219,19 @@ using static Common.GeneralApplicationConstants;
                 });
             }
 
+            // Configure URL binding for Railway (must listen on PORT env var)
+            // ASP.NET Core will automatically use PORT or ASPNETCORE_URLS environment variables
+            var webPort = Environment.GetEnvironmentVariable("PORT");
+            if (!string.IsNullOrEmpty(webPort))
+            {
+                // Configure the web host to listen on Railway's PORT
+                builder.WebHost.UseUrls($"http://0.0.0.0:{webPort}");
+                Console.WriteLine($"Configured to listen on http://0.0.0.0:{webPort}");
+            }
+            else
+            {
+                Console.WriteLine("PORT environment variable not set. Using default configuration.");
+            }
 
             WebApplication app = builder.Build();
 
@@ -362,6 +375,22 @@ using static Common.GeneralApplicationConstants;
                 config.MapHub<OrderHub>("/orderHub");
             });
 
+            // Log startup information
+            try
+            {
+                var startupLogger = app.Services.GetRequiredService<ILogger<Program>>();
+                var urls = Environment.GetEnvironmentVariable("ASPNETCORE_URLS") ?? "Not configured";
+                startupLogger.LogInformation("Application starting. Environment: {Environment}, URLs: {Urls}", 
+                    app.Environment.EnvironmentName, urls);
+                Console.WriteLine($"Application is ready. Environment: {app.Environment.EnvironmentName}");
+                Console.WriteLine($"Listening on: {urls}");
+                Console.WriteLine($"PORT env var: {Environment.GetEnvironmentVariable("PORT") ?? "Not set"}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"ERROR during startup logging: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+            }
 
             app.Run();
         }

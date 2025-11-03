@@ -240,11 +240,14 @@ using static Common.GeneralApplicationConstants;
                             {
                                 context.Database.Migrate();
                             }
-                            catch (InvalidOperationException ex) when (ex.Message.Contains("pending changes"))
+                            catch (InvalidOperationException ex) when (
+                                ex.Message.Contains("pending changes") || 
+                                ex.Message.Contains("PendingModelChangesWarning") ||
+                                ex.InnerException?.Message?.Contains("pending changes") == true)
                             {
                                 var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
                                 logger.LogWarning("Database has pending model changes (likely from reverted migrations). Skipping migration. Database is accessible.");
-                                Console.WriteLine("Warning: Database has pending model changes but is accessible. Continuing startup.");
+                                Console.WriteLine($"Warning: Database has pending model changes but is accessible. Error: {ex.Message}");
                             }
                         }
                         else

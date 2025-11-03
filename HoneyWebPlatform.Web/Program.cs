@@ -347,6 +347,12 @@ using static Common.GeneralApplicationConstants;
 
             // Add health check endpoint
             app.MapHealthChecks("/health");
+            
+            // Add simple ping endpoint that doesn't require database
+            app.MapGet("/ping", () => Results.Ok(new { status = "ok", timestamp = DateTime.UtcNow }));
+            
+            // Add simple root endpoint for Railway health checks
+            app.MapGet("/", () => Results.Ok(new { message = "HoneyWebPlatform API is running", timestamp = DateTime.UtcNow }));
 
             app.EnableOnlineUsersCheck();
 
@@ -379,12 +385,14 @@ using static Common.GeneralApplicationConstants;
             try
             {
                 var startupLogger = app.Services.GetRequiredService<ILogger<Program>>();
-                var urls = Environment.GetEnvironmentVariable("ASPNETCORE_URLS") ?? "Not configured";
-                startupLogger.LogInformation("Application starting. Environment: {Environment}, URLs: {Urls}", 
-                    app.Environment.EnvironmentName, urls);
+                var port = Environment.GetEnvironmentVariable("PORT") ?? "Not set";
+                var urls = builder.Configuration["ASPNETCORE_URLS"] ?? Environment.GetEnvironmentVariable("ASPNETCORE_URLS") ?? "Not configured";
+                startupLogger.LogInformation("Application starting. Environment: {Environment}, PORT: {Port}, URLs: {Urls}", 
+                    app.Environment.EnvironmentName, port, urls);
                 Console.WriteLine($"Application is ready. Environment: {app.Environment.EnvironmentName}");
-                Console.WriteLine($"Listening on: {urls}");
-                Console.WriteLine($"PORT env var: {Environment.GetEnvironmentVariable("PORT") ?? "Not set"}");
+                Console.WriteLine($"PORT environment variable: {port}");
+                Console.WriteLine($"ASPNETCORE_URLS: {urls}");
+                Console.WriteLine($"Application will listen on: http://0.0.0.0:{port}");
             }
             catch (Exception ex)
             {
@@ -392,7 +400,22 @@ using static Common.GeneralApplicationConstants;
                 Console.WriteLine($"Stack trace: {ex.StackTrace}");
             }
 
-            app.Run();
+            // Wrap app.Run in try-catch to catch any unhandled exceptions
+            try
+            {
+                Console.WriteLine("Starting application...");
+                app.Run();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"FATAL ERROR: Application crashed: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                if (ex.InnerException != null)
+                {
+                    Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
+                }
+                throw; // Re-throw to ensure Railway restarts the container
+            }
         }
 
         /// Checking if all the services are added for each entity

@@ -385,14 +385,17 @@ using static Common.GeneralApplicationConstants;
             try
             {
                 var startupLogger = app.Services.GetRequiredService<ILogger<Program>>();
-                var port = Environment.GetEnvironmentVariable("PORT") ?? "Not set";
+                var httpPort = Environment.GetEnvironmentVariable("PORT") ?? "Not set";
                 var urls = builder.Configuration["ASPNETCORE_URLS"] ?? Environment.GetEnvironmentVariable("ASPNETCORE_URLS") ?? "Not configured";
                 startupLogger.LogInformation("Application starting. Environment: {Environment}, PORT: {Port}, URLs: {Urls}", 
-                    app.Environment.EnvironmentName, port, urls);
+                    app.Environment.EnvironmentName, httpPort, urls);
                 Console.WriteLine($"Application is ready. Environment: {app.Environment.EnvironmentName}");
-                Console.WriteLine($"PORT environment variable: {port}");
+                Console.WriteLine($"PORT environment variable: {httpPort}");
                 Console.WriteLine($"ASPNETCORE_URLS: {urls}");
-                Console.WriteLine($"Application will listen on: http://0.0.0.0:{port}");
+                if (httpPort != "Not set")
+                {
+                    Console.WriteLine($"Application will listen on: http://0.0.0.0:{httpPort}");
+                }
             }
             catch (Exception ex)
             {

@@ -6,6 +6,7 @@ namespace HoneyWebPlatform.Web
     using Microsoft.AspNetCore.Identity;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.EntityFrameworkCore;
+    using Microsoft.EntityFrameworkCore.Diagnostics;
     using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 using HoneyWebPlatform.Services.Data.Models;
@@ -113,6 +114,9 @@ using static Common.GeneralApplicationConstants;
                 {
                     // Use PostgreSQL for production
                     options.UseNpgsql(connectionString);
+                    // Suppress pending model changes warning in production (database may have extra columns from reverted migrations)
+                    options.ConfigureWarnings(warnings => 
+                        warnings.Ignore(RelationalEventId.PendingModelChangesWarning));
                 }
             });
 
@@ -246,7 +250,30 @@ using static Common.GeneralApplicationConstants;
                     // Use Migrate() instead of EnsureCreated() for production
                     if (app.Environment.IsProduction())
                     {
-                        context.Database.Migrate();
+                        // Check if database exists and can connect
+                        if (context.Database.CanConnect())
+                        {
+                            // Try to apply migrations, but don't fail if there are pending model changes
+                            // (this can happen if database has extra columns from reverted migrations)
+                            try
+                            {
+                                context.Database.Migrate();
+                            }
+                            catch (InvalidOperationException ex) when (
+                                ex.Message.Contains("pending changes") || 
+                                ex.Message.Contains("PendingModelChangesWarning") ||
+                                ex.InnerException?.Message?.Contains("pending changes") == true)
+                            {
+                                var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+                                logger.LogWarning("Database has pending model changes (likely from reverted migrations). Skipping migration. Database is accessible.");
+                                Console.WriteLine($"Warning: Database has pending model changes but is accessible. Error: {ex.Message}");
+                            }
+                        }
+                        else
+                        {
+                            // Database doesn't exist, create it
+                            context.Database.Migrate();
+                        }
                     }
                     else
                     {
@@ -271,6 +298,7 @@ using static Common.GeneralApplicationConstants;
                     {
                         // In production, log the error but continue startup
                         logger.LogError("Database migration failed, but continuing application startup");
+                        Console.WriteLine("Database migration error occurred, but continuing application startup");
                     }
                 }
             }

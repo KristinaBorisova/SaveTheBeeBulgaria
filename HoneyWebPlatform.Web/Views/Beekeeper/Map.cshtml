@@ -97,6 +97,22 @@
         color: #666;
     }
 
+    .beekeeper-info-window p a {
+        color: #F59F0A;
+        text-decoration: underline;
+        cursor: pointer;
+        font-weight: normal;
+        background: none;
+        border: none;
+        padding: 0;
+        display: inline;
+    }
+
+    .beekeeper-info-window p a:hover {
+        color: #f39c12;
+        text-decoration: underline;
+    }
+
     .beekeeper-info-window a {
         display: inline-block;
         margin-top: 0.75rem;
@@ -343,11 +359,17 @@
             ? `<div class="honey-types">${beekeeper.honeyTypes.map(type => `<span class="honey-type-badge">${type}</span>`).join('')}</div>`
             : '';
 
+        // Create Google Maps directions link (opens in directions/navigation mode) as clickable text
+        const shopLocationHtml = beekeeper.shopLocation 
+            ? `<p><strong>Локация:</strong> <a href="https://www.google.com/maps/dir/?api=1&destination=${beekeeper.latitude},${beekeeper.longitude}" target="_blank" style="color: #F59F0A; text-decoration: underline; cursor: pointer;">${escapeHtml(beekeeper.shopLocation)}</a></p>`
+            : '';
+
         return `
             <div class="beekeeper-info-window">
                 <h3>${escapeHtml(beekeeper.fullName)}</h3>
                 <p><strong>Регион:</strong> ${escapeHtml(beekeeper.region || 'България')}</p>
                 ${honeyTypesHtml}
+                ${shopLocationHtml}
                 <a href="${beekeeper.profileUrl}" target="_blank">Виж профил →</a>
             </div>
         `;

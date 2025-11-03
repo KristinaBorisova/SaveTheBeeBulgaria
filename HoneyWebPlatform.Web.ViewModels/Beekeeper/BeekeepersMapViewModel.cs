@@ -15,6 +15,8 @@ namespace HoneyWebPlatform.Web.ViewModels.Beekeeper
         
         public string? Region { get; set; }
         
+        public string? ShopLocation { get; set; }
+        
         public double Latitude { get; set; }
         
         public double Longitude { get; set; }

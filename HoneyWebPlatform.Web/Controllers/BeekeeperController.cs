@@ -127,16 +127,20 @@ using static Common.NotificationMessagesConstants;
                     {
                         Id = "6d013af5-d0e9-4704-a6a9-877ae0000000",
                         FullName = "Ивайло Борисов",
-                        Location = "Северозападен",
+                        Region = "Северозападен, Враца",
+                        ShopLocation = "Пазар на Враца, Централен пазар",
                         Latitude = 43.2044,
                         Longitude = 23.5074,
                         HoneyCount = 5
-                    },
+                    }
+                    // Commented out other beekeepers for now - only showing Ивайло Борисов
+                    /*
                     new BeekeeperCardViewModel
                     {
                         Id = Guid.NewGuid().ToString(),
                         FullName = "Мария Петрова",
-                        Location = "Югозападен",
+                        Region = "Югозападен",
+                        ShopLocation = "Централна градинка, София",
                         Latitude = 42.6979,
                         Longitude = 23.3219,
                         HoneyCount = 3
@@ -145,7 +149,8 @@ using static Common.NotificationMessagesConstants;
                     {
                         Id = Guid.NewGuid().ToString(),
                         FullName = "Иван Димитров",
-                        Location = "Южен централен",
+                        Region = "Южен централен",
+                        ShopLocation = "Струма бул., Пловдив",
                         Latitude = 42.1354,
                         Longitude = 24.7453,
                         HoneyCount = 4
@@ -154,7 +159,8 @@ using static Common.NotificationMessagesConstants;
                     {
                         Id = Guid.NewGuid().ToString(),
                         FullName = "Анна Иванова",
-                        Location = "Североизточен",
+                        Region = "Североизточен",
+                        ShopLocation = "Приморски, Варна",
                         Latitude = 43.2141,
                         Longitude = 27.9147,
                         HoneyCount = 6
@@ -163,11 +169,13 @@ using static Common.NotificationMessagesConstants;
                     {
                         Id = Guid.NewGuid().ToString(),
                         FullName = "Георги Станев",
-                        Location = "Югоизточен",
+                        Region = "Югоизточен",
+                        ShopLocation = "Черно море бул., Бургас",
                         Latitude = 42.5048,
                         Longitude = 27.4626,
                         HoneyCount = 8
                     }
+                    */
                 };
                 
                 // Mock API key - replace with actual Google Maps API key from configuration
@@ -182,7 +190,8 @@ using static Common.NotificationMessagesConstants;
                     {
                         Id = b.Id,
                         FullName = b.FullName,
-                        Region = b.Location,
+                        Region = b.Region,
+                        ShopLocation = b.ShopLocation,
                         Latitude = b.Latitude ?? 42.7339, // Default to Bulgaria center if not set
                         Longitude = b.Longitude ?? 25.4858,
                         HoneyTypes = new List<string> { "Липов", "Акациев", "Билков" }, // Test honey types

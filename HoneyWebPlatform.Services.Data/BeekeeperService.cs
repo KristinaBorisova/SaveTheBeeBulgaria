@@ -152,7 +152,7 @@
                     HoneyCount = b.OwnedHoney.Count(),
                     PropolisCount = b.OwnedPropolis.Count(),
                     JoinedDate = new DateTime(2024, 1, 1), // Default join date - can be enhanced with actual creation tracking
-                    Location = "България", // Default location, can be enhanced later
+                    Region = "България", // Default region, can be enhanced later
                     Bio = $"Опитен пчелар с {b.OwnedHoney.Count()} меда и {b.OwnedPropolis.Count()} прополиса",
                     AverageRating = 4.5, // Default rating, can be enhanced later
                     TotalOrders = 0 // Can be enhanced with order tracking

@@ -1,4 +1,5 @@
-# Use a specific .NET 9.0 image
+# Use a specific .NET 9.0 image (explicit version to avoid cache issues)
+# Updated: 2024 - Upgraded from .NET 6.0 to .NET 9.0
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
 WORKDIR /app
 EXPOSE 80
@@ -6,7 +7,8 @@ EXPOSE 80
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
 
-# Copy csproj files
+# Copy csproj files and solution file
+COPY *.sln ./
 COPY HoneyWebPlatform.Web/*.csproj ./HoneyWebPlatform.Web/
 COPY HoneyWebPlatform.Common/*.csproj ./HoneyWebPlatform.Common/
 COPY HoneyWebPlatform.Data/*.csproj ./HoneyWebPlatform.Data/
@@ -17,8 +19,8 @@ COPY HoneyWebPlatform.Services.Mapping/*.csproj ./HoneyWebPlatform.Services.Mapp
 COPY HoneyWebPlatform.Web.Infrastructure/*.csproj ./HoneyWebPlatform.Web.Infrastructure/
 COPY HoneyWebPlatform.Web.ViewModels/*.csproj ./HoneyWebPlatform.Web.ViewModels/
 
-# Restore dependencies
-RUN dotnet restore "HoneyWebPlatform.Web/HoneyWebPlatform.Web.csproj"
+# Restore dependencies (using --no-cache to force fresh download)
+RUN dotnet restore "HoneyWebPlatform.Web/HoneyWebPlatform.Web.csproj" --no-cache
 
 # Copy everything else
 COPY . .

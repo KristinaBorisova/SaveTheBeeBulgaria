@@ -331,8 +331,7 @@ using static Common.GeneralApplicationConstants;
                 app.UseHsts();
             }
 
-            // HTTPS redirection disabled for local development without certificate
-            // app.UseHttpsRedirection();
+            app.UseHttpsRedirection();
             app.UseStaticFiles();
 
             // Add localization middleware - COMMENTED OUT FOR SIMPLICITY

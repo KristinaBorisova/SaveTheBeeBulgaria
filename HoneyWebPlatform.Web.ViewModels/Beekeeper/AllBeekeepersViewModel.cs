@@ -23,19 +23,12 @@ namespace HoneyWebPlatform.Web.ViewModels.Beekeeper
         
         public DateTime JoinedDate { get; set; }
         
-        public string? Region { get; set; }
-        
-        public string? ShopLocation { get; set; }
+        public string? Location { get; set; }
         
         public string? Bio { get; set; }
         
         public double AverageRating { get; set; }
         
         public int TotalOrders { get; set; }
-        
-        // Map coordinates for interactive map
-        public double? Latitude { get; set; }
-        
-        public double? Longitude { get; set; }
     }
 }

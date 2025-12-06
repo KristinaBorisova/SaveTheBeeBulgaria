@@ -412,13 +412,9 @@ using static Common.GeneralApplicationConstants;
             // Register all endpoints together in UseEndpoints
             app.UseEndpoints(config =>
             {
-                // Add a simple root endpoint for Railway health checks (responds immediately)
-                config.MapGet("/", () => Results.Ok(new { 
-                    status = "ok",
-                    message = "HoneyWebPlatform is running",
-                    timestamp = DateTime.UtcNow,
-                    endpoints = new[] { "/ping", "/ready", "/health", "/test" }
-                }));
+                // Root endpoint redirects to Home page
+                // Keep health check endpoints available for Railway monitoring
+                config.MapGet("/", () => Results.Redirect("/Home"));
                 
                 // Add health check endpoint (includes database check)
                 config.MapHealthChecks("/health");

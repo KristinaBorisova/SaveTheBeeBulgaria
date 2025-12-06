@@ -225,12 +225,23 @@ using static Common.GeneralApplicationConstants;
             if (!string.IsNullOrEmpty(webPort))
             {
                 // Configure the web host to listen on Railway's PORT
+                // Use both http and https to be safe, but Railway will handle HTTPS termination
                 builder.WebHost.UseUrls($"http://0.0.0.0:{webPort}");
                 Console.WriteLine($"Configured to listen on http://0.0.0.0:{webPort}");
             }
             else
             {
-                Console.WriteLine("PORT environment variable not set. Using default configuration.");
+                // Also check ASPNETCORE_URLS as fallback
+                var urls = Environment.GetEnvironmentVariable("ASPNETCORE_URLS");
+                if (!string.IsNullOrEmpty(urls))
+                {
+                    builder.WebHost.UseUrls(urls);
+                    Console.WriteLine($"Configured to listen on URLs from ASPNETCORE_URLS: {urls}");
+                }
+                else
+                {
+                    Console.WriteLine("PORT and ASPNETCORE_URLS environment variables not set. Using default configuration.");
+                }
             }
 
             WebApplication app = builder.Build();
@@ -331,7 +342,13 @@ using static Common.GeneralApplicationConstants;
                 app.UseHsts();
             }
 
-            app.UseHttpsRedirection();
+            // Only use HTTPS redirection if not on Railway (Railway handles HTTPS at proxy level)
+            // Check if we're on Railway by checking for PORT environment variable
+            var isRailway = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("PORT"));
+            if (!isRailway)
+            {
+                app.UseHttpsRedirection();
+            }
             app.UseStaticFiles();
 
             // Add localization middleware - COMMENTED OUT FOR SIMPLICITY
@@ -349,9 +366,6 @@ using static Common.GeneralApplicationConstants;
             
             // Add simple ping endpoint that doesn't require database
             app.MapGet("/ping", () => Results.Ok(new { status = "ok", timestamp = DateTime.UtcNow }));
-            
-            // Add simple root endpoint for Railway health checks
-            app.MapGet("/", () => Results.Ok(new { message = "HoneyWebPlatform API is running", timestamp = DateTime.UtcNow }));
 
             app.EnableOnlineUsersCheck();
 

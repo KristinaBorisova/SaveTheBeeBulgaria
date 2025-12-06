@@ -114,8 +114,9 @@ using static Common.GeneralApplicationConstants;
                 {
                     // Use PostgreSQL for production
                     options.UseNpgsql(connectionString);
-                    // Note: PendingModelChangesWarning is not available in EF Core 6.x
-                    // Warnings about pending model changes will appear but won't break the application
+                    // Suppress pending model changes warning in production (database may have extra columns from reverted migrations)
+                    options.ConfigureWarnings(warnings => 
+                        warnings.Ignore(RelationalEventId.PendingModelChangesWarning));
                 }
             });
 

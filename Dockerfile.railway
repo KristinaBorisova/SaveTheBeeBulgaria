@@ -1,5 +1,4 @@
-# Use a specific .NET 9.0 image (explicit version to avoid cache issues)
-# Updated: 2024 - Upgraded from .NET 6.0 to .NET 9.0
+# Use .NET 9.0 image
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
 WORKDIR /app
 EXPOSE 80

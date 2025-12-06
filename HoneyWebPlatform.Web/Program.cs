@@ -336,8 +336,10 @@ using static Common.GeneralApplicationConstants;
             }
             else
             {
-                app.UseExceptionHandler("/Home/Error/500");
-                app.UseStatusCodePagesWithRedirects("/Home/Error?statusCode={0}");
+                // Use a simpler error handler that doesn't require database/controllers
+                app.UseExceptionHandler("/error");
+                // Don't use UseStatusCodePagesWithRedirects as it requires controllers
+                // app.UseStatusCodePagesWithRedirects("/Home/Error?statusCode={0}");
 
                 app.UseHsts();
             }
@@ -409,6 +411,14 @@ using static Common.GeneralApplicationConstants;
             // Register all endpoints together in UseEndpoints
             app.UseEndpoints(config =>
             {
+                // Add a simple root endpoint for Railway health checks (responds immediately)
+                config.MapGet("/", () => Results.Ok(new { 
+                    status = "ok",
+                    message = "HoneyWebPlatform is running",
+                    timestamp = DateTime.UtcNow,
+                    endpoints = new[] { "/ping", "/ready", "/health", "/test" }
+                }));
+                
                 // Add health check endpoint (includes database check)
                 config.MapHealthChecks("/health");
                 
@@ -429,6 +439,12 @@ using static Common.GeneralApplicationConstants;
                 // Test endpoint
                 config.MapGet("/test", () => Results.Ok(new { 
                     message = "Test endpoint working",
+                    timestamp = DateTime.UtcNow 
+                }));
+                
+                // Simple error endpoint
+                config.MapGet("/error", () => Results.Ok(new { 
+                    error = "An error occurred",
                     timestamp = DateTime.UtcNow 
                 }));
                 
@@ -488,14 +504,21 @@ using static Common.GeneralApplicationConstants;
             lifetime.ApplicationStarted.Register(() =>
             {
                 Console.WriteLine($"[STARTUP] ✓ Application has started and is listening for requests");
-                Console.WriteLine($"[STARTUP] ✓ Health check endpoints available: /ping, /ready, /health");
+                Console.WriteLine($"[STARTUP] ✓ Health check endpoints available: /, /ping, /ready, /health");
                 Console.WriteLine($"[STARTUP] ✓ Ready to accept HTTP requests");
+                Console.WriteLine($"[STARTUP] ✓ Listening on: http://0.0.0.0:{Environment.GetEnvironmentVariable("PORT") ?? "80"}");
+            });
+            
+            lifetime.ApplicationStopping.Register(() =>
+            {
+                Console.WriteLine($"[SHUTDOWN] Application is shutting down...");
             });
             
             // Wrap app.Run in try-catch to catch any unhandled exceptions
             try
             {
                 Console.WriteLine("[STARTUP] Starting Kestrel server...");
+                Console.WriteLine("[STARTUP] Waiting for incoming requests...");
                 app.Run();
             }
             catch (Exception ex)

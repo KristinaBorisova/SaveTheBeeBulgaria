@@ -49,10 +49,9 @@
         {
             base.OnConfiguring(optionsBuilder);
             
-            // Suppress pending model changes warning
-            // (database may have extra columns from reverted migrations)
-            optionsBuilder.ConfigureWarnings(warnings => 
-                warnings.Ignore(RelationalEventId.PendingModelChangesWarning));
+            // Note: PendingModelChangesWarning is not available in EF Core 6.x
+            // (it was added in EF Core 7.0)
+            // Warnings about pending model changes will appear but won't break the application
         }
 
         protected override void OnModelCreating(ModelBuilder builder)

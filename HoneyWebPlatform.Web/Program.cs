@@ -2,6 +2,7 @@ namespace HoneyWebPlatform.Web
 {
     using System.Reflection;
     using System.IO;
+    using System.Threading.Tasks;
 
     using Microsoft.AspNetCore.Identity;
     using Microsoft.AspNetCore.Mvc;
@@ -220,14 +221,14 @@ using static Common.GeneralApplicationConstants;
             }
 
             // Configure URL binding for Railway (must listen on PORT env var)
-            // ASP.NET Core will automatically use PORT or ASPNETCORE_URLS environment variables
+            // In .NET 9.0, ASP.NET Core automatically reads PORT, but we'll set it explicitly for Railway
             var webPort = Environment.GetEnvironmentVariable("PORT");
             if (!string.IsNullOrEmpty(webPort))
             {
                 // Configure the web host to listen on Railway's PORT
-                // Use both http and https to be safe, but Railway will handle HTTPS termination
+                // Railway expects the app to listen on 0.0.0.0 (all interfaces) on the PORT env var
                 builder.WebHost.UseUrls($"http://0.0.0.0:{webPort}");
-                Console.WriteLine($"Configured to listen on http://0.0.0.0:{webPort}");
+                Console.WriteLine($"[STARTUP] Configured to listen on http://0.0.0.0:{webPort}");
             }
             else
             {
@@ -236,11 +237,13 @@ using static Common.GeneralApplicationConstants;
                 if (!string.IsNullOrEmpty(urls))
                 {
                     builder.WebHost.UseUrls(urls);
-                    Console.WriteLine($"Configured to listen on URLs from ASPNETCORE_URLS: {urls}");
+                    Console.WriteLine($"[STARTUP] Configured to listen on URLs from ASPNETCORE_URLS: {urls}");
                 }
                 else
                 {
-                    Console.WriteLine("PORT and ASPNETCORE_URLS environment variables not set. Using default configuration.");
+                    // Default fallback - listen on port 80
+                    builder.WebHost.UseUrls("http://0.0.0.0:80");
+                    Console.WriteLine("[STARTUP] PORT and ASPNETCORE_URLS not set. Using default: http://0.0.0.0:80");
                 }
             }
 
@@ -265,67 +268,78 @@ using static Common.GeneralApplicationConstants;
                 }
             }
 
-            // Ensure database is created and migrated
-            using (var scope = app.Services.CreateScope())
+            // Ensure database is created and migrated (run asynchronously to not block startup)
+            // This allows the app to start listening immediately while migration happens in background
+            _ = Task.Run(async () =>
             {
-                var context = scope.ServiceProvider.GetRequiredService<HoneyWebPlatformDbContext>();
+                await Task.Delay(TimeSpan.FromSeconds(2)); // Give app time to start listening
                 try
                 {
-                    // Use Migrate() instead of EnsureCreated() for production
-                    if (app.Environment.IsProduction())
+                    using (var scope = app.Services.CreateScope())
                     {
-                        // Check if database exists and can connect
-                        if (context.Database.CanConnect())
+                        var context = scope.ServiceProvider.GetRequiredService<HoneyWebPlatformDbContext>();
+                        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+                        
+                        logger.LogInformation("Starting database migration...");
+                        Console.WriteLine("Starting database migration...");
+                        
+                        // Use Migrate() instead of EnsureCreated() for production
+                        if (app.Environment.IsProduction())
                         {
-                            // Try to apply migrations, but don't fail if there are pending model changes
-                            // (this can happen if database has extra columns from reverted migrations)
-                            try
+                            // Check if database exists and can connect
+                            if (context.Database.CanConnect())
                             {
-                                context.Database.Migrate();
+                                // Try to apply migrations, but don't fail if there are pending model changes
+                                // (this can happen if database has extra columns from reverted migrations)
+                                try
+                                {
+                                    context.Database.Migrate();
+                                    logger.LogInformation("Database migration completed successfully.");
+                                    Console.WriteLine("Database migration completed successfully.");
+                                }
+                                catch (InvalidOperationException ex) when (
+                                    ex.Message.Contains("pending changes") || 
+                                    ex.Message.Contains("PendingModelChangesWarning") ||
+                                    ex.InnerException?.Message?.Contains("pending changes") == true)
+                                {
+                                    logger.LogWarning("Database has pending model changes (likely from reverted migrations). Skipping migration. Database is accessible.");
+                                    Console.WriteLine($"Warning: Database has pending model changes but is accessible. Error: {ex.Message}");
+                                }
                             }
-                            catch (InvalidOperationException ex) when (
-                                ex.Message.Contains("pending changes") || 
-                                ex.Message.Contains("PendingModelChangesWarning") ||
-                                ex.InnerException?.Message?.Contains("pending changes") == true)
+                            else
                             {
-                                var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-                                logger.LogWarning("Database has pending model changes (likely from reverted migrations). Skipping migration. Database is accessible.");
-                                Console.WriteLine($"Warning: Database has pending model changes but is accessible. Error: {ex.Message}");
+                                // Database doesn't exist, create it
+                                context.Database.Migrate();
+                                logger.LogInformation("Database created and migrated successfully.");
+                                Console.WriteLine("Database created and migrated successfully.");
                             }
                         }
                         else
                         {
-                            // Database doesn't exist, create it
-                            context.Database.Migrate();
+                            context.Database.EnsureCreated();
+                            logger.LogInformation("Database ensured created.");
+                            Console.WriteLine("Database ensured created.");
                         }
-                    }
-                    else
-                    {
-                        context.Database.EnsureCreated();
                     }
                 }
                 catch (Exception ex)
                 {
-                    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-                    logger.LogError(ex, "An error occurred while creating/migrating the database.");
-                    
-                    // Log connection string details for debugging (without sensitive data)
-                    logger.LogError("Connection string details: {ConnectionString}", 
-                        connectionString?.Replace("Password=", "Password=***").Replace("Pwd=", "Pwd=***"));
-                    
-                    // Don't rethrow in production to prevent container restart loops
-                    if (!app.Environment.IsProduction())
+                    // Use a separate scope for logging the error
+                    using (var scope = app.Services.CreateScope())
                     {
-                        throw;
+                        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+                        logger.LogError(ex, "An error occurred while creating/migrating the database.");
+                        
+                        // Log connection string details for debugging (without sensitive data)
+                        logger.LogError("Connection string details: {ConnectionString}", 
+                            connectionString?.Replace("Password=", "Password=***").Replace("Pwd=", "Pwd=***"));
                     }
-                    else
-                    {
-                        // In production, log the error but continue startup
-                        logger.LogError("Database migration failed, but continuing application startup");
-                        Console.WriteLine("Database migration error occurred, but continuing application startup");
-                    }
+                    
+                    Console.WriteLine($"Database migration error: {ex.Message}");
+                    Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                    // Don't throw - allow app to continue running even if migration fails
                 }
-            }
+            });
 
             AutoMapperConfig.RegisterMappings(typeof(ErrorViewModel).GetTypeInfo().Assembly);
 
@@ -361,11 +375,22 @@ using static Common.GeneralApplicationConstants;
             app.UseAuthentication();
             app.UseAuthorization();
 
-            // Add health check endpoint
+            // Add health check endpoint (includes database check)
             app.MapHealthChecks("/health");
             
-            // Add simple ping endpoint that doesn't require database
-            app.MapGet("/ping", () => Results.Ok(new { status = "ok", timestamp = DateTime.UtcNow }));
+            // Add simple ping endpoint that doesn't require database - for Railway readiness checks
+            app.MapGet("/ping", () => Results.Ok(new { 
+                status = "ok", 
+                timestamp = DateTime.UtcNow,
+                message = "Application is running and ready to accept requests"
+            }));
+            
+            // Add a simple readiness endpoint for Railway
+            app.MapGet("/ready", () => Results.Ok(new { 
+                status = "ready", 
+                timestamp = DateTime.UtcNow,
+                port = Environment.GetEnvironmentVariable("PORT") ?? "not set"
+            }));
 
             app.EnableOnlineUsersCheck();
 
@@ -416,19 +441,26 @@ using static Common.GeneralApplicationConstants;
                 Console.WriteLine($"Stack trace: {ex.StackTrace}");
             }
 
+            // Log that we're about to start listening
+            var finalPort = Environment.GetEnvironmentVariable("PORT") ?? "80";
+            Console.WriteLine($"[STARTUP] ========================================");
+            Console.WriteLine($"[STARTUP] Application is starting and will listen on port {finalPort}");
+            Console.WriteLine($"[STARTUP] Environment: {app.Environment.EnvironmentName}");
+            Console.WriteLine($"[STARTUP] ========================================");
+            
             // Wrap app.Run in try-catch to catch any unhandled exceptions
             try
             {
-                Console.WriteLine("Starting application...");
+                Console.WriteLine("[STARTUP] Starting Kestrel server...");
                 app.Run();
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"FATAL ERROR: Application crashed: {ex.Message}");
-                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                Console.WriteLine($"[FATAL ERROR] Application crashed: {ex.Message}");
+                Console.WriteLine($"[FATAL ERROR] Stack trace: {ex.StackTrace}");
                 if (ex.InnerException != null)
                 {
-                    Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
+                    Console.WriteLine($"[FATAL ERROR] Inner exception: {ex.InnerException.Message}");
                 }
                 throw; // Re-throw to ensure Railway restarts the container
             }

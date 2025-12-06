@@ -3,6 +3,7 @@ namespace HoneyWebPlatform.Web
     using System.Reflection;
     using System.IO;
     using System.Threading.Tasks;
+    using System.Net.Http;
 
     using Microsoft.AspNetCore.Identity;
     using Microsoft.AspNetCore.Mvc;
@@ -510,6 +511,25 @@ using static Common.GeneralApplicationConstants;
                 Console.WriteLine($"[STARTUP] ✓ Listening on: http://0.0.0.0:{port}");
                 Console.WriteLine($"[STARTUP] ✓ All network interfaces bound (0.0.0.0)");
                 Console.WriteLine($"[STARTUP] ✓ Waiting for Railway proxy to route traffic...");
+                
+                // Test internal connectivity after a short delay
+                _ = Task.Run(async () =>
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(2));
+                    try
+                    {
+                        using (var client = new System.Net.Http.HttpClient())
+                        {
+                            client.Timeout = TimeSpan.FromSeconds(5);
+                            var response = await client.GetAsync($"http://localhost:{port}/ping");
+                            Console.WriteLine($"[SELF-TEST] Internal connectivity test: {response.StatusCode}");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[SELF-TEST] Internal connectivity test failed: {ex.Message}");
+                    }
+                });
             });
             
             lifetime.ApplicationStopping.Register(() =>

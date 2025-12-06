@@ -220,30 +220,28 @@ using static Common.GeneralApplicationConstants;
                 });
             }
 
-            // Configure URL binding for Railway (must listen on PORT env var)
-            // In .NET 9.0, ASP.NET Core automatically reads PORT, but we'll set it explicitly for Railway
+            // Configure URL binding for Railway
+            // Railway provides PORT environment variable - we must listen on 0.0.0.0:PORT
             var webPort = Environment.GetEnvironmentVariable("PORT");
             if (!string.IsNullOrEmpty(webPort))
             {
-                // Configure the web host to listen on Railway's PORT
-                // Railway expects the app to listen on 0.0.0.0 (all interfaces) on the PORT env var
+                // Explicitly configure the URL - Railway requires listening on 0.0.0.0 (all interfaces)
                 builder.WebHost.UseUrls($"http://0.0.0.0:{webPort}");
                 Console.WriteLine($"[STARTUP] Configured to listen on http://0.0.0.0:{webPort}");
             }
             else
             {
-                // Also check ASPNETCORE_URLS as fallback
+                // Fallback - check ASPNETCORE_URLS or use default
                 var urls = Environment.GetEnvironmentVariable("ASPNETCORE_URLS");
                 if (!string.IsNullOrEmpty(urls))
                 {
                     builder.WebHost.UseUrls(urls);
-                    Console.WriteLine($"[STARTUP] Configured to listen on URLs from ASPNETCORE_URLS: {urls}");
+                    Console.WriteLine($"[STARTUP] Using ASPNETCORE_URLS: {urls}");
                 }
                 else
                 {
-                    // Default fallback - listen on port 80
                     builder.WebHost.UseUrls("http://0.0.0.0:80");
-                    Console.WriteLine("[STARTUP] PORT and ASPNETCORE_URLS not set. Using default: http://0.0.0.0:80");
+                    Console.WriteLine("[STARTUP] No PORT or ASPNETCORE_URLS set. Using default: http://0.0.0.0:80");
                 }
             }
 

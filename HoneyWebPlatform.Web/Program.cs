@@ -355,6 +355,14 @@ using static Common.GeneralApplicationConstants;
             // app.UseRequestLocalization();
 
             app.UseRouting();
+            
+            // Add request logging middleware for debugging Railway connectivity
+            app.Use(async (context, next) =>
+            {
+                Console.WriteLine($"[REQUEST] {context.Request.Method} {context.Request.Path} from {context.Connection.RemoteIpAddress}");
+                await next();
+                Console.WriteLine($"[RESPONSE] {context.Request.Method} {context.Request.Path} -> {context.Response.StatusCode}");
+            });
 
             app.UseResponseCaching();
 
@@ -363,24 +371,6 @@ using static Common.GeneralApplicationConstants;
             
             // Enable online users check middleware (must be after auth, before endpoints)
             app.EnableOnlineUsersCheck();
-
-            // Add health check endpoint (includes database check)
-            app.MapHealthChecks("/health");
-            
-            // Add simple ping endpoint that doesn't require database - for Railway readiness checks
-            // These must be registered before UseEndpoints to work properly
-            app.MapGet("/ping", () => Results.Ok(new { 
-                status = "ok", 
-                timestamp = DateTime.UtcNow,
-                message = "Application is running and ready to accept requests"
-            }));
-            
-            // Add a simple readiness endpoint for Railway
-            app.MapGet("/ready", () => Results.Ok(new { 
-                status = "ready", 
-                timestamp = DateTime.UtcNow,
-                port = Environment.GetEnvironmentVariable("PORT") ?? "not set"
-            }));
 
             // Seed administrator in background to not block startup
             if (app.Environment.IsDevelopment())
@@ -416,14 +406,33 @@ using static Common.GeneralApplicationConstants;
                 });
             }
 
+            // Register all endpoints together in UseEndpoints
             app.UseEndpoints(config =>
             {
-                // Map minimal API endpoints first (these work without MVC)
+                // Add health check endpoint (includes database check)
+                config.MapHealthChecks("/health");
+                
+                // Add simple ping endpoint that doesn't require database - for Railway readiness checks
+                config.MapGet("/ping", () => Results.Ok(new { 
+                    status = "ok", 
+                    timestamp = DateTime.UtcNow,
+                    message = "Application is running and ready to accept requests"
+                }));
+                
+                // Add a simple readiness endpoint for Railway
+                config.MapGet("/ready", () => Results.Ok(new { 
+                    status = "ready", 
+                    timestamp = DateTime.UtcNow,
+                    port = Environment.GetEnvironmentVariable("PORT") ?? "not set"
+                }));
+                
+                // Test endpoint
                 config.MapGet("/test", () => Results.Ok(new { 
                     message = "Test endpoint working",
                     timestamp = DateTime.UtcNow 
                 }));
                 
+                // MVC routes
                 config.MapControllerRoute(
                     name: "areas",
                     pattern: "/{area:exists}/{controller=Home}/{action=Index}/{id?}"

@@ -60,7 +60,7 @@
                         Id = h.Id.ToString(),
                         Title = h.Title,
                         Origin = h.Origin,
-                        ImageUrl = string.IsNullOrEmpty(h.ImageUrl) ? "/img/icon/honey-placeholder.jpg" : h.ImageUrl,
+                        ImageUrl = string.IsNullOrEmpty(h.ImageUrl) ? "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTUwIiBoZWlnaHQ9IjE1MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZmY5NzAwIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk1lZDwvdGV4dD48L3N2Zz4=" : h.ImageUrl,
                         Price = h.Price
                     })
                     .ToArrayAsync();

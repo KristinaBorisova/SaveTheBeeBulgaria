@@ -9,6 +9,7 @@ namespace HoneyWebPlatform.Web
     using Microsoft.EntityFrameworkCore;
     using Microsoft.EntityFrameworkCore.Diagnostics;
     using Microsoft.Extensions.Diagnostics.HealthChecks;
+    using Microsoft.Extensions.Hosting;
 
 using HoneyWebPlatform.Services.Data.Models;
 using HoneyWebPlatform.Web.Areas.Hubs;
@@ -266,20 +267,21 @@ using static Common.GeneralApplicationConstants;
                 }
             }
 
-            // Ensure database is created and migrated (run asynchronously to not block startup)
-            // This allows the app to start listening immediately while migration happens in background
+            // Ensure database is created and migrated (run in background to not block startup)
+            // This allows Railway to connect immediately while migration happens
+            var scopeFactory = app.Services.GetRequiredService<IServiceScopeFactory>();
             _ = Task.Run(async () =>
             {
-                await Task.Delay(TimeSpan.FromSeconds(2)); // Give app time to start listening
+                await Task.Delay(TimeSpan.FromSeconds(1)); // Brief delay to let app start listening
                 try
                 {
-                    using (var scope = app.Services.CreateScope())
+                    using (var scope = scopeFactory.CreateScope())
                     {
                         var context = scope.ServiceProvider.GetRequiredService<HoneyWebPlatformDbContext>();
                         var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
                         
-                        logger.LogInformation("Starting database migration...");
-                        Console.WriteLine("Starting database migration...");
+                        logger.LogInformation("Starting database migration in background...");
+                        Console.WriteLine("[DB] Starting database migration in background...");
                         
                         // Use Migrate() instead of EnsureCreated() for production
                         if (app.Environment.IsProduction())
@@ -287,55 +289,41 @@ using static Common.GeneralApplicationConstants;
                             // Check if database exists and can connect
                             if (context.Database.CanConnect())
                             {
-                                // Try to apply migrations, but don't fail if there are pending model changes
-                                // (this can happen if database has extra columns from reverted migrations)
                                 try
                                 {
                                     context.Database.Migrate();
                                     logger.LogInformation("Database migration completed successfully.");
-                                    Console.WriteLine("Database migration completed successfully.");
+                                    Console.WriteLine("[DB] ✓ Database migration completed successfully.");
                                 }
                                 catch (InvalidOperationException ex) when (
                                     ex.Message.Contains("pending changes") || 
                                     ex.Message.Contains("PendingModelChangesWarning") ||
                                     ex.InnerException?.Message?.Contains("pending changes") == true)
                                 {
-                                    logger.LogWarning("Database has pending model changes (likely from reverted migrations). Skipping migration. Database is accessible.");
-                                    Console.WriteLine($"Warning: Database has pending model changes but is accessible. Error: {ex.Message}");
+                                    logger.LogWarning("Database has pending model changes. Skipping migration. Database is accessible.");
+                                    Console.WriteLine("[DB] ⚠ Database has pending model changes but is accessible.");
                                 }
                             }
                             else
                             {
-                                // Database doesn't exist, create it
                                 context.Database.Migrate();
                                 logger.LogInformation("Database created and migrated successfully.");
-                                Console.WriteLine("Database created and migrated successfully.");
+                                Console.WriteLine("[DB] ✓ Database created and migrated successfully.");
                             }
                         }
                         else
                         {
                             context.Database.EnsureCreated();
                             logger.LogInformation("Database ensured created.");
-                            Console.WriteLine("Database ensured created.");
+                            Console.WriteLine("[DB] ✓ Database ensured created.");
                         }
                     }
                 }
                 catch (Exception ex)
                 {
-                    // Use a separate scope for logging the error
-                    using (var scope = app.Services.CreateScope())
-                    {
-                        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-                        logger.LogError(ex, "An error occurred while creating/migrating the database.");
-                        
-                        // Log connection string details for debugging (without sensitive data)
-                        logger.LogError("Connection string details: {ConnectionString}", 
-                            connectionString?.Replace("Password=", "Password=***").Replace("Pwd=", "Pwd=***"));
-                    }
-                    
-                    Console.WriteLine($"Database migration error: {ex.Message}");
-                    Console.WriteLine($"Stack trace: {ex.StackTrace}");
-                    // Don't throw - allow app to continue running even if migration fails
+                    Console.WriteLine($"[DB ERROR] Database migration failed: {ex.Message}");
+                    Console.WriteLine($"[DB ERROR] Stack: {ex.StackTrace}");
+                    // Don't throw - app continues running
                 }
             });
 
@@ -444,7 +432,19 @@ using static Common.GeneralApplicationConstants;
             Console.WriteLine($"[STARTUP] ========================================");
             Console.WriteLine($"[STARTUP] Application is starting and will listen on port {finalPort}");
             Console.WriteLine($"[STARTUP] Environment: {app.Environment.EnvironmentName}");
+            Console.WriteLine($"[STARTUP] All middleware configured");
+            Console.WriteLine($"[STARTUP] All routes configured");
+            Console.WriteLine($"[STARTUP] Ready to start Kestrel server");
             Console.WriteLine($"[STARTUP] ========================================");
+            
+            // Use the application lifetime to log when the app is actually running
+            var lifetime = app.Services.GetRequiredService<IHostApplicationLifetime>();
+            lifetime.ApplicationStarted.Register(() =>
+            {
+                Console.WriteLine($"[STARTUP] ✓ Application has started and is listening for requests");
+                Console.WriteLine($"[STARTUP] ✓ Health check endpoints available: /ping, /ready, /health");
+                Console.WriteLine($"[STARTUP] ✓ Ready to accept HTTP requests");
+            });
             
             // Wrap app.Run in try-catch to catch any unhandled exceptions
             try

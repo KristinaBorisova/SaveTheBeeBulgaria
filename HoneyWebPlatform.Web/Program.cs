@@ -503,10 +503,13 @@ using static Common.GeneralApplicationConstants;
             var lifetime = app.Services.GetRequiredService<IHostApplicationLifetime>();
             lifetime.ApplicationStarted.Register(() =>
             {
+                var port = Environment.GetEnvironmentVariable("PORT") ?? "80";
                 Console.WriteLine($"[STARTUP] ✓ Application has started and is listening for requests");
                 Console.WriteLine($"[STARTUP] ✓ Health check endpoints available: /, /ping, /ready, /health");
                 Console.WriteLine($"[STARTUP] ✓ Ready to accept HTTP requests");
-                Console.WriteLine($"[STARTUP] ✓ Listening on: http://0.0.0.0:{Environment.GetEnvironmentVariable("PORT") ?? "80"}");
+                Console.WriteLine($"[STARTUP] ✓ Listening on: http://0.0.0.0:{port}");
+                Console.WriteLine($"[STARTUP] ✓ All network interfaces bound (0.0.0.0)");
+                Console.WriteLine($"[STARTUP] ✓ Waiting for Railway proxy to route traffic...");
             });
             
             lifetime.ApplicationStopping.Register(() =>

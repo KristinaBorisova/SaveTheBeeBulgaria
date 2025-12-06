@@ -360,11 +360,15 @@ using static Common.GeneralApplicationConstants;
 
             app.UseAuthentication();
             app.UseAuthorization();
+            
+            // Enable online users check middleware (must be after auth, before endpoints)
+            app.EnableOnlineUsersCheck();
 
             // Add health check endpoint (includes database check)
             app.MapHealthChecks("/health");
             
             // Add simple ping endpoint that doesn't require database - for Railway readiness checks
+            // These must be registered before UseEndpoints to work properly
             app.MapGet("/ping", () => Results.Ok(new { 
                 status = "ok", 
                 timestamp = DateTime.UtcNow,
@@ -378,15 +382,48 @@ using static Common.GeneralApplicationConstants;
                 port = Environment.GetEnvironmentVariable("PORT") ?? "not set"
             }));
 
-            app.EnableOnlineUsersCheck();
-
+            // Seed administrator in background to not block startup
             if (app.Environment.IsDevelopment())
             {
-                app.SeedAdministrator(DevelopmentAdminEmail);
+                _ = Task.Run(async () =>
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(3)); // Wait for app to be ready
+                    try
+                    {
+                        using (var scope = app.Services.CreateScope())
+                        {
+                            var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+                            var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
+                            
+                            if (!await roleManager.RoleExistsAsync(AdminRoleName))
+                            {
+                                var role = new IdentityRole<Guid>(AdminRoleName);
+                                await roleManager.CreateAsync(role);
+                                
+                                var adminUser = await userManager.FindByEmailAsync(DevelopmentAdminEmail);
+                                if (adminUser != null)
+                                {
+                                    await userManager.AddToRoleAsync(adminUser, AdminRoleName);
+                                    Console.WriteLine("[SEED] Administrator seeded successfully.");
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[SEED ERROR] Failed to seed administrator: {ex.Message}");
+                    }
+                });
             }
 
             app.UseEndpoints(config =>
             {
+                // Map minimal API endpoints first (these work without MVC)
+                config.MapGet("/test", () => Results.Ok(new { 
+                    message = "Test endpoint working",
+                    timestamp = DateTime.UtcNow 
+                }));
+                
                 config.MapControllerRoute(
                     name: "areas",
                     pattern: "/{area:exists}/{controller=Home}/{action=Index}/{id?}"

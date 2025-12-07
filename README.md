@@ -198,25 +198,38 @@ dotnet test
 
 ## 🚀 Deployment
 
-### Azure App Service Deployment
-The project is configured for deployment to Azure App Service using GitHub Actions:
+### Railway Deployment (Production)
+The project is configured for deployment to Railway using a Modified Git Flow strategy:
 
-1. **Workflow Configuration**
-   - Located in `.github/workflows/master_savethebeebulgaria.yml`
-   - Builds and deploys on push to master branch
-   - Uses Azure App Service deployment
+1. **Production Deployment**
+   - Railway automatically deploys from the `master` branch
+   - Only production-ready code reaches the live site
+   - Uses semantic versioning with Git tags (v1.0.0, v1.1.0, etc.)
 
-2. **Environment Setup**
-   - Configure Azure App Service
-   - Set up connection strings
-   - Configure OAuth providers
-   - Set up email settings
+2. **Branching Strategy**
+   - **`master`**: Production branch (auto-deployed to Railway)
+   - **`dev`**: Development branch (safe for testing)
+   - **`release/*`**: Release preparation branches
+   - **`hotfix/*`**: Emergency production fixes
+   - **`feature/*`**: Optional feature development branches
+
+3. **Release Process**
+   - Monthly releases: `dev` → `release/v1.1.0` → `master`
+   - Hotfixes: `master` → `hotfix/fix-name` → `master`
+   - See [BRANCHING_WORKFLOW.md](BRANCHING_WORKFLOW.md) for detailed workflows
+
+4. **Environment Setup**
+   - Configure Railway environment variables
+   - Set up connection strings for PostgreSQL
+   - Configure OAuth providers (Google, Facebook)
+   - Set up email settings (Resend/SMTP)
 
 ### Docker Support
 The project includes Docker configuration:
 - `Dockerfile` for containerization
 - `docker-compose.yml` for local development
 - Multi-stage build for optimized production images
+- `Dockerfile.railway` for Railway deployment
 
 ## 📁 Project Structure Details
 

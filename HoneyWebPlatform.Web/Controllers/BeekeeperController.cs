@@ -40,6 +40,7 @@ using static Common.NotificationMessagesConstants;
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Become(BecomeBeekeeperFormModel model)
         {
             string? userId = User.GetId();
@@ -87,6 +88,28 @@ using static Common.NotificationMessagesConstants;
 
 
             return RedirectToAction("All", "Honey");
+        }
+
+        [HttpGet]
+        [AllowAnonymous]
+        public async Task<IActionResult> All()
+        {
+            try
+            {
+                var beekeepers = await beekeeperService.GetAllBeekeepersAsync();
+                
+                var viewModel = new AllBeekeepersViewModel
+                {
+                    Beekeepers = beekeepers
+                };
+
+                return View(viewModel);
+            }
+            catch (Exception)
+            {
+                TempData[ErrorMessage] = "Възникна грешка при зареждането на пчеларите!";
+                return RedirectToAction("Index", "Home");
+            }
         }
 
         [HttpGet]

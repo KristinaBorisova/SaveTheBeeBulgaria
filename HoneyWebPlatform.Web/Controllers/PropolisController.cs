@@ -75,6 +75,7 @@
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Add(PropolisFormModel model)
         {
             bool isBeekeeper =

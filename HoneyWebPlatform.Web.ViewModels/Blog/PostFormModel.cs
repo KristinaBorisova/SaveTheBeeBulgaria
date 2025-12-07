@@ -23,12 +23,11 @@
         [Required(ErrorMessage = "Моля, въведете съдържанието.")]
         public string Content { get; set; } = null!;
 
-        [Required(ErrorMessage = "Моля добавете снимка до 2MB.")]
         [Display(Name = "Снимка")]
         [MaxFileSize(ProfilePictureMaxSize, ErrorMessage = "Максималният размер на файла за снимка е 2 мегабайта.")]
         public IFormFile? PostPicture { get; set; }
 
-        public string PostPicturePath { get; set; }
+        public string PostPicturePath { get; set; } = string.Empty;
 
         public void CreateMappings(IProfileExpression configuration)
         {

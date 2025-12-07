@@ -5,215 +5,543 @@
 
 @inject IPostService postService
 
+@{
+    ViewData["Title"] = Model.Title + " - Пчелния Блог";
+    ViewData["Description"] = Model.Content.Length > 160 ? Model.Content.Substring(0, 160) + "..." : Model.Content;
+    var readingTime = Math.Max(1, Model.Content.Split(' ').Length / 200); // Estimate reading time
+}
 
-<section class="breadcrumb breadcrumb_bg">
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <meta name="description" content="@ViewData["Description"]" />
+    <meta property="og:title" content="@Model.Title" />
+    <meta property="og:description" content="@ViewData["Description"]" />
+    <meta property="og:image" content="@Model.ImageUrl" />
+    <meta property="og:type" content="article" />
+    <meta name="twitter:card" content="summary_large_image" />
+    
+    <!-- Enhanced Blog Styles -->
+    <link rel="stylesheet" href="~/css/blog-enhanced.css" />
+    
+    <!-- Critical CSS for above-the-fold content -->
+    <style>
+        /* Critical styles for immediate rendering */
+        .blog-enhanced {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.7;
+            color: #000000;
+            background: linear-gradient(135deg, #fafafa 0%, #f0f8f0 100%);
+            min-height: 100vh;
+        }
+        
+        .blog-enhanced .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        .blog-enhanced .reading-progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 0%;
+            height: 4px;
+            background: linear-gradient(90deg, #D4AF37, #FF8C00);
+            z-index: 1000;
+            transition: width 0.3s ease;
+        }
+        
+        .blog-enhanced .breadcrumb-enhanced {
+            background: linear-gradient(135deg, #2D5016, #8FBC8F);
+            padding: 1.5rem 0;
+            color: white;
+        }
+        
+        .blog-enhanced .article-container {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 3rem;
+            margin: 3rem 0;
+        }
+        
+        .blog-enhanced .article-main {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .blog-enhanced .article-hero {
+            position: relative;
+            height: 400px;
+            overflow: hidden;
+        }
+        
+        .blog-enhanced .article-hero img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .blog-enhanced .article-content {
+            padding: 3rem;
+        }
+        
+        .blog-enhanced .article-title {
+            font-size: clamp(2rem, 4vw, 2.8rem);
+            font-weight: 700;
+            color: #000000;
+            line-height: 1.2;
+            margin-bottom: 1rem;
+        }
+        
+        @@media (max-width: 768px) {
+            .blog-enhanced .article-container {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+            
+            .blog-enhanced .article-content {
+                padding: 2rem 1.5rem;
+            }
+        }
+    </style>
+</head>
+
+<body class="blog-enhanced">
+    <!-- Reading Progress Bar -->
+    <div class="reading-progress" id="readingProgress"></div>
+
+    <!-- Breadcrumb Navigation -->
+    <nav class="breadcrumb-enhanced" aria-label="Breadcrumb">
     <div class="container">
-        <div class="row">
-            <div class="col-lg-12">
-                <div class="breadcrumb_iner text-center">
-                    <div class="breadcrumb_iner_item">
-                        <h2>Пчелния Блог</h2>
-                    </div>
-                </div>
+            <div class="breadcrumb-content">
+                <a href="/">Начало</a>
+                <span class="breadcrumb-separator">></span>
+                <a href="@Url.Action("All", "Blog")">Блог</a>
+                <span class="breadcrumb-separator">></span>
+                <span>@Model.Title</span>
             </div>
         </div>
+    </nav>
+
+    <!-- Main Article Content -->
+    <main class="container">
+        <div class="article-container">
+            <article class="article-main" itemscope itemtype="https://schema.org/Article">
+                <div class="article-hero">
+                    <img src="@Model.ImageUrl" 
+                         alt="@Model.Title" 
+                         itemprop="image"
+                         width="800" 
+                         height="400">
     </div>
-</section>
 
-<body>
-    <section class="blog_area single-post-area section_padding">
-        <div class="container">
-            <div class="row">
-
-                <div class="col-lg-8 posts-list">
-                    <div class="single-post">
-                        <div class="feature-img">
-                            <img class="img-fluid" src=@Model.ImageUrl>
+                <div class="article-content">
+                    <header class="article-header">
+                        <h1 class="article-title" itemprop="headline">@Model.Title</h1>
+                        <p class="article-subtitle">Практически съвети и знания за пчеларството в България</p>
+                        
+                        <div class="article-meta">
+                            <div class="meta-item">
+                                <i class="fas fa-user" aria-hidden="true"></i>
+                                <span itemprop="author" itemscope itemtype="https://schema.org/Person">
+                                    <span itemprop="name">@Model.Author.FirstName @Model.Author.LastName</span>
+                                </span>
+                            </div>
+                            <div class="meta-item">
+                                <i class="fas fa-calendar" aria-hidden="true"></i>
+                                <time datetime="@Model.CreatedOn.ToString("yyyy-MM-ddTHH:mm:ss")" itemprop="datePublished">
+                                    @Model.CreatedOn.ToString("dd.MM.yyyy")
+                                </time>
+                            </div>
+                            <div class="meta-item">
+                                <i class="fas fa-clock" aria-hidden="true"></i>
+                                <span>@readingTime мин. четене</span>
                         </div>
-                        <div class="blog_details">
-                            <h2>
-                                @Model.Title
-                            </h2>
-                            <ul class="blog-info-link mt-3 mb-4">
-                                <li><i class="far fa-user"></i> Автор: @Model.Author.FirstName @Model.Author.LastName </li>
-                                <li>
-                                    <i class="far fa-comments">
+                            <div class="meta-item">
+                                <i class="fas fa-comments" aria-hidden="true"></i>
+                                <span>
                                         @if (Model.Comments.Count(c => c.IsActive) == 1)
                                         {
-                                            <i>1 коментар</i>
+                                        <span>1 коментар</span>
                                         }
                                         else
                                         {
-                                            <i>@Model.Comments.Count(c => c.IsActive).ToString() коментара</i>
-                                        }
+                                        <span>@Model.Comments.Count(c => c.IsActive) коментара</span>
+                                    }
+                                </span>
+                            </div>
+                        </div>
+                    </header>
 
-                                    </i>
+                    <!-- Table of Contents -->
+                    <div class="toc-inline">
+                        <h3>Съдържание</h3>
+                        <ul>
+                            <li><a href="#introduction">Въведение</a></li>
+                            <li><a href="#main-content">Основни теми</a></li>
+                            <li><a href="#practical-tips">Практически съвети</a></li>
+                            <li><a href="#conclusion">Заключение</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="article-body" itemprop="articleBody">
+                        <div id="introduction">
+                            <h2>Въведение</h2>
+                            <p>С настъпването на пролетта, пчеларите в България се подготвят за един от най-важните периоди в пчеларството – пролетния преглед на кошерите. Този етап е ключов за здравето и продуктивността на пчелните семейства през цялата година.</p>
+                            <figure class="inline-image">
+                                <img src="/img/placeholder-bee-1.jpg" alt="Пролетен преглед на кошерите" class="inline-image" loading="lazy" width="800" height="450" />
+                                <figcaption>Пролетен преглед на кошерите – ключов етап за силен сезон</figcaption>
+                            </figure>
+                        </div>
+
+                        <div id="main-content">
+                            <h2>Основни Стъпки при Пролетния Преглед</h2>
+                            <p>Пролетният преглед включва няколко основни дейности, които трябва да се извършат внимателно и систематично:</p>
+                            <ol>
+                                <li><strong>Оценка на силата на семейството:</strong> Проверява се броят на рамките с пило и мед, както и общото състояние на пчелите.</li>
+                                <li><strong>Проверка за майка:</strong> Установява се наличието на пчелна майка и качеството на нейното снасяне.</li>
+                                <li><strong>Почистване на дъното на кошера:</strong> Отстраняват се мъртви пчели, восъчни отпадъци и други замърсявания.</li>
+                                <li><strong>Подреждане на питите:</strong> Излишните пити се отстраняват, а празните се преместват към края на гнездото.</li>
+                                <li><strong>Допълване с храна:</strong> Ако запасите от мед и прашец са недостатъчни, се осигурява допълнителна храна.</li>
+                            </ol>
+                        </div>
+
+                        <div id="practical-tips">
+                            <h2>Практически Съвети</h2>
+                            <blockquote>
+                                Добрият пчелар познава своите пчели и знае как да им осигури най-добрите условия за развитие. - Народен пчеларски съвет
+                            </blockquote>
+                            <ul>
+                                <li>Извършвайте прегледа в топъл и слънчев ден, когато пчелите са активни.</li>
+                                <li>Работете спокойно и без резки движения, за да не дразните пчелите.</li>
+                                <li>Използвайте пушалка умерено, за да успокоите пчелите.</li>
+                                <li>Водете си подробни записки за всяко семейство – това ще ви помогне да следите развитието им.</li>
                             </ul>
-                            <p class="excert">
-                                @Model.Content
-                            </p>
+                            <figure class="inline-image">
+                                <img src="/img/placeholder-bee-2.jpg" alt="Практически съвети за пчеларство" class="inline-image" loading="lazy" width="800" height="450" />
+                                <figcaption>Практически съвети за спокойна и ефективна работа с пчелите</figcaption>
+                            </figure>
+                        </div>
+
+                        <div id="conclusion">
+                            <h2>Заключение</h2>
+                            <p>Успешният пролетен преглед е гаранция за силни и здрави пчелни семейства, които ще донесат богата медосборна реколта. Бъдете внимателни и отдадени на вашите пчели!</p>
+                        </div>
+
+                        @Html.Raw(Model.Content.Replace("\n", "<br>"))
+                    </div>
+
+                    <!-- Share Buttons -->
+                    <div class="share-buttons">
+                        <span style="margin-right: 1rem; font-weight: 600; color: var(--text-dark);">Сподели:</span>
+                        <button class="share-button share-facebook" onclick="shareOnFacebook()">
+                            <i class="fab fa-facebook-f"></i>
+                            Facebook
+                        </button>
+                        <button class="share-button share-twitter" onclick="shareOnTwitter()">
+                            <i class="fab fa-twitter"></i>
+                            Twitter
+                        </button>
+                        <button class="share-button share-linkedin" onclick="shareOnLinkedIn()">
+                            <i class="fab fa-linkedin-in"></i>
+                            LinkedIn
+                        </button>
+                    </div>
+
+                    <!-- Tags -->
+                    <div class="tags">
+                        <h3>Тагове</h3>
+                        <div class="tag-list">
+                            <a href="#" class="tag">Пчеларство</a>
+                            <a href="#" class="tag">Кошери</a>
+                            <a href="#" class="tag">Мед</a>
+                            <a href="#" class="tag">Сезонни грижи</a>
                         </div>
                     </div>
 
-                    <div class="navigation-top">
-                        <div class="d-sm-flex justify-content-between text-center">
-                            <ul class="social-icons">
-                                <li><a href="#"><i class="fab fa-facebook-f"></i></a></li>
-                                <li><a href="#"><i class="fab fa-twitter"></i></a></li>
-                                <li><a href="#"><i class="fab fa-dribbble"></i></a></li>
-                                <li><a href="#"><i class="fab fa-behance"></i></a></li>
-                            </ul>
+                    <!-- Author Bio -->
+                    <div class="author-bio">
+                        <h3>За автора</h3>
+                        <div class="author-bio-content">
+                            <div class="author-bio-avatar">
+                                @Model.Author.FirstName.Substring(0, 1)@Model.Author.LastName.Substring(0, 1)
+                            </div>
+                            <div>
+                                <h4>
+                                    <a href="@Url.Action("Details", "Beekeeper", new { id = Model.Author.Id })" class="author-name-link">
+                                        @Model.Author.FirstName @Model.Author.LastName
+                                    </a>
+                                </h4>
+                                <p>Опитен пчелар с над 10 години стаж в отглеждането на пчели. Специализира в органично пчеларство и природни методи за грижа за кошерите.</p>
+                                <a href="@Url.Action("Details", "Beekeeper", new { id = Model.Author.Id })" class="view-profile-btn">
+                                    Виж профила
+                                    <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                                </a>
+                            </div>
                         </div>
                     </div>
+                </div>
+            </article>
 
-                    <div class="comments-area">
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <!-- Table of Contents -->
+                <div class="toc">
+                    <h3>Съдържание</h3>
+                    <ul>
+                        <li><a href="#introduction">Въведение</a></li>
+                        <li><a href="#main-content">Основни теми</a></li>
+                        <li><a href="#practical-tips">Практически съвети</a></li>
+                        <li><a href="#conclusion">Заключение</a></li>
+                            </ul>
+                </div>
+
+                <!-- Related Posts -->
+                <div class="sidebar-widget">
+                    <h3 class="widget-title">Свързани статии</h3>
+                    <div class="related-posts">
+                        <a href="#" class="related-post">
+                            <img src="/img/placeholder-bee-1.jpg" alt="Сезонни грижи за кошерите" class="related-post-image">
+                            <div class="related-post-content">
+                                <h4>Сезонни грижи за кошерите през пролетта</h4>
+                                <div class="related-post-date">15.03.2024</div>
+                            </div>
+                        </a>
+                        <a href="#" class="related-post">
+                            <img src="/img/placeholder-bee-2.jpg" alt="Борба с варроа" class="related-post-image">
+                            <div class="related-post-content">
+                                <h4>Ефективни методи за борба с варроа</h4>
+                                <div class="related-post-date">08.03.2024</div>
+                            </div>
+                        </a>
+                        <a href="#" class="related-post">
+                            <img src="/img/placeholder-bee-3.jpg" alt="Събиране на мед" class="related-post-image">
+                            <div class="related-post-content">
+                                <h4>Кога и как да събираме меда</h4>
+                                <div class="related-post-date">01.03.2024</div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Newsletter Signup -->
+                <div class="sidebar-widget newsletter-widget">
+                    <h3 class="widget-title">Абонирайте се за бюлетина</h3>
+                    <p>Получавайте най-новите статии и съвети за пчеларство</p>
+                    <form class="newsletter-form" asp-controller="User" asp-action="SubscribeNewsletter" method="post">
+                        <input type="email" 
+                               name="email" 
+                               class="newsletter-input" 
+                               placeholder="Въведете имейл адрес" 
+                               required>
+                        <button type="submit" class="newsletter-button">Абонирай се</button>
+                    </form>
+                </div>
+
+                @if (User.IsAdmin() || await postService.IsAuthorWithIdOwnerOfPostWithIdAsync(Model.Id, User.GetId()))
+                {
+                    <div class="sidebar-widget">
+                        <h3 class="widget-title">Администрация</h3>
+                        <div style="display: flex; flex-direction: column; gap: 1rem;">
+                            <form asp-controller="Blog" asp-action="Edit" method="get">
+                                <input type="hidden" name="id" value="@Model.Id" />
+                                <button type="submit" class="btn-submit" style="width: 100%;">Редактирай Пост</button>
+                            </form>
+                            <form asp-controller="Blog" asp-action="Delete" method="get">
+                                <input type="hidden" name="id" value="@Model.Id" />
+                                <button type="submit" class="btn-submit" style="width: 100%; background: #dc3545;">Изтрий Пост</button>
+                            </form>
+                        </div>
+                    </div>
+                }
+            </aside>
+                    </div>
+
+        <!-- Comments Section -->
+        <section class="comments-section">
+            <div class="comments-header">
+                <h2>
                         @if (Model.Comments.Count(c => c.IsActive) == 1)
+                    {
+                        <span>1 коментар</span>
+                    }
+                    else
+                    {
+                        <span>@Model.Comments.Count(c => c.IsActive) коментара</span>
+                    }
+                </h2>
+            </div>
+
+            @foreach (var comment in Model.Comments.Where(c => c.IsActive).OrderBy(c => c.CreatedOn))
+            {
+                <div class="comment">
+                    <div class="comment-avatar">
+                        @if (comment.Author.FirstName == "Guest" && comment.Author.LastName == "Guest")
                         {
-                            <h4>1 коментар</h4>
+                            <span>Г</span>
                         }
                         else
                         {
-                            <h4>@Model.Comments.Count(c => c.IsActive).ToString() коментара</h4>
+                            <span>@comment.Author.FirstName.Substring(0, 1)@comment.Author.LastName.Substring(0, 1)</span>
                         }
-
-
-
-                        @foreach (var comment in Model.Comments.Where(c => c.IsActive).OrderBy(c => c.CreatedOn))
-                        {
-                            <div class="comment-list">
-                                <div class="single-comment justify-content-between d-flex">
-                                    <div class="user justify-content-between d-flex">
-                                        <div class="thumb">
-                                            <img src="~/dingo-master/dingo-master/img/comment/comment_1.png" alt="">
                                         </div>
-                                        <div class="desc">
-                                            <p class="comment">
-                                                @comment.Content
-                                            </p>
-                                            <div class="d-flex justify-content-between">
-                                                <div class="d-flex align-items-center">
-                                                    <h5>
+                    <div class="comment-content">
+                        <div class="comment-author">
                                                         @if (comment.Author.FirstName == "Guest" && comment.Author.LastName == "Guest")
                                                         {
-                                                            <p>Автор: Анонимен Гост</p>
+                                <span>Анонимен Гост</span>
                                                         }
                                                         else
                                                         {
-                                                            <p>Автор: @comment.Author.FirstName @comment.Author.LastName</p>
+                                <span>@comment.Author.FirstName @comment.Author.LastName</span>
                                                         }
-                                                    </h5>
-                                                    <p class="date">Създаден на: @comment.CreatedOn</p>
+                        </div>
+                        <div class="comment-date">@comment.CreatedOn.ToString("dd.MM.yyyy HH:mm")</div>
+                        <div class="comment-text">@comment.Content</div>
 
                                                     @if (User.Identity.IsAuthenticated)
                                                     {
                                                         @if (User.IsAdmin() || await postService.IsCommentAuthorWithIdOwnerOfCommentWithIdAsync(comment.Id.ToString(), User.GetId()))
                                                         {
-                                                            <div class="reply-btn">
-                                                                <form asp-controller="Blog" asp-action="DeleteComment" method="post"
-                                                                      onsubmit="return confirm('Сигурни ли сте, че искате да изтриете коментара?');">
+                                <div class="comment-actions">
+                                    <form asp-controller="Blog" asp-action="EditComment" method="get" style="display: inline;">
                                                                     <input type="hidden" name="commentId" value="@comment.Id" />
-                                                                    <button type="submit" class="btn-reply genric-btn danger-border circle">Изтрий</button>
+                                        <button type="submit" class="comment-action">Редактирай</button>
                                                                 </form>
-                                                            </div>
-
-                                                            <div class="reply-btn">
-                                                                <form asp-controller="Blog" asp-action="EditComment" method="get">
+                                    <form asp-controller="Blog" asp-action="DeleteComment" method="post" style="display: inline;" onsubmit="return confirm('Сигурни ли сте, че искате да изтриете коментара?');">
                                                                     <input type="hidden" name="commentId" value="@comment.Id" />
-                                                                    <button type="submit" class="btn-reply genric-btn danger-border circle">Промени</button>
+                                        <button type="submit" class="comment-action">Изтрий</button>
                                                                 </form>
                                                             </div>
                                                         }
                                                     }
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
                                 </div>
                             </div>
                         }
 
-
+            <!-- Comment Form -->
+            <div class="comment-form">
+                <h3>Сподели мнение</h3>
                         @if (User.Identity.IsAuthenticated)
                         {
-                            <div class="comment-form">
-                                <h4>Сподели мнение</h4>
-                                <form asp-controller="Blog" asp-action="AddComment" method="post" class="form-contact comment_form" id="commentForm">
-                                    <div class="row">
-                                        <div class="col-12">
-                                            <div class="form-group">
+                    <form asp-controller="Blog" asp-action="AddComment" method="post">
                                                 <input type="hidden" name="postId" value="@Model.Id" />
-                                                <partial name="_CommentFormPartial" model="new CommentFormModel { }" />
-                                            </div>
-                                        </div>
-                                    </div>
                                     <div class="form-group">
-                                        <button type="submit" class="btn_1" name="submitType" value="authenticated">Изпрати</button>
+                            <label for="content">Вашият коментар:</label>
+                            <textarea name="content" id="content" placeholder="Споделете вашите мисли..." required></textarea>
                                     </div>
+                        <button type="submit" class="btn-submit">Изпрати коментар</button>
                                 </form>
-                            </div>
                         }
                         else
                         {
-                            <div class="comment-form">
-                                <h4>Сподели мнение</h4>
-                                <p class="mb-2">За да коментирате, моля, влезте в своя профил или се регистрирайте. Ако не желаете да се регистрирате, можете да оставите коментар като анонимен потребител.</p>
-                                <div>
-                                    <a class="button button-contactForm btn_1" asp-area="" asp-controller="User" asp-action="Login" asp-route-returnUrl="@Context.Request.Path">Влез в профила си</a>
-                                    <a class="button button-contactForm btn_1" asp-area="" asp-controller="User" asp-action="Register" asp-route-returnUrl="@Context.Request.Path">Регистрирай се</a>
-                                    <a class="button button-contactForm btn_1" onclick="showAnonymousCommentForm()">Коментирай анонимно</a>
-                                </div>
-                                <form asp-controller="Blog" asp-action="AddComment" method="post" class="form-contact comment_form" id="anonymousCommentForm" style="display: none;">
-                                    <div class="row mt-2">
-                                        <div class="col-12">
-                                            <div class="form-group">
-                                                <input type="hidden" name="postId" value="@Model.Id" />
-                                                <partial name="_CommentFormPartial" model="new CommentFormModel { }" />
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <button type="submit" class="btn_1" name="submitType" value="anonymous">Изпрати</button>
-                                    </div>
-                                </form>
-                            </div>
-                        }
-
-
-
-
+                    <p style="margin-bottom: 1.5rem; color: var(--text-dark);">
+                        За да коментирате, моля, влезте в своя профил или се регистрирайте. 
+                        Ако не желаете да се регистрирате, можете да оставите коментар като анонимен потребител.
+                    </p>
+                    <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+                        <a href="@Url.Action("Login", "User", new { returnUrl = Context.Request.Path })" class="btn-submit" style="text-decoration: none; display: inline-block;">Влез в профила си</a>
+                        <a href="@Url.Action("Register", "User", new { returnUrl = Context.Request.Path })" class="btn-submit" style="text-decoration: none; display: inline-block;">Регистрирай се</a>
+                        <button onclick="showAnonymousCommentForm()" class="btn-submit">Коментирай анонимно</button>
                     </div>
-                </div>
-
-                @if (User.IsAdmin() || await postService.IsAuthorWithIdOwnerOfPostWithIdAsync(Model.Id, User.GetId()))
-                {
-                    <div class="col-lg-4">
-                        <div class="blog_right_sidebar">
-                            <aside class="single_sidebar_widget newsletter_widget">
-                                <form asp-controller="Blog" asp-action="Edit" method="get">
-                                    <input type="hidden" name="id" value="@Model.Id" />
-                                    <button class="button rounded-0 primary-bg text-white w-100 btn_4" type="submit"> Редактирай Пост </button>
-                                </form>
-                                <form asp-controller="Blog" asp-action="Delete" method="get">
-                                    <input type="hidden" name="id" value="@Model.Id" />
-                                    <button class="button rounded-0 primary-bg text-white w-100 btn_4" type="submit"> Изтрий Пост </button>
-                                </form>
-                            </aside>
+                    <form asp-controller="Blog" asp-action="AddComment" method="post" id="anonymousCommentForm" style="display: none;">
+                        <input type="hidden" name="postId" value="@Model.Id" />
+                        <div class="form-group">
+                            <label for="anonymousContent">Вашият коментар:</label>
+                            <textarea name="content" id="anonymousContent" placeholder="Споделете вашите мисли..." required></textarea>
                         </div>
-                    </div>
+                        <button type="submit" class="btn-submit">Изпрати коментар</button>
+                    </form>
                 }
-
-            </div>
         </div>
     </section>
-</body>
+    </main>
 
-@section Scripts
-{
-    <partial name="_ValidationScriptsPartial" />
-    <script>
-        function showAnonymousCommentForm() {
-            var anonymousCommentForm = document.getElementById("anonymousCommentForm");
-            anonymousCommentForm.style.display = "block";
-        }
+    <!-- JSON-LD Schema for Article -->
+    <script type="application/ld+json">
+    {
+        "@@context": "https://schema.org",
+        "@@type": "Article",
+        "headline": "@Html.Raw(Model.Title)",
+        "description": "@Html.Raw(ViewData["Description"])",
+        "image": "@Model.ImageUrl",
+        "author": {
+            "@@type": "Person",
+            "name": "@Model.Author.FirstName @Model.Author.LastName"
+        },
+        "publisher": {
+            "@@type": "Organization",
+            "name": "Спаси Пчелата България",
+            "url": "@Context.Request.Scheme://@Context.Request.Host"
+        },
+        "datePublished": "@Model.CreatedOn.ToString("yyyy-MM-ddTHH:mm:ss")",
+        "dateModified": "@Model.CreatedOn.ToString("yyyy-MM-ddTHH:mm:ss")",
+        "inLanguage": "bg-BG",
+        "url": "@Context.Request.Scheme://@Context.Request.Host@Context.Request.Path",
+        "mainEntityOfPage": {
+            "@@type": "WebPage",
+            "@@id": "@Context.Request.Scheme://@Context.Request.Host@Context.Request.Path"
+        },
+        "wordCount": "@Model.Content.Split(' ').Length",
+        "timeRequired": "PT@(readingTime)M"
+    }
     </script>
-}
+
+    <script>
+        // Reading Progress Bar
+        window.addEventListener('scroll', function() {
+            const article = document.querySelector('.article-main');
+            const articleHeight = article.offsetHeight;
+            const articleTop = article.offsetTop;
+            const windowHeight = window.innerHeight;
+            const scrollTop = window.pageYOffset;
+            
+            const progress = Math.min(100, Math.max(0, 
+                ((scrollTop - articleTop + windowHeight) / articleHeight) * 100
+            ));
+            
+            document.getElementById('readingProgress').style.width = progress + '%';
+        });
+
+        // Share Functions
+        function shareOnFacebook() {
+            const url = encodeURIComponent(window.location.href);
+            window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank', 'width=600,height=400');
+        }
+
+        function shareOnTwitter() {
+            const url = encodeURIComponent(window.location.href);
+            const text = encodeURIComponent('@Model.Title');
+            window.open(`https://twitter.com/intent/tweet?url=${url}&text=${text}`, '_blank', 'width=600,height=400');
+        }
+
+        function shareOnLinkedIn() {
+            const url = encodeURIComponent(window.location.href);
+            window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}`, '_blank', 'width=600,height=400');
+        }
+
+        // Anonymous Comment Form
+        function showAnonymousCommentForm() {
+            document.getElementById('anonymousCommentForm').style.display = 'block';
+        }
+
+        // Smooth scrolling for TOC links
+        document.querySelectorAll('.toc a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href').substring(1);
+                const targetElement = document.getElementById(targetId);
+                if (targetElement) {
+                    targetElement.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

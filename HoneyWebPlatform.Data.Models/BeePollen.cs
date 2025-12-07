@@ -9,6 +9,7 @@
         public BeePollen()
         {
             Id = Guid.NewGuid();
+            IsActive = true; //default value
         }
 
         [Key]

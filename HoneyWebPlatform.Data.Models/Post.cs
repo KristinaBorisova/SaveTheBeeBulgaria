@@ -13,6 +13,7 @@
         {
             Id = Guid.NewGuid();
             Comments = new HashSet<Comment>();
+            IsActive = true; //default value
         }
 
         [Key]

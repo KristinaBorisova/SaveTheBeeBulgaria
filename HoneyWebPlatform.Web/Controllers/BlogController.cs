@@ -99,6 +99,7 @@
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Add(PostFormModel input)
         {
             bool isUser = User.Identity.IsAuthenticated;
@@ -122,6 +123,13 @@
                 if (input.PostPicture != null && input.PostPicture.Length > 0)
                 {
                     var uploadsFolder = Path.Combine(webHostEnvironment.WebRootPath, "uploads", "PostPictures");
+                    
+                    // Ensure the uploads directory exists
+                    if (!Directory.Exists(uploadsFolder))
+                    {
+                        Directory.CreateDirectory(uploadsFolder);
+                    }
+                    
                     var uniqueFileName = Guid.NewGuid().ToString() + "_" + input.PostPicture.FileName;
                     var filePath = Path.Combine(uploadsFolder, uniqueFileName);
 
@@ -131,6 +139,11 @@
                     }
 
                     input.PostPicturePath = "/uploads/PostPictures/" + uniqueFileName;
+                }
+                else
+                {
+                    // Set default image path if no picture is uploaded
+                    input.PostPicturePath = "/img/icon/post-placeholder.jpg";
                 }
 
                 var postId = await postService.CreateAndReturnIdAsync(input, authorId!);

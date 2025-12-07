@@ -22,5 +22,7 @@ using HoneyWebPlatform.Data.Models;
         Task<bool> HasPropolisWithIdAsync(string? userId, string propolisId);
 
         Task<HoneyWebPlatform.Data.Models.Beekeeper?> GetBeekeeperProfileByIdAsync(string beekeeperId);
+
+        Task<IEnumerable<BeekeeperCardViewModel>> GetAllBeekeepersAsync();
     }
 }

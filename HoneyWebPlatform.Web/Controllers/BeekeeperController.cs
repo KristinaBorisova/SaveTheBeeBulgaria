@@ -11,18 +11,26 @@ using ViewModels.Honey;
 
 using static Common.NotificationMessagesConstants;
 
-    [Authorize]
     public class BeekeeperController : Controller
     {
         private readonly IBeekeeperService beekeeperService;
         private readonly IWebHostEnvironment webHostEnvironment;
         private readonly IHoneyService honeyService;
+        private readonly IEmailSender emailSender;
+        private readonly IConfiguration configuration;
 
-        public BeekeeperController(IBeekeeperService beekeeperService, IWebHostEnvironment webHostEnvironment, IHoneyService honeyService)
+        public BeekeeperController(
+            IBeekeeperService beekeeperService, 
+            IWebHostEnvironment webHostEnvironment, 
+            IHoneyService honeyService,
+            IEmailSender emailSender,
+            IConfiguration configuration)
         {
             this.beekeeperService = beekeeperService;
             this.webHostEnvironment = webHostEnvironment;
             this.honeyService = honeyService;
+            this.emailSender = emailSender;
+            this.configuration = configuration;
         }
 
         [HttpGet]
@@ -113,19 +121,175 @@ using static Common.NotificationMessagesConstants;
             }
         }
 
+        [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RecommendBeekeeper(RecommendBeekeeperFormModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                // If validation fails, return to map with errors
+                var googleMapsApiKey = HttpContext.RequestServices
+                    .GetService<IConfiguration>()?["GoogleMaps:ApiKey"] 
+                    ?? Environment.GetEnvironmentVariable("GOOGLE_MAPS_API_KEY")
+                    ?? "";
+
+                var allBeekeepers = await beekeeperService.GetAllBeekeepersAsync();
+                var mapMarkers = new List<BeekeeperMapMarker>();
+                
+                foreach (var beekeeper in allBeekeepers)
+                {
+                    var profileUrl = Url.Action("Profile", "Beekeeper", new { id = beekeeper.Id }) ?? "";
+                    if (string.IsNullOrEmpty(profileUrl))
+                    {
+                        profileUrl = $"/Beekeeper/Profile/{beekeeper.Id}";
+                    }
+
+                    var beekeeperHoneys = await honeyService.AllByBeekeeperIdAsync(beekeeper.Id);
+                    var honeyTypes = beekeeperHoneys
+                        .Select(h => h.Title)
+                        .Distinct()
+                        .Take(5)
+                        .ToList();
+
+                    mapMarkers.Add(new BeekeeperMapMarker
+                    {
+                        Id = beekeeper.Id,
+                        FullName = beekeeper.FullName,
+                        Region = beekeeper.Region ?? "България",
+                        ShopLocation = beekeeper.Region ?? "България",
+                        Latitude = beekeeper.Latitude ?? 42.7339,
+                        Longitude = beekeeper.Longitude ?? 25.4858,
+                        HoneyTypes = honeyTypes.Any() ? honeyTypes : new List<string> { "Различни видове мед" },
+                        ProfileUrl = profileUrl
+                    });
+                }
+
+                var viewModel = new BeekeepersMapViewModel
+                {
+                    Beekeepers = mapMarkers,
+                    GoogleMapsApiKey = googleMapsApiKey,
+                    RecommendationForm = model
+                };
+
+                return View("Map", viewModel);
+            }
+
+            try
+            {
+                // Get admin email from configuration or use default
+                var adminEmail = configuration["EmailSettings:AdminEmail"] 
+                    ?? configuration["EmailSettings:SmtpUsername"] 
+                    ?? "savethebeebulgaria@gmail.com";
+
+                // Log for verification
+                Console.WriteLine($"[BEEKEEPER RECOMMENDATION] Sending email to: {adminEmail}");
+                Console.WriteLine($"[BEEKEEPER RECOMMENDATION] Beekeeper: {model.BeekeeperName}");
+                Console.WriteLine($"[BEEKEEPER RECOMMENDATION] Contact: {model.ContactNumber}");
+                Console.WriteLine($"[BEEKEEPER RECOMMENDATION] Region: {model.Region}");
+                Console.WriteLine($"[BEEKEEPER RECOMMENDATION] Colonies: {model.NumberOfColonies ?? "Not specified"}");
+                Console.WriteLine($"[BEEKEEPER RECOMMENDATION] Recommender: {model.RecommenderName} ({model.RecommenderEmail})");
+
+                // Create email body
+                var emailSubject = "Нова препоръка за пчелар - Save The Bee Bulgaria";
+                var coloniesInfo = !string.IsNullOrEmpty(model.NumberOfColonies) 
+                    ? $"<div class='info-box'><div class='info-label'>Брой пчелни семейства:</div><div class='info-value'>{model.NumberOfColonies}</div></div>"
+                    : "";
+                
+                var emailBody = $@"
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <style>
+        body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+        .header {{ background: linear-gradient(135deg, #F59F0A, #D97706); color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }}
+        .content {{ background: #f9f9f9; padding: 30px; border-radius: 0 0 8px 8px; }}
+        .info-box {{ background: white; padding: 20px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #F59F0A; }}
+        .info-label {{ font-weight: bold; color: #F59F0A; margin-bottom: 5px; }}
+        .info-value {{ margin-bottom: 15px; }}
+        .footer {{ text-align: center; margin-top: 30px; color: #666; font-size: 0.9em; }}
+    </style>
+</head>
+<body>
+    <div class='container'>
+        <div class='header'>
+            <h2>Нова препоръка за пчелар</h2>
+        </div>
+        <div class='content'>
+            <div class='info-box'>
+                <div class='info-label'>Име на пчелар:</div>
+                <div class='info-value'>{model.BeekeeperName}</div>
+            </div>
+            <div class='info-box'>
+                <div class='info-label'>Номер за връзка:</div>
+                <div class='info-value'>{model.ContactNumber}</div>
+            </div>
+            <div class='info-box'>
+                <div class='info-label'>Регион:</div>
+                <div class='info-value'>{model.Region}</div>
+            </div>
+            {coloniesInfo}
+            <div class='info-box'>
+                <div class='info-label'>Защо се препоръчва:</div>
+                <div class='info-value'>{model.RecommendationReason}</div>
+            </div>
+            <div class='info-box'>
+                <div class='info-label'>Препоръчан от:</div>
+                <div class='info-value'>{model.RecommenderName} ({model.RecommenderEmail})</div>
+            </div>
+            <div class='footer'>
+                <p>Това съобщение е изпратено автоматично от формата за препоръки на Save The Bee Bulgaria.</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>";
+
+                // Send email
+                await emailSender.SendEmailAsync(adminEmail, emailSubject, emailBody, "");
+                
+                Console.WriteLine($"[BEEKEEPER RECOMMENDATION] ✓ Email sent successfully to {adminEmail}");
+
+                TempData[SuccessMessage] = "Благодарим ви! Вашата препоръка е изпратена успешно. Ще се свържем с вас скоро.";
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[BEEKEEPER RECOMMENDATION] ✗ Error sending email: {ex.Message}");
+                Console.WriteLine($"[BEEKEEPER RECOMMENDATION] Stack trace: {ex.StackTrace}");
+                TempData[ErrorMessage] = "Възникна грешка при изпращането на препоръката. Моля, опитайте отново по-късно.";
+            }
+
+            return RedirectToAction("Map", new { success = true });
+        }
+
         [HttpGet]
         [AllowAnonymous]
-        public async Task<IActionResult> Map()
+        public async Task<IActionResult> Map(bool? success = false)
         {
             try
             {
-                // Using hardcoded test data for demonstration
-                // TODO: Replace with database query once migration is applied on Railway
-                var beekeepers = new List<BeekeeperCardViewModel>
+                // Show success notification if redirected from successful submission
+                if (success == true && TempData.ContainsKey(SuccessMessage))
+                {
+                    ViewBag.ShowSuccessNotification = true;
+                }
+                // Get all beekeepers from database (works in both SQLite local and PostgreSQL production)
+                var allBeekeepers = await beekeeperService.GetAllBeekeepersAsync();
+                
+                // Get Google Maps API key from configuration
+                var googleMapsApiKey = HttpContext.RequestServices
+                    .GetService<IConfiguration>()?["GoogleMaps:ApiKey"] 
+                    ?? Environment.GetEnvironmentVariable("GOOGLE_MAPS_API_KEY")
+                    ?? "";
+
+                // Hardcoded test data for local development when database is empty
+                var hardcodedBeekeepers = new List<BeekeeperCardViewModel>
                 {
                     new BeekeeperCardViewModel
                     {
-                        Id = "6d013af5-d0e9-4704-a6a9-877ae0000000",
+                        Id = "6d013af5-d0e9-4704-a6a9-877ae0000000", // Placeholder - will be replaced if found in DB
                         FullName = "Ивайло Борисов",
                         Region = "Северозападен, Враца",
                         ShopLocation = "Пазар на Враца, Централен пазар",
@@ -133,71 +297,89 @@ using static Common.NotificationMessagesConstants;
                         Longitude = 23.5074,
                         HoneyCount = 5
                     }
-                    // Commented out other beekeepers for now - only showing Ивайло Борисов
-                    /*
-                    new BeekeeperCardViewModel
-                    {
-                        Id = Guid.NewGuid().ToString(),
-                        FullName = "Мария Петрова",
-                        Region = "Югозападен",
-                        ShopLocation = "Централна градинка, София",
-                        Latitude = 42.6979,
-                        Longitude = 23.3219,
-                        HoneyCount = 3
-                    },
-                    new BeekeeperCardViewModel
-                    {
-                        Id = Guid.NewGuid().ToString(),
-                        FullName = "Иван Димитров",
-                        Region = "Южен централен",
-                        ShopLocation = "Струма бул., Пловдив",
-                        Latitude = 42.1354,
-                        Longitude = 24.7453,
-                        HoneyCount = 4
-                    },
-                    new BeekeeperCardViewModel
-                    {
-                        Id = Guid.NewGuid().ToString(),
-                        FullName = "Анна Иванова",
-                        Region = "Североизточен",
-                        ShopLocation = "Приморски, Варна",
-                        Latitude = 43.2141,
-                        Longitude = 27.9147,
-                        HoneyCount = 6
-                    },
-                    new BeekeeperCardViewModel
-                    {
-                        Id = Guid.NewGuid().ToString(),
-                        FullName = "Георги Станев",
-                        Region = "Югоизточен",
-                        ShopLocation = "Черно море бул., Бургас",
-                        Latitude = 42.5048,
-                        Longitude = 27.4626,
-                        HoneyCount = 8
-                    }
-                    */
                 };
+
+                // Use database beekeepers if available, otherwise use hardcoded data for testing
+                var beekeepersToShow = allBeekeepers.Any() 
+                    ? allBeekeepers.ToList()
+                    : hardcodedBeekeepers;
+
+                // Build map markers from beekeepers
+                var mapMarkers = new List<BeekeeperMapMarker>();
                 
-                // Mock API key - replace with actual Google Maps API key from configuration
-                var googleMapsApiKey = HttpContext.RequestServices
-                    .GetService<IConfiguration>()?["GoogleMaps:ApiKey"] 
-                    ?? Environment.GetEnvironmentVariable("GOOGLE_MAPS_API_KEY")
-                    ?? "";
+                foreach (var beekeeper in beekeepersToShow)
+                {
+                    string beekeeperId = beekeeper.Id;
+                    string profileUrl = string.Empty;
+                    
+                    // If using hardcoded data, try to find the beekeeper in database by name
+                    // This allows the profile link to work if the beekeeper exists in production DB
+                    if (!allBeekeepers.Any() && beekeepersToShow == hardcodedBeekeepers)
+                    {
+                        var actualBeekeeperId = await beekeeperService.GetBeekeeperIdByFullNameAsync(beekeeper.FullName);
+                        if (!string.IsNullOrEmpty(actualBeekeeperId))
+                        {
+                            beekeeperId = actualBeekeeperId;
+                        }
+                    }
+                    
+                    // Only generate profile URL if beekeeper exists in database (check by trying to get their profile)
+                    // In production: all beekeepers are from DB, so profile URLs will work
+                    // In local: only works if beekeeper was found by name lookup above
+                    var beekeeperExists = await beekeeperService.GetBeekeeperProfileByIdAsync(beekeeperId) != null;
+                    
+                    if (beekeeperExists)
+                    {
+                        profileUrl = Url.Action("Profile", "Beekeeper", new { id = beekeeperId }) ?? "";
+                        if (string.IsNullOrEmpty(profileUrl))
+                        {
+                            profileUrl = $"/Beekeeper/Profile/{beekeeperId}";
+                        }
+                    }
+                    
+                    // Get honey types for this beekeeper (only if beekeeper exists in DB)
+                    var honeyTypes = new List<string>();
+                    if (beekeeperExists)
+                    {
+                        try
+                        {
+                            var beekeeperHoneys = await honeyService.AllByBeekeeperIdAsync(beekeeperId);
+                            honeyTypes = beekeeperHoneys
+                                .Select(h => h.Title)
+                                .Distinct()
+                                .Take(5)
+                                .ToList();
+                        }
+                        catch
+                        {
+                            // If honey lookup fails, use default
+                            honeyTypes = new List<string> { "Различни видове мед" };
+                        }
+                    }
+                    
+                    if (!honeyTypes.Any())
+                    {
+                        honeyTypes = new List<string> { "Различни видове мед" };
+                    }
+                    
+                    mapMarkers.Add(new BeekeeperMapMarker
+                    {
+                        Id = beekeeperId,
+                        FullName = beekeeper.FullName,
+                        Region = beekeeper.Region ?? "България",
+                        ShopLocation = beekeeper.ShopLocation ?? beekeeper.Region ?? "България",
+                        Latitude = beekeeper.Latitude ?? 43.2044, // Use hardcoded coordinates if not set
+                        Longitude = beekeeper.Longitude ?? 23.5074,
+                        HoneyTypes = honeyTypes,
+                        ProfileUrl = profileUrl // Empty if beekeeper doesn't exist, so link won't show
+                    });
+                }
 
                 var viewModel = new BeekeepersMapViewModel
                 {
-                    Beekeepers = beekeepers.Select(b => new BeekeeperMapMarker
-                    {
-                        Id = b.Id,
-                        FullName = b.FullName,
-                        Region = b.Region,
-                        ShopLocation = b.ShopLocation,
-                        Latitude = b.Latitude ?? 42.7339, // Default to Bulgaria center if not set
-                        Longitude = b.Longitude ?? 25.4858,
-                        HoneyTypes = new List<string> { "Липов", "Акациев", "Билков" }, // Test honey types
-                        ProfileUrl = Url.Action("Profile", "Beekeeper", new { id = b.Id }) ?? ""
-                    }),
-                    GoogleMapsApiKey = googleMapsApiKey
+                    Beekeepers = mapMarkers,
+                    GoogleMapsApiKey = googleMapsApiKey,
+                    RecommendationForm = new RecommendBeekeeperFormModel()
                 };
 
                 return View(viewModel);

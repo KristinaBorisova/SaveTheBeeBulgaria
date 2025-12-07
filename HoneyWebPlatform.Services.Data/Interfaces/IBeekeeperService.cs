@@ -24,5 +24,7 @@ using HoneyWebPlatform.Data.Models;
         Task<HoneyWebPlatform.Data.Models.Beekeeper?> GetBeekeeperProfileByIdAsync(string beekeeperId);
 
         Task<IEnumerable<BeekeeperCardViewModel>> GetAllBeekeepersAsync();
+
+        Task<string?> GetBeekeeperIdByFullNameAsync(string fullName);
     }
 }

@@ -5,6 +5,8 @@ namespace HoneyWebPlatform.Web.ViewModels.Beekeeper
         public IEnumerable<BeekeeperMapMarker> Beekeepers { get; set; } = new List<BeekeeperMapMarker>();
         
         public string GoogleMapsApiKey { get; set; } = string.Empty;
+
+        public RecommendBeekeeperFormModel RecommendationForm { get; set; } = new RecommendBeekeeperFormModel();
     }
 
     public class BeekeeperMapMarker

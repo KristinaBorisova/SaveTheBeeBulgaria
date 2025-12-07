@@ -164,5 +164,19 @@
 
             return beekeepers;
         }
+
+        public async Task<string?> GetBeekeeperIdByFullNameAsync(string fullName)
+        {
+            // Query using projection to avoid materializing Beekeeper entity (which has Latitude/Longitude
+            // that may not exist in local SQLite database but exist in production PostgreSQL)
+            // Access User navigation property directly - EF Core will handle the join
+            var beekeeperId = await dbContext
+                .Beekeepers
+                .Where(b => (b.User.FirstName + " " + b.User.LastName).Trim() == fullName)
+                .Select(b => b.Id)
+                .FirstOrDefaultAsync();
+
+            return beekeeperId == Guid.Empty ? null : beekeeperId.ToString();
+        }
     }
 }

@@ -1,4 +1,5 @@
 @model BeekeepersMapViewModel
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 
 @{
     ViewBag.Title = "Интерактивна карта на Пчелари";
@@ -195,13 +196,558 @@
             height: 70vh;
         }
     }
+
+    /* Recommendation Section Styles */
+    .recommendation-section {
+        margin-top: 3rem;
+        padding: 2rem;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+
+    .recommendation-cta {
+        text-align: center;
+        padding: 0 1rem;
+    }
+
+    .recommendation-text {
+        font-size: 1.2rem;
+        color: #333;
+        margin-bottom: 1.5rem;
+        line-height: 1.7;
+        font-weight: 400;
+        max-width: 800px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .recommend-btn {
+        padding: 1rem 2.5rem;
+        background: #F59F0A;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        box-shadow: 0 2px 5px rgba(245, 159, 10, 0.3);
+        min-width: 200px;
+        display: inline-block;
+    }
+
+    .recommend-btn:hover {
+        background: #f39c12;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(245, 159, 10, 0.4);
+    }
+
+    .recommend-btn:active {
+        transform: translateY(0);
+    }
+
+    .recommendation-form {
+        margin-top: 2rem;
+        padding: 2rem;
+        background: #f8f9fa;
+        border-radius: 10px;
+        border: 2px solid #F59F0A;
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+
+    .recommendation-form h3 {
+        color: #F59F0A;
+        margin-bottom: 1.5rem;
+        font-size: 1.5rem;
+        font-weight: 700;
+        text-align: center;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+        width: 100%;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: #333;
+        font-size: 1rem;
+        line-height: 1.5;
+    }
+
+    .form-group input {
+        width: 100%;
+        padding: 1rem 1.125rem; /* Balanced padding: Top/bottom: 1rem (16px), Left/right: 1.125rem */
+        border: 2px solid #ddd;
+        border-radius: 5px;
+        font-size: 1rem; /* Standard font size */
+        font-family: inherit;
+        transition: all 0.3s;
+        background: white;
+        cursor: text;
+        box-sizing: border-box;
+        color: #333;
+        min-height: 48px; /* Reduced to match dropdown height while ensuring text visibility */
+        line-height: 1.5; /* Balanced line-height for proper text display */
+        vertical-align: middle;
+        overflow: visible; /* Ensure text is never clipped */
+    }
+
+    .form-group select {
+        width: 100%;
+        padding: 1rem 3rem 1rem 1.125rem; /* Balanced padding: top/bottom 1rem (16px), left 1.125rem, right 3rem for arrow */
+        border: 2px solid #ddd;
+        border-radius: 5px;
+        font-size: 1rem; /* Standard font size */
+        font-family: inherit;
+        transition: all 0.3s;
+        background: white;
+        cursor: pointer;
+        box-sizing: border-box;
+        color: #333;
+        font-weight: 500;
+        min-height: 48px; /* Reduced height but still ensures text visibility */
+        height: auto; /* Allow height to adjust if needed */
+        line-height: 1.5; /* Balanced line-height for proper text display */
+        overflow: visible !important; /* Ensure text is never clipped */
+        text-overflow: clip; /* Don't hide text, show it all */
+        white-space: normal; /* Allow text to wrap if needed */
+        /* Keep native appearance for better compatibility */
+        -webkit-appearance: menulist;
+        -moz-appearance: menulist;
+        appearance: menulist;
+    }
+
+    /* Style for when no value is selected (placeholder) */
+    .form-group select.placeholder-selected {
+        color: #999;
+        font-weight: normal;
+        font-style: italic;
+    }
+
+    /* Style for when a value is selected */
+    .form-group select.value-selected {
+        color: #333;
+        font-weight: 500;
+        font-style: normal;
+    }
+
+    .form-group select option {
+        color: #333;
+        background: white;
+        padding: 0.5rem;
+    }
+
+    .form-group select option:first-child {
+        color: #999;
+        font-style: italic;
+    }
+
+    .form-group select option:checked,
+    .form-group select option[selected] {
+        background: #F59F0A;
+        color: white;
+        font-weight: 600;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus {
+        outline: none;
+        border-color: #F59F0A;
+        box-shadow: 0 0 0 3px rgba(245, 159, 10, 0.1);
+    }
+
+    .form-group select:hover {
+        border-color: #F59F0A;
+    }
+
+    .form-group textarea {
+        resize: vertical;
+        min-height: 400px; /* Significantly increased height to ensure ALL text is visible */
+        font-family: inherit;
+        line-height: 2; /* Increased line spacing significantly to prevent text clipping */
+        padding: 1.5rem; /* Significantly increased padding to 1.5rem (24px) for better text visibility */
+        overflow-y: auto; /* Allow scrolling if content exceeds height */
+        overflow-x: hidden; /* Prevent horizontal scrolling */
+        vertical-align: top;
+        font-size: 1.0625rem; /* Slightly larger font for better visibility */
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: flex-end;
+        margin-top: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .submit-btn {
+        padding: 0.875rem 2rem;
+        background: #F59F0A;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        min-width: 140px;
+        flex: 1;
+        max-width: 200px;
+    }
+
+    .submit-btn:hover {
+        background: #f39c12;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 5px rgba(245, 159, 10, 0.3);
+    }
+
+    .submit-btn:active {
+        transform: translateY(0);
+    }
+
+    .cancel-btn {
+        padding: 0.875rem 2rem;
+        background: #6c757d;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        min-width: 140px;
+        flex: 1;
+        max-width: 200px;
+    }
+
+    .cancel-btn:hover {
+        background: #5a6268;
+        transform: translateY(-1px);
+    }
+
+    .cancel-btn:active {
+        transform: translateY(0);
+    }
+
+    .text-danger {
+        color: #dc3545;
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+        display: block;
+        line-height: 1.4;
+    }
+
+    .validation-summary {
+        background: #fff3cd;
+        border: 1px solid #ffc107;
+        border-radius: 5px;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+        color: #856404;
+    }
+
+    /* Hide validation summary when it's valid (no errors) */
+    .validation-summary.validation-summary-valid {
+        display: none !important;
+    }
+
+    /* Only show validation summary when there are actual errors */
+    .validation-summary:not(.validation-summary-valid) {
+        display: block;
+    }
+
+    .validation-summary ul {
+        margin: 0;
+        padding-left: 1.5rem;
+        list-style-type: disc;
+    }
+
+    .validation-summary li {
+        margin-bottom: 0.5rem;
+        line-height: 1.5;
+    }
+
+    .validation-summary li:last-child {
+        margin-bottom: 0;
+    }
+
+    /* Responsive Design */
+    @@media (max-width: 768px) {
+        .recommendation-section {
+            padding: 1.25rem;
+            margin-top: 2rem;
+        }
+
+        .recommendation-cta {
+            padding: 0;
+        }
+
+        .recommendation-text {
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 1.25rem;
+        }
+
+        .recommend-btn {
+            padding: 0.875rem 1.5rem;
+            font-size: 1rem;
+            min-width: auto;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .recommendation-form {
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .recommendation-form h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-group label {
+            font-size: 0.95rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-group input {
+            padding: 0.875rem 1rem; /* Balanced padding for mobile: 14px top/bottom */
+            font-size: 16px; /* Prevents zoom on iOS */
+            border-width: 2px;
+            min-height: 48px; /* Reduced to match dropdown height while ensuring text visibility on mobile */
+            line-height: 1.5; /* Balanced line-height for proper text display */
+            overflow: visible;
+        }
+
+        .form-group select {
+            padding: 0.875rem 2.75rem 0.875rem 1rem; /* Balanced padding on mobile: 14px top/bottom */
+            font-size: 16px; /* Prevents zoom on iOS */
+            border-width: 2px;
+            min-height: 48px; /* Reduced height but still ensures text visibility on mobile */
+            height: auto; /* Allow height to adjust if needed */
+            line-height: 1.5; /* Balanced line-height for proper text display */
+            overflow: visible !important;
+            white-space: normal;
+        }
+
+        .form-group textarea {
+            min-height: 320px; /* Significantly increased for mobile to ensure ALL text is visible */
+            padding: 1.25rem; /* Significantly increased padding for mobile */
+            font-size: 16px; /* Prevents zoom on iOS */
+            border-width: 2px;
+            line-height: 2; /* Increased line spacing significantly */
+        }
+
+        .form-actions {
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-top: 1.5rem;
+        }
+
+        .submit-btn,
+        .cancel-btn {
+            width: 100%;
+            max-width: 100%;
+            padding: 0.875rem 1.5rem;
+        }
+
+        .text-danger {
+            font-size: 0.8125rem;
+        }
+    }
+
+    @@media (max-width: 480px) {
+        .recommendation-section {
+            padding: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .recommendation-text {
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .recommend-btn {
+            padding: 0.75rem 1.25rem;
+            font-size: 0.95rem;
+        }
+
+        .recommendation-form {
+            padding: 1.25rem;
+        }
+
+        .recommendation-form h3 {
+            font-size: 1.1rem;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            padding: 0.625rem;
+            font-size: 16px;
+        }
+    }
+
+    /* Improve touch targets for mobile */
+    @@media (hover: none) and (pointer: coarse) {
+        .recommend-btn,
+        .submit-btn,
+        .cancel-btn {
+            min-height: 44px; /* Minimum touch target size */
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            min-height: 44px;
+        }
+    }
+
+    /* Success Notification Pop-up */
+    .success-notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: linear-gradient(135deg, #28a745, #20c997);
+        color: white;
+        padding: 1.5rem 2rem;
+        border-radius: 10px;
+        box-shadow: 0 4px 20px rgba(40, 167, 69, 0.4);
+        z-index: 10000;
+        display: none;
+        animation: slideInRight 0.3s ease-out;
+        max-width: 400px;
+        min-width: 300px;
+    }
+
+    .success-notification.show {
+        display: block;
+    }
+
+    .success-notification-content {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .success-notification-icon {
+        font-size: 2rem;
+        flex-shrink: 0;
+    }
+
+    .success-notification-text {
+        flex: 1;
+    }
+
+    .success-notification-title {
+        font-weight: 700;
+        font-size: 1.1rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .success-notification-message {
+        font-size: 0.95rem;
+        opacity: 0.95;
+        line-height: 1.4;
+    }
+
+    .success-notification-close {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 1.5rem;
+        cursor: pointer;
+        padding: 0;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0.8;
+        transition: opacity 0.3s;
+        flex-shrink: 0;
+    }
+
+    .success-notification-close:hover {
+        opacity: 1;
+    }
+
+    @@keyframes slideInRight {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+
+    @@keyframes slideOutRight {
+        from {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        to {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+    }
+
+    .success-notification.hiding {
+        animation: slideOutRight 0.3s ease-out forwards;
+    }
+
+    @@media (max-width: 768px) {
+        .success-notification {
+            top: 10px;
+            right: 10px;
+            left: 10px;
+            max-width: none;
+            min-width: auto;
+            padding: 1.25rem 1.5rem;
+        }
+
+        .success-notification-title {
+            font-size: 1rem;
+        }
+
+        .success-notification-message {
+            font-size: 0.9rem;
+        }
+    }
 </style>
+
+<!-- Success Notification Pop-up -->
+<div id="successNotification" class="success-notification">
+    <div class="success-notification-content">
+        <div class="success-notification-icon">✓</div>
+        <div class="success-notification-text">
+            <div class="success-notification-title">Благодарим ви!</div>
+            <div class="success-notification-message">Вашата препоръка е изпратена успешно. Ще се свържем с вас скоро.</div>
+        </div>
+        <button type="button" class="success-notification-close" onclick="hideSuccessNotification()" aria-label="Close">×</button>
+    </div>
+</div>
 
 <div class="map-page-container">
     <div class="container">
         <div class="page-header">
             <h1>Интерактивна карта на Пчелари</h1>
-            <p>Намерете пчелари в България и опознайте качествата им мед</p>
+            <p>Намерете малки местни пчелари в България и опознайте качествения им мед!</p>
         </div>
 
         <div class="map-filters">
@@ -238,6 +784,87 @@
         <div class="map-container">
             <div id="map" style="background: #e9ecef; display: flex; align-items: center; justify-content: center; color: #666;">
                 Loading map...
+            </div>
+        </div>
+
+        <!-- Beekeeper Recommendation Section -->
+        <div class="recommendation-section">
+            <div class="recommendation-cta">
+                <p class="recommendation-text">
+                    Искаш ли да ни помогнеш да разширим картата с повече малки местни пчелари? 
+                    Препоръчай ни пчелар, а ние ще се погрижим за останалото!
+                </p>
+                <button type="button" class="recommend-btn" onclick="toggleRecommendationForm()">
+                    Препоръчай пчелар
+                </button>
+            </div>
+
+            <div id="recommendationForm" class="recommendation-form" style="display: none;">
+                <h3>Препоръчай пчелар</h3>
+                <form asp-controller="Beekeeper" asp-action="RecommendBeekeeper" method="post" id="beekeeperRecommendationForm">
+                    <div asp-validation-summary="All" class="validation-summary"></div>
+
+                    <div class="form-group">
+                        <label asp-for="RecommendationForm.BeekeeperName">Име на пчелар *</label>
+                        <input asp-for="RecommendationForm.BeekeeperName" class="form-control" placeholder="Въведете името на пчелара" />
+                        <span asp-validation-for="RecommendationForm.BeekeeperName" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="RecommendationForm.ContactNumber">Номер за връзка *</label>
+                        <input asp-for="RecommendationForm.ContactNumber" class="form-control" placeholder="+359..." />
+                        <span asp-validation-for="RecommendationForm.ContactNumber" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="RecommendationForm.Region">Регион *</label>
+                        <select asp-for="RecommendationForm.Region" class="form-control" required onchange="updateSelectDisplay(this)">
+                            <option value="">Изберете регион</option>
+                            <option value="Северозападен">Северозападен (Враца, Монтана, Видин, Плевен, Ловеч)</option>
+                            <option value="Северен централен">Северен централен (Русе, Разград, Шумен, Търговище, Силистра, Добрич)</option>
+                            <option value="Североизточен">Североизточен (Варна)</option>
+                            <option value="Югозападен">Югозападен (София, Перник, Кюстендил, Благоевград)</option>
+                            <option value="Южен централен">Южен централен (Пловдив, Пазарджик, Смолян, Кърджали, Хасково, Стара Загора)</option>
+                            <option value="Югоизточен">Югоизточен (Бургас, Ямбол)</option>
+                        </select>
+                        <span asp-validation-for="RecommendationForm.Region" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="RecommendationForm.NumberOfColonies">Брой пчелни семейства</label>
+                        <select asp-for="RecommendationForm.NumberOfColonies" class="form-control" onchange="updateSelectDisplay(this)">
+                            <option value="">Изберете брой</option>
+                            <option value="<10">По-малко от 10</option>
+                            <option value="<50">10-50</option>
+                            <option value="<100">51-100</option>
+                            <option value="100+">Над 100</option>
+                        </select>
+                        <span asp-validation-for="RecommendationForm.NumberOfColonies" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="RecommendationForm.RecommendationReason">Защо ни препоръчвате този медопроизводител? *</label>
+                        <textarea asp-for="RecommendationForm.RecommendationReason" class="form-control" rows="8" placeholder="Разкажете ни защо препоръчвате този пчелар..."></textarea>
+                        <span asp-validation-for="RecommendationForm.RecommendationReason" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="RecommendationForm.RecommenderName">Кой го препоръчва: Име *</label>
+                        <input asp-for="RecommendationForm.RecommenderName" class="form-control" placeholder="Вашето име" />
+                        <span asp-validation-for="RecommendationForm.RecommenderName" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="RecommendationForm.RecommenderEmail">Имейл за обратна връзка *</label>
+                        <input asp-for="RecommendationForm.RecommenderEmail" type="email" class="form-control" placeholder="your.email@example.com" />
+                        <span asp-validation-for="RecommendationForm.RecommenderEmail" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="submit-btn">Изпрати препоръка</button>
+                        <button type="button" class="cancel-btn" onclick="toggleRecommendationForm()">Отказ</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -364,13 +991,17 @@
             ? `<p><strong>Локация:</strong> <a href="https://www.google.com/maps/dir/?api=1&destination=${beekeeper.latitude},${beekeeper.longitude}" target="_blank" style="color: #F59F0A; text-decoration: underline; cursor: pointer;">${escapeHtml(beekeeper.shopLocation)}</a></p>`
             : '';
 
+        const profileLink = beekeeper.profileUrl && beekeeper.profileUrl.trim() !== '' 
+            ? `<a href="${beekeeper.profileUrl}" class="profile-link">Виж профил →</a>`
+            : '<p style="color: #999; font-size: 0.9rem;">Профилът не е наличен</p>';
+
         return `
             <div class="beekeeper-info-window">
                 <h3>${escapeHtml(beekeeper.fullName)}</h3>
                 <p><strong>Регион:</strong> ${escapeHtml(beekeeper.region || 'България')}</p>
                 ${honeyTypesHtml}
                 ${shopLocationHtml}
-                <a href="${beekeeper.profileUrl}" target="_blank">Виж профил →</a>
+                ${profileLink}
             </div>
         `;
     }
@@ -429,5 +1060,129 @@
 
     // Note: Filters now require clicking "Търси" button to apply
     // Event listeners removed to allow manual search trigger
+
+    // Toggle recommendation form visibility
+    function toggleRecommendationForm() {
+        const form = document.getElementById('recommendationForm');
+        if (form.style.display === 'none' || form.style.display === '') {
+            form.style.display = 'block';
+            form.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        } else {
+            form.style.display = 'none';
+        }
+    }
+
+    // Update select display immediately when changed
+    function updateSelectDisplay(selectElement) {
+        if (!selectElement) return;
+        
+        const hasValue = selectElement.value && selectElement.value !== '';
+        const selectedOption = selectElement.options[selectElement.selectedIndex];
+        
+        // Remove existing classes
+        selectElement.classList.remove('placeholder-selected', 'value-selected');
+        
+        if (hasValue && selectedOption) {
+            // Value is selected - show in dark text
+            selectElement.classList.add('value-selected');
+            selectElement.style.color = '#333';
+            selectElement.style.fontWeight = '500';
+            selectElement.style.fontStyle = 'normal';
+            
+            // Ensure the selected option text is visible
+            // The native select should show this automatically, but we ensure it's styled correctly
+            console.log('Selected value:', selectElement.value, 'Selected text:', selectedOption.text);
+        } else {
+            // No value selected - show placeholder style
+            selectElement.classList.add('placeholder-selected');
+            selectElement.style.color = '#999';
+            selectElement.style.fontWeight = 'normal';
+            selectElement.style.fontStyle = 'italic';
+        }
+    }
+
+    // Initialize select displays on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        // Find select elements by their name attribute (ASP.NET generates name from asp-for)
+        const regionSelect = document.querySelector('select[name*="Region"]');
+        const coloniesSelect = document.querySelector('select[name*="NumberOfColonies"]');
+        
+        // Initialize both selects
+        if (regionSelect) {
+            updateSelectDisplay(regionSelect);
+        }
+        
+        if (coloniesSelect) {
+            updateSelectDisplay(coloniesSelect);
+        }
+        
+        // Also update on form show
+        const form = document.getElementById('recommendationForm');
+        if (form) {
+            const observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+                        if (form.style.display !== 'none') {
+                            updateSelectDisplay(regionSelect);
+                            updateSelectDisplay(coloniesSelect);
+                        }
+                    }
+                });
+            });
+            observer.observe(form, { attributes: true, attributeFilter: ['style'] });
+        }
+    });
+
+    // Show success notification
+    function showSuccessNotification() {
+        const notification = document.getElementById('successNotification');
+        if (notification) {
+            notification.classList.remove('hiding');
+            notification.classList.add('show');
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                hideSuccessNotification();
+            }, 5000);
+        }
+    }
+
+    // Hide success notification
+    function hideSuccessNotification() {
+        const notification = document.getElementById('successNotification');
+        if (notification) {
+            notification.classList.add('hiding');
+            setTimeout(() => {
+                notification.classList.remove('show', 'hiding');
+            }, 300);
+        }
+    }
+
+    // Check if form was submitted successfully (from TempData or ViewBag)
+    document.addEventListener('DOMContentLoaded', function() {
+        // Check for success message in URL
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('success') === 'true') {
+            showSuccessNotification();
+            // Clean URL
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+        
+        // Also check if ViewBag.ShowSuccessNotification is set
+        @if (ViewBag.ShowSuccessNotification == true)
+        {
+            <text>
+            showSuccessNotification();
+            </text>
+        }
+    });
+
+    // Handle form submission success
+    const form = document.getElementById('beekeeperRecommendationForm');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            // Form will submit normally, success will be handled by page reload with TempData
+        });
+    }
 </script>
 

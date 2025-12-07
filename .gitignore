@@ -361,8 +361,3 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
-
-# Sensitive configuration files - use environment variables instead
-appsettings.Development.json
-appsettings.Local.json
-*.secrets.json

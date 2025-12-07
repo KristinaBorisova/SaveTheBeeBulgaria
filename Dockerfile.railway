@@ -1,13 +1,16 @@
-# Use a specific .NET 6.0 image
-FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS base
+# Use .NET 9.0 image
+FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
 WORKDIR /app
-EXPOSE 80
+# Expose port - Railway will set PORT env var dynamically
+EXPOSE 8080
 
-FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
 
-# Copy csproj files
+# Copy csproj files and solution file
+COPY *.sln ./
 COPY HoneyWebPlatform.Web/*.csproj ./HoneyWebPlatform.Web/
+COPY HoneyWebPlatform.Common/*.csproj ./HoneyWebPlatform.Common/
 COPY HoneyWebPlatform.Data/*.csproj ./HoneyWebPlatform.Data/
 COPY HoneyWebPlatform.Data.Models/*.csproj ./HoneyWebPlatform.Data.Models/
 COPY HoneyWebPlatform.Services.Data/*.csproj ./HoneyWebPlatform.Services.Data/
@@ -16,8 +19,8 @@ COPY HoneyWebPlatform.Services.Mapping/*.csproj ./HoneyWebPlatform.Services.Mapp
 COPY HoneyWebPlatform.Web.Infrastructure/*.csproj ./HoneyWebPlatform.Web.Infrastructure/
 COPY HoneyWebPlatform.Web.ViewModels/*.csproj ./HoneyWebPlatform.Web.ViewModels/
 
-# Restore dependencies
-RUN dotnet restore "HoneyWebPlatform.Web/HoneyWebPlatform.Web.csproj"
+# Restore dependencies (using --no-cache to force fresh download)
+RUN dotnet restore "HoneyWebPlatform.Web/HoneyWebPlatform.Web.csproj" --no-cache
 
 # Copy everything else
 COPY . .

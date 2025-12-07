@@ -2,11 +2,15 @@ namespace HoneyWebPlatform.Web
 {
     using System.Reflection;
     using System.IO;
+    using System.Threading.Tasks;
+    using System.Net.Http;
 
     using Microsoft.AspNetCore.Identity;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.EntityFrameworkCore;
+    using Microsoft.EntityFrameworkCore.Diagnostics;
     using Microsoft.Extensions.Diagnostics.HealthChecks;
+    using Microsoft.Extensions.Hosting;
 
 using HoneyWebPlatform.Services.Data.Models;
 using HoneyWebPlatform.Web.Areas.Hubs;
@@ -113,6 +117,9 @@ using static Common.GeneralApplicationConstants;
                 {
                     // Use PostgreSQL for production
                     options.UseNpgsql(connectionString);
+                    // Suppress pending model changes warning in production (database may have extra columns from reverted migrations)
+                    options.ConfigureWarnings(warnings => 
+                        warnings.Ignore(RelationalEventId.PendingModelChangesWarning));
                 }
             });
 
@@ -215,6 +222,30 @@ using static Common.GeneralApplicationConstants;
                 });
             }
 
+            // Configure URL binding for Railway
+            // Railway provides PORT environment variable - we must listen on 0.0.0.0:PORT
+            var webPort = Environment.GetEnvironmentVariable("PORT");
+            if (!string.IsNullOrEmpty(webPort))
+            {
+                // Explicitly configure the URL - Railway requires listening on 0.0.0.0 (all interfaces)
+                builder.WebHost.UseUrls($"http://0.0.0.0:{webPort}");
+                Console.WriteLine($"[STARTUP] Configured to listen on http://0.0.0.0:{webPort}");
+            }
+            else
+            {
+                // Fallback - check ASPNETCORE_URLS or use default
+                var urls = Environment.GetEnvironmentVariable("ASPNETCORE_URLS");
+                if (!string.IsNullOrEmpty(urls))
+                {
+                    builder.WebHost.UseUrls(urls);
+                    Console.WriteLine($"[STARTUP] Using ASPNETCORE_URLS: {urls}");
+                }
+                else
+                {
+                    builder.WebHost.UseUrls("http://0.0.0.0:80");
+                    Console.WriteLine("[STARTUP] No PORT or ASPNETCORE_URLS set. Using default: http://0.0.0.0:80");
+                }
+            }
 
             WebApplication app = builder.Build();
 
@@ -237,43 +268,65 @@ using static Common.GeneralApplicationConstants;
                 }
             }
 
-            // Ensure database is created and migrated
-            using (var scope = app.Services.CreateScope())
+            // Ensure database is created and migrated (run in background to not block startup)
+            // This allows Railway to connect immediately while migration happens
+            var scopeFactory = app.Services.GetRequiredService<IServiceScopeFactory>();
+            _ = Task.Run(async () =>
             {
-                var context = scope.ServiceProvider.GetRequiredService<HoneyWebPlatformDbContext>();
+                await Task.Delay(TimeSpan.FromSeconds(1)); // Brief delay to let app start listening
                 try
                 {
-                    // Use Migrate() instead of EnsureCreated() for production
-                    if (app.Environment.IsProduction())
+                    using (var scope = scopeFactory.CreateScope())
                     {
-                        context.Database.Migrate();
-                    }
-                    else
-                    {
-                        context.Database.EnsureCreated();
+                        var context = scope.ServiceProvider.GetRequiredService<HoneyWebPlatformDbContext>();
+                        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+                        
+                        logger.LogInformation("Starting database migration in background...");
+                        Console.WriteLine("[DB] Starting database migration in background...");
+                        
+                        // Use Migrate() instead of EnsureCreated() for production
+                        if (app.Environment.IsProduction())
+                        {
+                            // Check if database exists and can connect
+                            if (context.Database.CanConnect())
+                            {
+                                try
+                                {
+                                    context.Database.Migrate();
+                                    logger.LogInformation("Database migration completed successfully.");
+                                    Console.WriteLine("[DB] ✓ Database migration completed successfully.");
+                                }
+                                catch (InvalidOperationException ex) when (
+                                    ex.Message.Contains("pending changes") || 
+                                    ex.Message.Contains("PendingModelChangesWarning") ||
+                                    ex.InnerException?.Message?.Contains("pending changes") == true)
+                                {
+                                    logger.LogWarning("Database has pending model changes. Skipping migration. Database is accessible.");
+                                    Console.WriteLine("[DB] ⚠ Database has pending model changes but is accessible.");
+                                }
+                            }
+                            else
+                            {
+                                context.Database.Migrate();
+                                logger.LogInformation("Database created and migrated successfully.");
+                                Console.WriteLine("[DB] ✓ Database created and migrated successfully.");
+                            }
+                        }
+                        else
+                        {
+                            context.Database.EnsureCreated();
+                            logger.LogInformation("Database ensured created.");
+                            Console.WriteLine("[DB] ✓ Database ensured created.");
+                        }
                     }
                 }
                 catch (Exception ex)
                 {
-                    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-                    logger.LogError(ex, "An error occurred while creating/migrating the database.");
-                    
-                    // Log connection string details for debugging (without sensitive data)
-                    logger.LogError("Connection string details: {ConnectionString}", 
-                        connectionString?.Replace("Password=", "Password=***").Replace("Pwd=", "Pwd=***"));
-                    
-                    // Don't rethrow in production to prevent container restart loops
-                    if (!app.Environment.IsProduction())
-                    {
-                        throw;
-                    }
-                    else
-                    {
-                        // In production, log the error but continue startup
-                        logger.LogError("Database migration failed, but continuing application startup");
-                    }
+                    Console.WriteLine($"[DB ERROR] Database migration failed: {ex.Message}");
+                    Console.WriteLine($"[DB ERROR] Stack: {ex.StackTrace}");
+                    // Don't throw - app continues running
                 }
-            }
+            });
 
             AutoMapperConfig.RegisterMappings(typeof(ErrorViewModel).GetTypeInfo().Assembly);
 
@@ -284,38 +337,115 @@ using static Common.GeneralApplicationConstants;
             }
             else
             {
-                app.UseExceptionHandler("/Home/Error/500");
-                app.UseStatusCodePagesWithRedirects("/Home/Error?statusCode={0}");
+                // Use a simpler error handler that doesn't require database/controllers
+                app.UseExceptionHandler("/error");
+                // Don't use UseStatusCodePagesWithRedirects as it requires controllers
+                // app.UseStatusCodePagesWithRedirects("/Home/Error?statusCode={0}");
 
                 app.UseHsts();
             }
 
-            // HTTPS redirection disabled for local development without certificate
-            // app.UseHttpsRedirection();
+            // Only use HTTPS redirection if not on Railway (Railway handles HTTPS at proxy level)
+            // Check if we're on Railway by checking for PORT environment variable
+            var isRailway = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("PORT"));
+            if (!isRailway)
+            {
+                app.UseHttpsRedirection();
+            }
             app.UseStaticFiles();
 
             // Add localization middleware - COMMENTED OUT FOR SIMPLICITY
             // app.UseRequestLocalization();
 
             app.UseRouting();
+            
+            // Add request logging middleware for debugging Railway connectivity
+            app.Use(async (context, next) =>
+            {
+                Console.WriteLine($"[REQUEST] {context.Request.Method} {context.Request.Path} from {context.Connection.RemoteIpAddress}");
+                await next();
+                Console.WriteLine($"[RESPONSE] {context.Request.Method} {context.Request.Path} -> {context.Response.StatusCode}");
+            });
 
             app.UseResponseCaching();
 
             app.UseAuthentication();
             app.UseAuthorization();
-
-            // Add health check endpoint
-            app.MapHealthChecks("/health");
-
+            
+            // Enable online users check middleware (must be after auth, before endpoints)
             app.EnableOnlineUsersCheck();
 
+            // Seed administrator in background to not block startup
             if (app.Environment.IsDevelopment())
             {
-                app.SeedAdministrator(DevelopmentAdminEmail);
+                _ = Task.Run(async () =>
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(3)); // Wait for app to be ready
+                    try
+                    {
+                        using (var scope = app.Services.CreateScope())
+                        {
+                            var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+                            var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
+                            
+                            if (!await roleManager.RoleExistsAsync(AdminRoleName))
+                            {
+                                var role = new IdentityRole<Guid>(AdminRoleName);
+                                await roleManager.CreateAsync(role);
+                                
+                                var adminUser = await userManager.FindByEmailAsync(DevelopmentAdminEmail);
+                                if (adminUser != null)
+                                {
+                                    await userManager.AddToRoleAsync(adminUser, AdminRoleName);
+                                    Console.WriteLine("[SEED] Administrator seeded successfully.");
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[SEED ERROR] Failed to seed administrator: {ex.Message}");
+                    }
+                });
             }
 
+            // Register all endpoints together in UseEndpoints
             app.UseEndpoints(config =>
             {
+                // Root endpoint redirects to Home page
+                // Keep health check endpoints available for Railway monitoring
+                config.MapGet("/", () => Results.Redirect("/Home"));
+                
+                // Add health check endpoint (includes database check)
+                config.MapHealthChecks("/health");
+                
+                // Add simple ping endpoint that doesn't require database - for Railway readiness checks
+                config.MapGet("/ping", () => Results.Ok(new { 
+                    status = "ok", 
+                    timestamp = DateTime.UtcNow,
+                    message = "Application is running and ready to accept requests"
+                }));
+                
+                // Add a simple readiness endpoint for Railway
+                config.MapGet("/ready", () => Results.Ok(new { 
+                    status = "ready", 
+                    timestamp = DateTime.UtcNow,
+                    port = Environment.GetEnvironmentVariable("PORT") ?? "not set"
+                }));
+                
+                // Test endpoint
+                config.MapGet("/test", () => Results.Ok(new { 
+                    message = "Test endpoint working",
+                    timestamp = DateTime.UtcNow 
+                }));
+                
+                // Simple error endpoint
+                config.MapGet("/error", () => Results.Ok(new { 
+                    error = "An error occurred",
+                    timestamp = DateTime.UtcNow 
+                }));
+                
+                // MVC routes
                 config.MapControllerRoute(
                     name: "areas",
                     pattern: "/{area:exists}/{controller=Home}/{action=Index}/{id?}"
@@ -334,8 +464,92 @@ using static Common.GeneralApplicationConstants;
                 config.MapHub<OrderHub>("/orderHub");
             });
 
+            // Log startup information
+            try
+            {
+                var startupLogger = app.Services.GetRequiredService<ILogger<Program>>();
+                var httpPort = Environment.GetEnvironmentVariable("PORT") ?? "Not set";
+                var urls = builder.Configuration["ASPNETCORE_URLS"] ?? Environment.GetEnvironmentVariable("ASPNETCORE_URLS") ?? "Not configured";
+                startupLogger.LogInformation("Application starting. Environment: {Environment}, PORT: {Port}, URLs: {Urls}", 
+                    app.Environment.EnvironmentName, httpPort, urls);
+                Console.WriteLine($"Application is ready. Environment: {app.Environment.EnvironmentName}");
+                Console.WriteLine($"PORT environment variable: {httpPort}");
+                Console.WriteLine($"ASPNETCORE_URLS: {urls}");
+                if (httpPort != "Not set")
+                {
+                    Console.WriteLine($"Application will listen on: http://0.0.0.0:{httpPort}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"ERROR during startup logging: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+            }
 
-            app.Run();
+            // Log that we're about to start listening
+            var finalPort = Environment.GetEnvironmentVariable("PORT") ?? "80";
+            Console.WriteLine($"[STARTUP] ========================================");
+            Console.WriteLine($"[STARTUP] Application is starting and will listen on port {finalPort}");
+            Console.WriteLine($"[STARTUP] Environment: {app.Environment.EnvironmentName}");
+            Console.WriteLine($"[STARTUP] All middleware configured");
+            Console.WriteLine($"[STARTUP] All routes configured");
+            Console.WriteLine($"[STARTUP] Ready to start Kestrel server");
+            Console.WriteLine($"[STARTUP] ========================================");
+            
+            // Use the application lifetime to log when the app is actually running
+            var lifetime = app.Services.GetRequiredService<IHostApplicationLifetime>();
+            lifetime.ApplicationStarted.Register(() =>
+            {
+                var port = Environment.GetEnvironmentVariable("PORT") ?? "80";
+                Console.WriteLine($"[STARTUP] ✓ Application has started and is listening for requests");
+                Console.WriteLine($"[STARTUP] ✓ Health check endpoints available: /, /ping, /ready, /health");
+                Console.WriteLine($"[STARTUP] ✓ Ready to accept HTTP requests");
+                Console.WriteLine($"[STARTUP] ✓ Listening on: http://0.0.0.0:{port}");
+                Console.WriteLine($"[STARTUP] ✓ All network interfaces bound (0.0.0.0)");
+                Console.WriteLine($"[STARTUP] ✓ Waiting for Railway proxy to route traffic...");
+                
+                // Test internal connectivity after a short delay
+                _ = Task.Run(async () =>
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(2));
+                    try
+                    {
+                        using (var client = new System.Net.Http.HttpClient())
+                        {
+                            client.Timeout = TimeSpan.FromSeconds(5);
+                            var response = await client.GetAsync($"http://localhost:{port}/ping");
+                            Console.WriteLine($"[SELF-TEST] Internal connectivity test: {response.StatusCode}");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[SELF-TEST] Internal connectivity test failed: {ex.Message}");
+                    }
+                });
+            });
+            
+            lifetime.ApplicationStopping.Register(() =>
+            {
+                Console.WriteLine($"[SHUTDOWN] Application is shutting down...");
+            });
+            
+            // Wrap app.Run in try-catch to catch any unhandled exceptions
+            try
+            {
+                Console.WriteLine("[STARTUP] Starting Kestrel server...");
+                Console.WriteLine("[STARTUP] Waiting for incoming requests...");
+                app.Run();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[FATAL ERROR] Application crashed: {ex.Message}");
+                Console.WriteLine($"[FATAL ERROR] Stack trace: {ex.StackTrace}");
+                if (ex.InnerException != null)
+                {
+                    Console.WriteLine($"[FATAL ERROR] Inner exception: {ex.InnerException.Message}");
+                }
+                throw; // Re-throw to ensure Railway restarts the container
+            }
         }
 
         /// Checking if all the services are added for each entity

@@ -23,6 +23,9 @@
     "SiteKey": "",
     "SecretKey": ""
   },
+  "GoogleMaps": {
+    "ApiKey": ""
+  },
   "Authentication": {
     "Google": {
       "ClientId": "YOUR_GOOGLE_CLIENT_ID",
@@ -34,3 +37,4 @@
     }
   }
 }
+

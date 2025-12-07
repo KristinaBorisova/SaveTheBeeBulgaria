@@ -155,10 +155,10 @@ using static Common.NotificationMessagesConstants;
                     {
                         Id = beekeeper.Id,
                         FullName = beekeeper.FullName,
-                        Region = beekeeper.Region ?? "България",
-                        ShopLocation = beekeeper.Region ?? "България",
-                        Latitude = beekeeper.Latitude ?? 42.7339,
-                        Longitude = beekeeper.Longitude ?? 25.4858,
+                        Region = beekeeper.Location ?? "България", // Use Location from BeekeeperCardViewModel
+                        ShopLocation = beekeeper.Location ?? "България",
+                        Latitude = 42.7339, // Default coordinates for Bulgaria center
+                        Longitude = 25.4858,
                         HoneyTypes = honeyTypes.Any() ? honeyTypes : new List<string> { "Различни видове мед" },
                         ProfileUrl = profileUrl
                     });
@@ -284,9 +284,9 @@ using static Common.NotificationMessagesConstants;
                     ?? "";
 
                 // Hardcoded test data for local development when database is empty
-                var hardcodedBeekeepers = new List<BeekeeperCardViewModel>
+                var hardcodedBeekeepers = new List<BeekeeperMapMarker>
                 {
-                    new BeekeeperCardViewModel
+                    new BeekeeperMapMarker
                     {
                         Id = "6d013af5-d0e9-4704-a6a9-877ae0000000", // Placeholder - will be replaced if found in DB
                         FullName = "Ивайло Борисов",
@@ -294,84 +294,116 @@ using static Common.NotificationMessagesConstants;
                         ShopLocation = "Пазар на Враца, Централен пазар",
                         Latitude = 43.2044,
                         Longitude = 23.5074,
-                        HoneyCount = 5
+                        HoneyTypes = new List<string> { "Различни видове мед" }
                     }
                 };
-
-                // Use database beekeepers if available, otherwise use hardcoded data for testing
-                var beekeepersToShow = allBeekeepers.Any() 
-                    ? allBeekeepers.ToList()
-                    : hardcodedBeekeepers;
 
                 // Build map markers from beekeepers
                 var mapMarkers = new List<BeekeeperMapMarker>();
                 
-                foreach (var beekeeper in beekeepersToShow)
+                if (allBeekeepers.Any())
                 {
-                    string beekeeperId = beekeeper.Id;
-                    string profileUrl = string.Empty;
-                    
-                    // If using hardcoded data, try to find the beekeeper in database by name
-                    // This allows the profile link to work if the beekeeper exists in production DB
-                    if (!allBeekeepers.Any() && beekeepersToShow == hardcodedBeekeepers)
+                    // Use database beekeepers
+                    foreach (var beekeeper in allBeekeepers)
                     {
-                        var actualBeekeeperId = await beekeeperService.GetBeekeeperIdByFullNameAsync(beekeeper.FullName);
+                        string beekeeperId = beekeeper.Id;
+                        string profileUrl = string.Empty;
+                        
+                        // Generate profile URL
+                        var beekeeperExists = await beekeeperService.GetBeekeeperProfileByIdAsync(beekeeperId) != null;
+                        
+                        if (beekeeperExists)
+                        {
+                            profileUrl = Url.Action("Profile", "Beekeeper", new { id = beekeeperId }) ?? "";
+                            if (string.IsNullOrEmpty(profileUrl))
+                            {
+                                profileUrl = $"/Beekeeper/Profile/{beekeeperId}";
+                            }
+                        }
+                        
+                        // Get honey types for this beekeeper
+                        var honeyTypes = new List<string>();
+                        if (beekeeperExists)
+                        {
+                            try
+                            {
+                                var beekeeperHoneys = await honeyService.AllByBeekeeperIdAsync(beekeeperId);
+                                honeyTypes = beekeeperHoneys
+                                    .Select(h => h.Title)
+                                    .Distinct()
+                                    .Take(5)
+                                    .ToList();
+                            }
+                            catch
+                            {
+                                // If honey lookup fails, use default
+                                honeyTypes = new List<string> { "Различни видове мед" };
+                            }
+                        }
+                        
+                        if (!honeyTypes.Any())
+                        {
+                            honeyTypes = new List<string> { "Различни видове мед" };
+                        }
+                        
+                        mapMarkers.Add(new BeekeeperMapMarker
+                        {
+                            Id = beekeeperId,
+                            FullName = beekeeper.FullName,
+                            Region = beekeeper.Location ?? "България", // Use Location from BeekeeperCardViewModel
+                            ShopLocation = beekeeper.Location ?? "България",
+                            Latitude = 42.7339, // Default coordinates for Bulgaria center
+                            Longitude = 25.4858,
+                            HoneyTypes = honeyTypes,
+                            ProfileUrl = profileUrl
+                        });
+                    }
+                }
+                else
+                {
+                    // Use hardcoded data for testing
+                    foreach (var hardcodedBeekeeper in hardcodedBeekeepers)
+                    {
+                        string beekeeperId = hardcodedBeekeeper.Id;
+                        string profileUrl = string.Empty;
+                        
+                        // Try to find the beekeeper in database by name
+                        var actualBeekeeperId = await beekeeperService.GetBeekeeperIdByFullNameAsync(hardcodedBeekeeper.FullName);
                         if (!string.IsNullOrEmpty(actualBeekeeperId))
                         {
                             beekeeperId = actualBeekeeperId;
+                            
+                            // Generate profile URL if beekeeper exists
+                            var beekeeperExists = await beekeeperService.GetBeekeeperProfileByIdAsync(beekeeperId) != null;
+                            if (beekeeperExists)
+                            {
+                                profileUrl = Url.Action("Profile", "Beekeeper", new { id = beekeeperId }) ?? "";
+                                if (string.IsNullOrEmpty(profileUrl))
+                                {
+                                    profileUrl = $"/Beekeeper/Profile/{beekeeperId}";
+                                }
+                                
+                                // Get honey types from database
+                                try
+                                {
+                                    var beekeeperHoneys = await honeyService.AllByBeekeeperIdAsync(beekeeperId);
+                                    hardcodedBeekeeper.HoneyTypes = beekeeperHoneys
+                                        .Select(h => h.Title)
+                                        .Distinct()
+                                        .Take(5)
+                                        .ToList();
+                                }
+                                catch
+                                {
+                                    // Keep default honey types
+                                }
+                            }
                         }
+                        
+                        hardcodedBeekeeper.Id = beekeeperId;
+                        hardcodedBeekeeper.ProfileUrl = profileUrl;
+                        mapMarkers.Add(hardcodedBeekeeper);
                     }
-                    
-                    // Only generate profile URL if beekeeper exists in database (check by trying to get their profile)
-                    // In production: all beekeepers are from DB, so profile URLs will work
-                    // In local: only works if beekeeper was found by name lookup above
-                    var beekeeperExists = await beekeeperService.GetBeekeeperProfileByIdAsync(beekeeperId) != null;
-                    
-                    if (beekeeperExists)
-                    {
-                        profileUrl = Url.Action("Profile", "Beekeeper", new { id = beekeeperId }) ?? "";
-                        if (string.IsNullOrEmpty(profileUrl))
-                        {
-                            profileUrl = $"/Beekeeper/Profile/{beekeeperId}";
-                        }
-                    }
-                    
-                    // Get honey types for this beekeeper (only if beekeeper exists in DB)
-                    var honeyTypes = new List<string>();
-                    if (beekeeperExists)
-                    {
-                        try
-                        {
-                            var beekeeperHoneys = await honeyService.AllByBeekeeperIdAsync(beekeeperId);
-                            honeyTypes = beekeeperHoneys
-                                .Select(h => h.Title)
-                                .Distinct()
-                                .Take(5)
-                                .ToList();
-                        }
-                        catch
-                        {
-                            // If honey lookup fails, use default
-                            honeyTypes = new List<string> { "Различни видове мед" };
-                        }
-                    }
-                    
-                    if (!honeyTypes.Any())
-                    {
-                        honeyTypes = new List<string> { "Различни видове мед" };
-                    }
-                    
-                    mapMarkers.Add(new BeekeeperMapMarker
-                    {
-                        Id = beekeeperId,
-                        FullName = beekeeper.FullName,
-                        Region = beekeeper.Region ?? "България",
-                        ShopLocation = beekeeper.ShopLocation ?? beekeeper.Region ?? "България",
-                        Latitude = beekeeper.Latitude ?? 43.2044, // Use hardcoded coordinates if not set
-                        Longitude = beekeeper.Longitude ?? 23.5074,
-                        HoneyTypes = honeyTypes,
-                        ProfileUrl = profileUrl // Empty if beekeeper doesn't exist, so link won't show
-                    });
                 }
 
                 var viewModel = new BeekeepersMapViewModel

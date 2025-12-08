@@ -1,0 +1,602 @@
+@{
+    ViewData["Title"] = "Твоето медено късметче";
+}
+
+<!-- Main Container -->
+<div class="honey-fortune-container" style="min-height: 100vh; background: linear-gradient(135deg, #FFF8E7 0%, #FFE5B4 50%, #FFD89B 100%); padding: 40px 20px; position: relative; overflow: hidden;">
+    
+    <!-- Honeycomb Background Decoration -->
+    <div class="honeycomb-bg" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0.03; pointer-events: none; z-index: 0;">
+        <div style="position: absolute; top: 10%; left: 5%; width: 100px; height: 87px; background: url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 87\"><polygon points=\"50,0 93.3,25 93.3,75 50,100 6.7,75 6.7,25\" fill=\"%23F59F0A\" opacity=\"0.1\"/></svg>') no-repeat; background-size: contain; animation: float 20s infinite ease-in-out;"></div>
+        <div style="position: absolute; top: 60%; right: 10%; width: 80px; height: 70px; background: url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 87\"><polygon points=\"50,0 93.3,25 93.3,75 50,100 6.7,75 6.7,25\" fill=\"%23F59F0A\" opacity=\"0.1\"/></svg>') no-repeat; background-size: contain; animation: float 25s infinite ease-in-out reverse;"></div>
+        <div style="position: absolute; bottom: 15%; left: 15%; width: 60px; height: 52px; background: url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 87\"><polygon points=\"50,0 93.3,25 93.3,75 50,100 6.7,75 6.7,25\" fill=\"%23F59F0A\" opacity=\"0.1\"/></svg>') no-repeat; background-size: contain; animation: float 18s infinite ease-in-out;"></div>
+    </div>
+
+    <div class="container" style="position: relative; z-index: 1; max-width: 600px; margin: 0 auto;">
+        <!-- Header Section -->
+        <header class="fortune-header" style="text-align: center; margin-bottom: 3rem;">
+            <h1 style="font-size: 2.5rem; font-weight: 700; color: #D97706; margin-bottom: 1rem; text-shadow: 2px 2px 4px rgba(0,0,0,0.1);">
+                🍯 Твоето медено късметче
+            </h1>
+            <p style="font-size: 1.1rem; color: #8B4513; line-height: 1.6; max-width: 500px; margin: 0 auto;">
+                Въведи кода от твоето медено бурканче и разкрий сладкия си късмет.
+            </p>
+        </header>
+
+        <!-- Code Input Section -->
+        <section class="input-section" style="margin-bottom: 3rem;">
+            <form id="fortuneForm" class="fortune-form" novalidate>
+                <div class="input-group" style="margin-bottom: 1.5rem;">
+                    <label for="codeInput" class="sr-only">Въведи код от бурканчето</label>
+                    <input 
+                        type="text" 
+                        id="codeInput" 
+                        class="code-input" 
+                        placeholder="1111A"
+                        maxlength="5"
+                        autocomplete="off"
+                        style="width: 100%; padding: 1rem 1.5rem; font-size: 1.2rem; text-align: center; border: 3px solid #F59F0A; border-radius: 12px; background: white; color: #333; font-weight: 600; letter-spacing: 0.1em; transition: all 0.3s ease; text-transform: uppercase;"
+                        aria-label="Въведи код от меденото бурканче (1111A до 1111F)"
+                        aria-describedby="codeHelp"
+                    >
+                    <div id="codeHelp" class="code-help" style="text-align: center; margin-top: 0.5rem; font-size: 0.9rem; color: #8B4513; opacity: 0.7;">
+                        Формат: 4 цифри + 1 главна буква на твоето медче от заведението
+                    </div>
+                </div>
+                
+                <button 
+                    type="submit" 
+                    id="revealBtn" 
+                    class="reveal-btn" 
+                    disabled
+                    style="width: 100%; padding: 1rem 2rem; font-size: 1.1rem; font-weight: 600; background: linear-gradient(135deg, #F59F0A 0%, #D97706 100%); color: white; border: none; border-radius: 12px; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(245, 159, 10, 0.3);"
+                    aria-label="Разкрий късметчето"
+                >
+                    Разкрий късметчето
+                </button>
+                
+                <div id="errorMessage" class="error-message" role="alert" aria-live="polite" style="margin-top: 1rem; text-align: center; color: #DC2626; font-size: 0.95rem; min-height: 1.5rem;"></div>
+            </form>
+        </section>
+
+        <!-- Scratch Card Section (hidden initially) -->
+        <section id="scratchSection" class="scratch-section" aria-live="polite" style="display: none;">
+            <div class="scratch-card" style="position: relative; width: 100%; max-width: 520px; margin: 0 auto; background: linear-gradient(135deg, #FFF8E7 0%, #FFE5B4 100%); border-radius: 24px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); overflow: hidden; padding: 2.5rem; min-height: 360px;">
+                <!-- Fortune text (visible under canvas) -->
+                <div class="fortune-text" id="fortuneText" style="position: relative; z-index: 1; text-align: center; font-size: 1.265rem; line-height: 1.8; color: #5A3E1F; padding: 1rem; font-weight: 500;"></div>
+                
+                <!-- Art Cafe Logo -->
+                <div class="art-cafe-logo" style="position: absolute; bottom: 15px; right: 15px; z-index: 1; opacity: 0.4; pointer-events: none;">
+                    <img src="~/Uploads/WebsiteAnimations/art-cafe-logo.png" alt="Art Cafe Logo" style="width: 80px; height: auto; max-width: 100%;" />
+                </div>
+                
+                <!-- Canvas for scratch layer -->
+                <canvas id="scratchCanvas" class="scratch-canvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; cursor: crosshair; z-index: 2; border-radius: 24px;"></canvas>
+                
+                <!-- Invisible hand animation element -->
+                <div id="scratchHand" class="scratch-hand" aria-hidden="true" style="position: absolute; width: 50px; height: 50px; z-index: 3; pointer-events: none; opacity: 0; transition: opacity 0.3s;">
+                    <svg width="50" height="50" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#F59F0A" stroke="#D97706" stroke-width="1.5"/>
+                        <path d="M2 17L12 22L22 17" stroke="#D97706" stroke-width="1.5"/>
+                        <path d="M2 12L12 17L22 12" stroke="#D97706" stroke-width="1.5"/>
+                    </svg>
+                </div>
+            </div>
+            
+            <!-- Flying Bee Animation -->
+            <div id="flyingBee" class="flying-bee" aria-hidden="true" style="position: fixed; top: 0; left: 0; width: 80px; height: 80px; z-index: 1000; pointer-events: none; opacity: 0; transform: translateX(-100px);">
+                <img src="~/Uploads/WebsiteAnimations/small-bee-for-animation.png" alt="Flying bee" style="width: 100%; height: 100%; object-fit: contain;" />
+            </div>
+        </section>
+    </div>
+</div>
+
+<style>
+    /* Screen reader only */
+    .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border-width: 0;
+    }
+
+    /* Input focus styles */
+    .code-input:focus {
+        outline: none;
+        border-color: #D97706 !important;
+        box-shadow: 0 0 0 4px rgba(245, 159, 10, 0.1);
+        transform: scale(1.02);
+    }
+
+    .code-input.shake {
+        animation: shake 0.5s;
+    }
+
+    @@keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-10px); }
+        75% { transform: translateX(10px); }
+    }
+
+    /* Button hover and disabled states */
+    .reveal-btn:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(245, 159, 10, 0.4);
+    }
+
+    .reveal-btn:active:not(:disabled) {
+        transform: translateY(0);
+    }
+
+    .reveal-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        background: #ccc !important;
+    }
+
+    /* Scratch section animation */
+    .scratch-section {
+        animation: fadeInScale 0.5s ease-out;
+    }
+
+    @@keyframes fadeInScale {
+        from {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    /* Honeycomb float animation */
+    @@keyframes float {
+        0%, 100% {
+            transform: translateY(0) rotate(0deg);
+        }
+        50% {
+            transform: translateY(-20px) rotate(5deg);
+        }
+    }
+
+    /* Flying Bee Animation */
+    .flying-bee {
+        transition: opacity 0.5s ease-in-out;
+    }
+    
+    /* Subtle bee hover/flutter animation */
+    @@keyframes beeFlutter {
+        0%, 100% {
+            transform: translateY(0) rotate(0deg);
+        }
+        25% {
+            transform: translateY(-3px) rotate(2deg);
+        }
+        75% {
+            transform: translateY(3px) rotate(-2deg);
+        }
+    }
+    
+    .flying-bee.active img {
+        animation: beeFlutter 0.3s ease-in-out infinite;
+    }
+    
+    @@keyframes beeFly {
+        0% {
+            transform: translateX(-100px) translateY(0) rotate(-5deg);
+            opacity: 1;
+        }
+        10% {
+            transform: translateX(10vw) translateY(-20px) rotate(2deg);
+        }
+        25% {
+            transform: translateX(25vw) translateY(-35px) rotate(-3deg);
+        }
+        40% {
+            transform: translateX(40vw) translateY(-10px) rotate(4deg);
+        }
+        50% {
+            transform: translateX(50vw) translateY(15px) rotate(-2deg);
+        }
+        65% {
+            transform: translateX(65vw) translateY(-5px) rotate(3deg);
+        }
+        75% {
+            transform: translateX(75vw) translateY(-25px) rotate(-4deg);
+        }
+        90% {
+            transform: translateX(90vw) translateY(-10px) rotate(2deg);
+        }
+        100% {
+            transform: translateX(calc(100vw + 100px)) translateY(0) rotate(-5deg);
+            opacity: 0;
+        }
+    }
+    
+    .flying-bee.active {
+        animation: beeFly 4s ease-in-out forwards;
+    }
+
+    /* Responsive design */
+    @@media (max-width: 768px) {
+        .honey-fortune-container h1 {
+            font-size: 2rem !important;
+        }
+        
+        .honey-fortune-container p {
+            font-size: 1rem !important;
+        }
+        
+        .scratch-card {
+            padding: 1.5rem !important;
+            min-height: 320px !important;
+        }
+        
+        .art-cafe-logo {
+            bottom: 10px !important;
+            right: 10px !important;
+        }
+        
+        .art-cafe-logo img {
+            width: 60px !important;
+        }
+        
+        .fortune-text {
+            font-size: 1.15rem !important;
+        }
+    }
+</style>
+
+<script>
+    // Hardcoded fortunes - will be replaced with API call: fetch('/api/fortune?code=' + code)
+    const fortunes = {
+        "1111A": "Както лъжичката мед превръща чая в десерт, така и една малка добра мисъл превръща деня в чудо. Днес избери мислите си по-сладки от навиците си — и ще усетиш как животът сам започва да ти се усмихва.",
+        "1111B": "Пчелата не пита колко е голям цветът — тя просто взима най-доброто от него. Там, където си днес, има достатъчно сладост за една малка, но важна стъпка напред. Огледай се по-внимателно — подаръкът вече е до теб.",
+        "1111C": "Пчелата не събира нектара от най-големия цвят, а от този, който ѝ говори най-тихо. Избери това, което те привлича без шум — там те чака твоят сладък късмет.",
+        "1111D": "Щастието рядко идва с гръм, по-често пристъпва тихо — като глътка горещо кафе или дума, казана навреме. Погледни внимателно днес. Може би вече е тук.",
+        "1111E": "Понякога животът ти подава не знак, а аромат — онзи лек намек, че си на правилния път. Днес следвай това, което мирише на дом за душата ти.",
+        "1111F": "„Най-същественото е невидимо за очите.“ — Антоан дьо-Сент Екзюпери, 'Малкият Принц' "
+    };
+
+    // DOM Elements
+    let codeInput, revealBtn, fortuneForm, errorMessage, scratchSection, fortuneText, scratchCanvas, scratchHand, flyingBee;
+    let ctx, isScratching = false, hasScratched = false, autoScratchComplete = false;
+    let beeAnimationTriggered = false;
+
+    // Initialization
+    function init() {
+        codeInput = document.getElementById('codeInput');
+        revealBtn = document.getElementById('revealBtn');
+        fortuneForm = document.getElementById('fortuneForm');
+        errorMessage = document.getElementById('errorMessage');
+        scratchSection = document.getElementById('scratchSection');
+        fortuneText = document.getElementById('fortuneText');
+        scratchCanvas = document.getElementById('scratchCanvas');
+        scratchHand = document.getElementById('scratchHand');
+        flyingBee = document.getElementById('flyingBee');
+
+        // Input event listeners
+        codeInput.addEventListener('input', handleInputChange);
+        codeInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                if (!revealBtn.disabled) {
+                    fortuneForm.dispatchEvent(new Event('submit'));
+                }
+            }
+        });
+
+        // Form submit
+        fortuneForm.addEventListener('submit', handleFormSubmit);
+    }
+
+    // Code validation
+    function validateCode(code) {
+        // Format: 1111 followed by A-F
+        const regex = /^1111[A-F]$/;
+        return regex.test(code);
+    }
+
+    // Input change handling
+    function handleInputChange(e) {
+        let value = e.target.value.toUpperCase().replace(/[^0-9A-Z]/g, '');
+        
+        // Limit to 5 characters
+        if (value.length > 5) {
+            value = value.substring(0, 5);
+        }
+        
+        codeInput.value = value;
+        
+        // Validate
+        const isValid = validateCode(value);
+        revealBtn.disabled = !isValid;
+        
+        // Clear error
+        if (errorMessage.textContent) {
+            errorMessage.textContent = '';
+        }
+    }
+
+    // Get fortune
+    function getFortune(code) {
+        return fortunes[code] || null;
+    }
+
+    // Form submission handling
+    function handleFormSubmit(e) {
+        e.preventDefault();
+        
+        const code = codeInput.value.trim().toUpperCase();
+        
+        if (!validateCode(code)) {
+            showError("Моля, въведете валиден код във формат: 1111A до 1111F.");
+            codeInput.classList.add('shake');
+            setTimeout(() => codeInput.classList.remove('shake'), 500);
+            return;
+        }
+
+        const fortune = getFortune(code);
+        
+        if (!fortune) {
+            showError("О, не! Такъв меден код не открихме. Провери отново късметчето си.");
+            codeInput.classList.add('shake');
+            setTimeout(() => codeInput.classList.remove('shake'), 500);
+            return;
+        }
+
+        // Show scratch card
+        showScratchCard(fortune);
+    }
+
+    // Show error message
+    function showError(message) {
+        errorMessage.textContent = message;
+        errorMessage.style.display = 'block';
+    }
+
+    // Show scratch card
+    function showScratchCard(fortune) {
+        fortuneText.textContent = fortune;
+        scratchSection.style.display = 'block';
+        
+        // Reset bee animation flag
+        beeAnimationTriggered = false;
+        
+        // Initialize canvas
+        initScratchCanvas();
+        
+        // Start auto-scratch animation
+        setTimeout(() => {
+            startAutoScratch();
+        }, 500);
+    }
+
+    // Initialize canvas
+    function initScratchCanvas() {
+        const card = scratchCanvas.parentElement;
+        const rect = card.getBoundingClientRect();
+        
+        scratchCanvas.width = rect.width;
+        scratchCanvas.height = rect.height;
+        
+        ctx = scratchCanvas.getContext('2d');
+        
+        // Draw scratch cover (golden gradient)
+        const gradient = ctx.createLinearGradient(0, 0, rect.width, rect.height);
+        gradient.addColorStop(0, '#F59F0A');
+        gradient.addColorStop(0.5, '#D97706');
+        gradient.addColorStop(1, '#B45309');
+        
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, rect.width, rect.height);
+        
+        // Add subtle texture pattern
+        ctx.globalCompositeOperation = 'multiply';
+        ctx.fillStyle = 'rgba(139, 69, 19, 0.1)';
+        for (let i = 0; i < 50; i++) {
+            ctx.fillRect(
+                Math.random() * rect.width,
+                Math.random() * rect.height,
+                20,
+                20
+            );
+        }
+        ctx.globalCompositeOperation = 'source-over';
+    }
+
+    // Check scratch progress and trigger bee animation
+    function checkScratchProgress() {
+        if (beeAnimationTriggered) return;
+        
+        const imageData = ctx.getImageData(0, 0, scratchCanvas.width, scratchCanvas.height);
+        const pixels = imageData.data;
+        let transparentPixels = 0;
+        const totalPixels = pixels.length / 4;
+        
+        // Count transparent pixels
+        for (let i = 3; i < pixels.length; i += 4) {
+            if (pixels[i] === 0) {
+                transparentPixels++;
+            }
+        }
+        
+        const scratchedPercentage = (transparentPixels / totalPixels) * 100;
+        
+        // If more than 60% is scratched, trigger bee animation
+        if (scratchedPercentage > 60) {
+            triggerBeeAnimation();
+            beeAnimationTriggered = true;
+        }
+    }
+
+    // Trigger bee animation
+    function triggerBeeAnimation() {
+        // Position bee on the left side of screen
+        const randomY = Math.random() * (window.innerHeight * 0.6) + (window.innerHeight * 0.2);
+        flyingBee.style.top = randomY + 'px';
+        flyingBee.style.opacity = '1';
+        
+        // Add animation class
+        flyingBee.classList.add('active');
+        
+        // Remove class after animation
+        setTimeout(() => {
+            flyingBee.classList.remove('active');
+            flyingBee.style.opacity = '0';
+        }, 3000);
+    }
+
+    // Auto-scratch animation (invisible hand)
+    function startAutoScratch() {
+        const card = scratchCanvas.parentElement;
+        const rect = card.getBoundingClientRect();
+        
+        // Define trajectory (4-6 lines)
+        const paths = [
+            { start: { x: rect.width * 0.1, y: rect.height * 0.2 }, end: { x: rect.width * 0.9, y: rect.height * 0.3 } },
+            { start: { x: rect.width * 0.2, y: rect.height * 0.5 }, end: { x: rect.width * 0.8, y: rect.height * 0.6 } },
+            { start: { x: rect.width * 0.15, y: rect.height * 0.75 }, end: { x: rect.width * 0.85, y: rect.height * 0.8 } },
+            { start: { x: rect.width * 0.3, y: rect.height * 0.4 }, end: { x: rect.width * 0.7, y: rect.height * 0.5 } }
+        ];
+
+        let currentPath = 0;
+        let progress = 0;
+        const brushSize = 80;
+        
+        scratchHand.style.opacity = '1';
+        
+        function animate() {
+            if (currentPath >= paths.length) {
+                scratchHand.style.opacity = '0';
+                autoScratchComplete = true;
+                enableManualScratch();
+                return;
+            }
+
+            const path = paths[currentPath];
+            const x = path.start.x + (path.end.x - path.start.x) * progress;
+            const y = path.start.y + (path.end.y - path.start.y) * progress;
+
+            // Position "hand"
+            scratchHand.style.left = (x - 25) + 'px';
+            scratchHand.style.top = (y - 25) + 'px';
+
+            // Erase in canvas with larger brush
+            ctx.globalCompositeOperation = 'destination-out';
+            ctx.beginPath();
+            ctx.arc(x, y, brushSize / 2, 0, Math.PI * 2);
+            ctx.fill();
+            // Add additional circles for more effective erasing
+            ctx.beginPath();
+            ctx.arc(x - 5, y, brushSize / 2.5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(x + 5, y, brushSize / 2.5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.globalCompositeOperation = 'source-over';
+            
+            // Check scratch progress
+            checkScratchProgress();
+
+            progress += 0.03;
+            
+            if (progress >= 1) {
+                progress = 0;
+                currentPath++;
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+    }
+
+    // Manual scratch
+    function enableManualScratch() {
+        const brushSize = 80;
+        let isDrawing = false;
+        let lastPoint = null;
+
+        function getPoint(e) {
+            const rect = scratchCanvas.getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            return {
+                x: clientX - rect.left,
+                y: clientY - rect.top
+            };
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+            
+            const point = getPoint(e);
+            
+            ctx.globalCompositeOperation = 'destination-out';
+            
+            // Main circle
+            ctx.beginPath();
+            ctx.arc(point.x, point.y, brushSize / 2, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Additional circles for more effective erasing
+            ctx.beginPath();
+            ctx.arc(point.x - 8, point.y, brushSize / 2.5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(point.x + 8, point.y, brushSize / 2.5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(point.x, point.y - 8, brushSize / 2.5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(point.x, point.y + 8, brushSize / 2.5, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // If there's a previous point, draw line between them for smooth erasing
+            if (lastPoint) {
+                ctx.beginPath();
+                ctx.moveTo(lastPoint.x, lastPoint.y);
+                ctx.lineTo(point.x, point.y);
+                ctx.lineWidth = brushSize;
+                ctx.lineCap = 'round';
+                ctx.stroke();
+            }
+            
+            lastPoint = point;
+            ctx.globalCompositeOperation = 'source-over';
+            
+            // Check scratch progress
+            checkScratchProgress();
+        }
+
+        scratchCanvas.addEventListener('pointerdown', (e) => {
+            isDrawing = true;
+            lastPoint = getPoint(e);
+            draw(e);
+        });
+
+        scratchCanvas.addEventListener('pointermove', draw);
+
+        scratchCanvas.addEventListener('pointerup', () => {
+            isDrawing = false;
+            lastPoint = null;
+        });
+
+        scratchCanvas.addEventListener('pointerleave', () => {
+            isDrawing = false;
+            lastPoint = null;
+        });
+    }
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', init);
+</script>
+

@@ -86,6 +86,11 @@ namespace HoneyWebPlatform.Web.Controllers
             return View();
         }
 
+        public IActionResult HoneyFortune()
+        {
+            return View();
+        }
+
         public IActionResult Contact()
         {
             return View();

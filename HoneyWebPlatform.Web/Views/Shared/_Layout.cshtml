@@ -72,7 +72,8 @@
                                     <a class="nav-link custom-menu-link dropdown-toggle" href="#" role="button" id="productsDropdown" data-bs-toggle="dropdown" aria-expanded="false">Продукти</a>
                                     <ul class="dropdown-menu" aria-labelledby="productsDropdown">
                                         <li>
-                                            <a class="dropdown-item nav-link text-dark" asp-area="" asp-controller="Honey" asp-action="All">Пчелен Мед</a>
+                                            <a class="dropdown-item nav-link text-dark" asp-area="" asp-controller="Honey" asp-action="All">🍯 Пчелен Мед</a>
+                                            <a class="dropdown-item nav-link text-dark" asp-area="" asp-controller="Home" asp-action="HoneyFortune">🔮 Твоето медено късметче</a>
                                             @*<a class="dropdown-item nav-link text-dark" asp-area="" asp-controller="Propolis" asp-action="All">Прополиси</a>*@
                                         </li>
                                     </ul>
@@ -308,6 +309,12 @@
             border: none;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             border-radius: 8px;
+        }
+        
+        /* Ensure emojis display properly in dropdown */
+        .dropdown-item {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Color Emoji", "Apple Color Emoji", "Segoe UI Emoji", sans-serif !important;
+            font-size: 14px !important;
         }
         
         .dropdown-item:hover {

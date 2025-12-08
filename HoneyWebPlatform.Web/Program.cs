@@ -36,8 +36,28 @@ using static Common.GeneralApplicationConstants;
             // Debug logging for connection string
             Console.WriteLine($"Initial connection string: {(string.IsNullOrEmpty(connectionString) ? "NULL" : "SET")}");
             
-            // Handle Railway environment variables
-            if (string.IsNullOrEmpty(connectionString))
+            // For Development, use SQLite connection string format
+            if (builder.Environment.IsDevelopment())
+            {
+                // Check if connection string is PostgreSQL format (contains "Host=") and convert to SQLite
+                if (!string.IsNullOrEmpty(connectionString) && connectionString.Contains("Host="))
+                {
+                    // Use SQLite database file for local development
+                    var dbPath = Path.Combine(builder.Environment.ContentRootPath, "honeywebplatform.db");
+                    connectionString = $"Data Source={dbPath}";
+                    Console.WriteLine($"Using SQLite for Development: {dbPath}");
+                }
+                else if (string.IsNullOrEmpty(connectionString))
+                {
+                    // Fallback to SQLite if no connection string is set
+                    var dbPath = Path.Combine(builder.Environment.ContentRootPath, "honeywebplatform.db");
+                    connectionString = $"Data Source={dbPath}";
+                    Console.WriteLine($"Using default SQLite for Development: {dbPath}");
+                }
+            }
+            
+            // Handle Railway environment variables (only for Production)
+            if (string.IsNullOrEmpty(connectionString) && !builder.Environment.IsDevelopment())
             {
                 var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
                 Console.WriteLine($"DATABASE_URL: {(string.IsNullOrEmpty(databaseUrl) ? "NULL" : "SET")}");
@@ -256,7 +276,8 @@ using static Common.GeneralApplicationConstants;
             Path.Combine(app.Environment.WebRootPath, "uploads", "PropolisPictures"),
             Path.Combine(app.Environment.WebRootPath, "uploads", "PostPictures"),
             Path.Combine(app.Environment.WebRootPath, "uploads", "HivePictures"),
-            Path.Combine(app.Environment.WebRootPath, "uploads", "UsersProfilePictures")
+            Path.Combine(app.Environment.WebRootPath, "uploads", "UsersProfilePictures"),
+            Path.Combine(app.Environment.WebRootPath, "uploads", "About")
         };
 
             foreach (var path in uploadPaths)

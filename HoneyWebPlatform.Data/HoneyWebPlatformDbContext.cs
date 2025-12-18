@@ -43,6 +43,8 @@
 
         public DbSet<Order> Orders { get; set; } = null!;
 
+        public DbSet<FortuneAccess> FortuneAccesses { get; set; } = null!;
+
 
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

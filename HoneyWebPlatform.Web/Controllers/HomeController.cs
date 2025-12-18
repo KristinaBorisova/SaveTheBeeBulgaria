@@ -11,6 +11,7 @@ namespace HoneyWebPlatform.Web.Controllers
     using Services.Data.Interfaces;
     using HoneyWebPlatform.Data.Models;
     using HoneyWebPlatform.Data;
+    using Services.Data;
 
     using ViewModels.Home;
     using ViewModels.User;
@@ -27,8 +28,9 @@ namespace HoneyWebPlatform.Web.Controllers
         private readonly ICategoryService categoryService;
         private readonly IBeekeeperService beekeeperService;
         private readonly IServiceProvider serviceProvider;
+        private readonly IFortuneService fortuneService;
 
-        public HomeController(IHoneyService honeyService, IPostService postService, IEmailSender emailSender, IOrderEmailService orderEmailService, ICategoryService categoryService, IBeekeeperService beekeeperService, IServiceProvider serviceProvider)
+        public HomeController(IHoneyService honeyService, IPostService postService, IEmailSender emailSender, IOrderEmailService orderEmailService, ICategoryService categoryService, IBeekeeperService beekeeperService, IServiceProvider serviceProvider, IFortuneService fortuneService)
         {
             this.honeyService = honeyService;
             // this.propolisService = propolisService; // Commented out - propolis functionality disabled
@@ -38,6 +40,7 @@ namespace HoneyWebPlatform.Web.Controllers
             this.categoryService = categoryService;
             this.beekeeperService = beekeeperService;
             this.serviceProvider = serviceProvider;
+            this.fortuneService = fortuneService;
         }
 
         public async Task<IActionResult> Index()
@@ -86,8 +89,34 @@ namespace HoneyWebPlatform.Web.Controllers
             return View();
         }
 
-        public IActionResult HoneyFortune()
+        public async Task<IActionResult> HoneyFortune()
         {
+            // Get client IP address
+            string? ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
+            
+            // Handle IPv4-mapped IPv6 addresses
+            if (ipAddress != null && ipAddress.StartsWith("::ffff:"))
+            {
+                ipAddress = ipAddress.Substring(7);
+            }
+            
+            // Fallback if IP is null
+            if (string.IsNullOrEmpty(ipAddress))
+            {
+                ipAddress = "unknown";
+            }
+
+            // Check if user can access fortune today
+            bool canAccess = await this.fortuneService.CanAccessFortuneTodayAsync(ipAddress);
+            
+            ViewBag.CanAccessFortune = canAccess;
+            
+            // If they can access, record the access BEFORE showing the fortune
+            if (canAccess)
+            {
+                await this.fortuneService.RecordFortuneAccessAsync(ipAddress);
+            }
+
             return View();
         }
 

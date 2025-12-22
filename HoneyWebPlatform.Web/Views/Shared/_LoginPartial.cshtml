@@ -14,50 +14,5 @@
 }
 
 <ul class="navbar-nav">
-    @if (SignInManager.IsSignedIn(User))
-    {
-        <!-- Shopping Cart -->
-        <li class="nav-item">
-            <a asp-controller="User" asp-action="Cart" class="nav-link">
-                <img src="~/dingo-master/dingo-master/img/shopping-cart.png" alt="logo" style="width: 40px; margin-right: 15px; margin-top: 3px;" />
-            </a>
-        </li>
-        
-        <!-- Поръчай Button -->
-        <li class="menu_btn">
-            <a class="btn custom-order-btn d-none d-sm-block" asp-controller="User" asp-action="Cart">Поръчай</a>
-        </li>
-        
-        <!-- User Profile -->
-        <li class="menu_btn">
-            <a class="btn custom-login-btn d-none d-sm-block" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">Здравей, @userFullName</a>
-        </li>
-        
-        @if (!isUserBeekeeper)
-        {
-            <li class="menu_btn">
-                <a class="btn custom-login-btn d-none d-sm-block" style="margin-right: 5px;" asp-area="" asp-controller="Beekeeper" asp-action="Become">Стани Пчелар</a>
-            </li>
-        }
-        
-        <!-- Logout -->
-        <li class="menu_btn">
-            <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout"
-                  asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
-                <button type="submit" class="btn custom-login-btn d-none d-sm-block">Излез</button>
-            </form>
-        </li>
-    }
-    else
-    {
-        <!-- Login -->
-        <li class="menu_btn">
-            <a class="btn custom-login-btn d-none d-sm-block" asp-area="" asp-controller="User" asp-action="Login" asp-route-returnUrl="@Context.Request.Path">Вход</a>
-        </li>
-        
-        <!-- Поръчай Button -->
-        <li class="menu_btn">
-            <a class="btn custom-order-btn d-none d-sm-block" asp-controller="User" asp-action="Cart">Поръчай</a>
-        </li>
-    }
+    @* Login buttons removed for dev branch *@
 </ul>

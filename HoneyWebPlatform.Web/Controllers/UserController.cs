@@ -29,6 +29,8 @@
         private readonly ISubscribedEmailService subscribedEmailService;
         private readonly ICartService cartService;
         private readonly IOrderService orderService;
+        private readonly IDatabaseHealthService databaseHealthService;
+        private readonly ILogger<UserController> logger;
 
         private readonly IHubContext<CartHub> hubContext;
 
@@ -40,6 +42,7 @@
                               IOrderService orderService,
                               IHubContext<CartHub> hubContext,
                               IWebHostEnvironment webHostEnvironment,
+                              IDatabaseHealthService databaseHealthService,
                               ILogger<UserController> logger)
         {
             this.signInManager = signInManager;
@@ -52,6 +55,8 @@
             this.subscribedEmailService = subscribedEmailService;
             this.cartService = cartService;
             this.orderService = orderService;
+            this.databaseHealthService = databaseHealthService;
+            this.logger = logger;
 
             this.hubContext = hubContext;
         }
@@ -86,126 +91,107 @@
             ValidationFailedAction = ValidationFailedAction.ContinueRequest)]
         public async Task<IActionResult> Register(RegisterFormModel model)
         {
+            logger.LogInformation("Registration attempt started for email: {Email}", model.Email);
+            
             try
             {
-                _logger.LogInformation("Registration attempt started for email: {Email}", model.Email);
-
-                // Validate model state
                 if (!ModelState.IsValid)
                 {
-                    _logger.LogWarning("Registration failed - ModelState is invalid for email: {Email}. Errors: {Errors}", 
-                        model.Email, string.Join(", ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)));
+                    logger.LogWarning("Registration failed - ModelState is invalid for email: {Email}", model.Email);
                     return View(model);
                 }
 
-                _logger.LogInformation("Model validation passed for email: {Email}", model.Email);
-
-                // Additional input validation and sanitization
-                if (string.IsNullOrWhiteSpace(model.Email) || string.IsNullOrWhiteSpace(model.Password) || 
-                    string.IsNullOrWhiteSpace(model.FirstName) || string.IsNullOrWhiteSpace(model.LastName))
+                // Check database health before proceeding
+                var canCreateUser = await databaseHealthService.CanCreateUserAsync();
+                if (!canCreateUser)
                 {
-                    _logger.LogWarning("Registration failed - Required fields are empty for email: {Email}", model.Email);
-                    ModelState.AddModelError(string.Empty, "Всички полета са задължителни.");
+                    var dbStatus = await databaseHealthService.GetDatabaseStatusAsync();
+                    logger.LogError("Database health check failed for registration attempt. Email: {Email}, Status: {Status}", model.Email, dbStatus);
+                    ModelState.AddModelError(string.Empty, $"Базата данни не е достъпна: {dbStatus}. Моля, опитайте отново по-късно или се свържете с администратор.");
                     return View(model);
                 }
-
-                // Sanitize inputs
-                model.Email = model.Email.Trim().ToLowerInvariant();
-                model.FirstName = model.FirstName.Trim();
-                model.LastName = model.LastName.Trim();
-
-                _logger.LogInformation("Input sanitization completed for email: {Email}", model.Email);
-
-                // Password strength validation
-                if (model.Password.Length < 6)
-                {
-                    _logger.LogWarning("Registration failed - Password too short for email: {Email}", model.Email);
-                    ModelState.AddModelError(nameof(model.Password), "Паролата трябва да е поне 6 символа.");
-                    return View(model);
-                }
-
-                if (model.Password != model.ConfirmPassword)
-                {
-                    _logger.LogWarning("Registration failed - Password confirmation mismatch for email: {Email}", model.Email);
-                    ModelState.AddModelError(nameof(model.ConfirmPassword), "Паролите не съвпадат.");
-                    return View(model);
-                }
-
-                _logger.LogInformation("Password validation passed for email: {Email}", model.Email);
 
                 // Check if user already exists
                 var existingUser = await userManager.FindByEmailAsync(model.Email);
                 if (existingUser != null)
                 {
-                    _logger.LogWarning("Registration failed - User already exists with email: {Email}", model.Email);
-                    ModelState.AddModelError(string.Empty, "Потребител с този имейл вече съществува.");
+                    logger.LogWarning("Registration failed - User already exists with email: {Email}", model.Email);
+                    ModelState.AddModelError(string.Empty, "Потребител с този имейл адрес вече съществува.");
                     return View(model);
                 }
 
-                _logger.LogInformation("User does not exist, proceeding with creation for email: {Email}", model.Email);
-
-                // Create new user
                 ApplicationUser user = new ApplicationUser()
                 {
                     FirstName = model.FirstName,
                     LastName = model.LastName
+                    // Add more properties as needed
                 };
 
-                _logger.LogInformation("Created ApplicationUser object for: {Email}, FirstName: {FirstName}, LastName: {LastName}", 
-                    model.Email, model.FirstName, model.LastName);
-
-                // Set email and username
                 await userManager.SetEmailAsync(user, model.Email);
                 await userManager.SetUserNameAsync(user, model.Email);
 
-                _logger.LogInformation("Set email and username for user: {Email}", model.Email);
+                // Profile picture upload removed for now
+                // File upload handling code has been removed
 
-                // Create user with password
-                IdentityResult result = await userManager.CreateAsync(user, model.Password);
+                // Attempt to create user with comprehensive error handling
+                IdentityResult result;
+                try
+                {
+                    result = await userManager.CreateAsync(user, model.Password);
+                }
+                catch (Exception ex) when (ex is InvalidOperationException || ex is ArgumentException)
+                {
+                    ModelState.AddModelError(string.Empty, "Грешка в конфигурацията на системата. Моля, опитайте отново по-късно.");
+                    return View(model);
+                }
+                catch (Exception ex)
+                {
+                    // Log the exception for debugging
+                    // In a real application, you would use a proper logging framework
+                    ModelState.AddModelError(string.Empty, "Възникна неочаквана грешка при създаване на профила. Моля, опитайте отново.");
+                    return View(model);
+                }
 
                 if (!result.Succeeded)
                 {
-                    _logger.LogError("User creation failed for email: {Email}. Errors: {Errors}", 
+                    logger.LogWarning("User creation failed for email: {Email}. Errors: {Errors}", 
                         model.Email, string.Join(", ", result.Errors.Select(e => e.Description)));
-
+                    
                     foreach (IdentityError error in result.Errors)
                     {
-                        ModelState.AddModelError(string.Empty, error.Description);
+                        // Provide more user-friendly error messages
+                        var friendlyMessage = GetFriendlyErrorMessage(error.Code);
+                        ModelState.AddModelError(string.Empty, friendlyMessage);
                     }
 
                     return View(model);
                 }
 
-                _logger.LogInformation("User created successfully for email: {Email}, UserId: {UserId}", 
-                    model.Email, user.Id);
-
-                // Verify user was created by attempting to retrieve it
-                var createdUser = await userManager.FindByEmailAsync(model.Email);
-                if (createdUser == null)
-                {
-                    _logger.LogError("User creation verification failed - User not found after creation for email: {Email}", model.Email);
-                    ModelState.AddModelError(string.Empty, "Грешка при създаване на потребителя. Моля опитайте отново.");
-                    return View(model);
-                }
-
-                _logger.LogInformation("User creation verified successfully for email: {Email}, UserId: {UserId}", 
-                    model.Email, createdUser.Id);
+                logger.LogInformation("User successfully created for email: {Email}", model.Email);
 
                 // Sign in the user
-                await signInManager.SignInAsync(user, false);
-                _logger.LogInformation("User signed in successfully for email: {Email}", model.Email);
+                try
+                {
+                    await signInManager.SignInAsync(user, false);
+                    this.memoryCache.Remove(UsersCacheKey);
 
-                // Clear cache
-                this.memoryCache.Remove(UsersCacheKey);
-                _logger.LogInformation("Cache cleared for users");
-
-                _logger.LogInformation("Registration completed successfully for email: {Email}", model.Email);
-                return Redirect(model.ReturnUrl ?? "/Home/Index");
+                    logger.LogInformation("User successfully signed in after registration. Email: {Email}", model.Email);
+                    TempData[SuccessMessage] = "Успешно създадохте профил! Добре дошли!";
+                    return Redirect(model.ReturnUrl ?? "/Home/Index");
+                }
+                catch (Exception ex)
+                {
+                    // User was created but sign-in failed
+                    logger.LogError(ex, "User was created but sign-in failed for email: {Email}", model.Email);
+                    ModelState.AddModelError(string.Empty, "Профилът беше създаден, но възникна грешка при влизането. Моля, влезте с вашите данни.");
+                    return View(model);
+                }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Unexpected error during registration for email: {Email}", model.Email);
-                ModelState.AddModelError(string.Empty, "Възникна неочаквана грешка по време на регистрацията. Моля опитайте отново.");
+                // Log the exception for debugging
+                logger.LogError(ex, "Critical error during registration for email: {Email}", model.Email);
+                ModelState.AddModelError(string.Empty, "Възникна критична грешка. Моля, опитайте отново или се свържете с администратор.");
                 return View(model);
             }
         }
@@ -543,6 +529,32 @@
             {
                 return false;
             }
+        }
+
+        private string GetFriendlyErrorMessage(string errorCode)
+        {
+            return errorCode switch
+            {
+                "DuplicateUserName" => "Потребител с това име вече съществува.",
+                "DuplicateEmail" => "Потребител с този имейл адрес вече съществува.",
+                "InvalidUserName" => "Невалидно потребителско име.",
+                "InvalidEmail" => "Невалиден имейл адрес.",
+                "InvalidPassword" => "Невалидна парола.",
+                "PasswordTooShort" => "Паролата е твърде къса.",
+                "PasswordRequiresNonAlphanumeric" => "Паролата трябва да съдържа поне един символ, който не е буква или цифра.",
+                "PasswordRequiresDigit" => "Паролата трябва да съдържа поне една цифра.",
+                "PasswordRequiresLower" => "Паролата трябва да съдържа поне една малка буква.",
+                "PasswordRequiresUpper" => "Паролата трябва да съдържа поне една главна буква.",
+                "UserAlreadyHasPassword" => "Потребителят вече има парола.",
+                "UserLockoutNotEnabled" => "Заключването на потребители не е активирано.",
+                "UserAlreadyInRole" => "Потребителят вече е в тази роля.",
+                "UserNotInRole" => "Потребителят не е в тази роля.",
+                "InvalidToken" => "Невалиден токен.",
+                "RecoveryCodeRedemptionFailed" => "Неуспешно възстановяване на код.",
+                "ConcurrencyFailure" => "Грешка при конкурентност. Операцията беше прекъсната.",
+                "DefaultIdentityError" => "Възникна грешка при създаване на потребителя.",
+                _ => $"Грешка: {errorCode}"
+            };
         }
 
     }

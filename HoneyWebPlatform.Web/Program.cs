@@ -8,22 +8,19 @@ namespace HoneyWebPlatform.Web
     using Microsoft.AspNetCore.Identity;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.EntityFrameworkCore;
-    using Microsoft.EntityFrameworkCore.Diagnostics;
-    using Microsoft.Extensions.Diagnostics.HealthChecks;
-    using Microsoft.Extensions.Hosting;
 
-using HoneyWebPlatform.Services.Data.Models;
-using HoneyWebPlatform.Web.Areas.Hubs;
-using Hubs;
-using Data;
-using Data.Models;
-using Infrastructure.Extensions;
-using Infrastructure.ModelBinders;
-using Services.Data.Interfaces;
-using Services.Data;
-using Services.Mapping;
-using ViewModels.Home;
-using static Common.GeneralApplicationConstants;
+    using HoneyWebPlatform.Services.Data.Models;
+    using HoneyWebPlatform.Web.Areas.Hubs;
+    using Hubs;
+    using Data;
+    using Data.Models;
+    using Infrastructure.Extensions;
+    using Infrastructure.ModelBinders;
+    using Services.Data.Interfaces;
+    using Services.Mapping;
+    using ViewModels.Home;
+    using static Common.GeneralApplicationConstants;
+    using HoneyWebPlatform.Services.Data;
 
     public class Program
     {
@@ -143,6 +140,10 @@ using static Common.GeneralApplicationConstants;
             builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 
             builder.Services.AddApplicationServices(typeof(IHoneyService));
+            
+            // Add database health service
+            builder.Services.AddScoped<IDatabaseHealthService, DatabaseHealthService>();
+            
             // Print the list of added services
             //PrintAddedServicesForEntities(builder.Services);
 

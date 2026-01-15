@@ -113,6 +113,27 @@
                                 <li class="nav-item">
                                     <a class="nav-link custom-menu-link" asp-area="" asp-controller="Home" asp-action="Contact">Контакт</a>
                                 </li>
+                                
+                                @* Language Switching Button - Currently Commented Out *@
+                                @*
+                                <li class="nav-item dropdown">
+                                    <a class="btn dropdown-toggle" href="#" role="button" id="languageDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="fas fa-globe"></i> БГ
+                                    </a>
+                                    <ul class="dropdown-menu" aria-labelledby="languageDropdown">
+                                        <li>
+                                            <a class="dropdown-item nav-link text-dark" href="#" onclick="changeLanguage('bg')">
+                                                <img src="~/images/bg-flag.png" alt="Bulgarian" style="width: 20px; height: 15px; margin-right: 8px;"> Български
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item nav-link text-dark" href="#" onclick="changeLanguage('en')">
+                                                <img src="~/images/en-flag.png" alt="English" style="width: 20px; height: 15px; margin-right: 8px;"> English
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </li>
+                                *@
                             </ul>
                         </div>
                         <partial name="_LoginPartial" />
@@ -338,6 +359,36 @@
 
     <partial name="_NotificationsPartial" />
 
+    @* Language Switching JavaScript - Currently Commented Out *@
+    @*
+    <script>
+        function changeLanguage(languageCode) {
+            // Store language preference in localStorage
+            localStorage.setItem('selectedLanguage', languageCode);
+            
+            // You can implement language switching logic here
+            // For example, redirect to a controller action that sets the culture
+            // window.location.href = '/Home/SetLanguage?culture=' + languageCode + '&returnUrl=' + encodeURIComponent(window.location.href);
+            
+            // Or use a more sophisticated approach with AJAX
+            console.log('Language changed to: ' + languageCode);
+        }
+        
+        // Load saved language preference on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedLanguage = localStorage.getItem('selectedLanguage');
+            if (savedLanguage) {
+                // Update UI to reflect current language
+                const languageButton = document.getElementById('languageDropdown');
+                if (languageButton) {
+                    languageButton.innerHTML = savedLanguage === 'bg' ? 
+                        '<i class="fas fa-globe"></i> БГ' : 
+                        '<i class="fas fa-globe"></i> EN';
+                }
+            }
+        });
+    </script>
+    *@
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>

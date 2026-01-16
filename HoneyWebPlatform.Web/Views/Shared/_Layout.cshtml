@@ -72,7 +72,7 @@
                                     <a class="nav-link custom-menu-link dropdown-toggle" href="#" role="button" id="productsDropdown" data-bs-toggle="dropdown" aria-expanded="false">Продукти</a>
                                     <ul class="dropdown-menu" aria-labelledby="productsDropdown">
                                         <li>
-                                            <a class="dropdown-item nav-link text-dark" asp-area="" asp-controller="Honey" asp-action="All">🍯 Пчелен Мед</a>
+                                            <span class="dropdown-item nav-link text-muted coming-soon-item" style="cursor: not-allowed; opacity: 0.6; pointer-events: none;">🍯 Пчелен Мед <small class="text-muted">(Coming soon)</small></span>
                                             <a class="dropdown-item nav-link text-dark" asp-area="" asp-controller="Home" asp-action="HoneyFortune">🔮 Твоето медено късметче</a>
                                             @*<a class="dropdown-item nav-link text-dark" asp-area="" asp-controller="Propolis" asp-action="All">Прополиси</a>*@
                                         </li>
@@ -81,7 +81,7 @@
                                 
                                 <!-- 2. Блог -->
                                 <li class="nav-item">
-                                    <a class="nav-link custom-menu-link" asp-area="" asp-controller="Blog" asp-action="All">Блог</a>
+                                    <span class="nav-link custom-menu-link coming-soon-item" style="color: #999 !important; cursor: not-allowed; opacity: 0.6; pointer-events: none;">Блог <small class="text-muted">(Coming soon)</small></span>
                                 </li>
                                 
                                 <!-- 3. За Нас -->
@@ -90,25 +90,8 @@
                                 </li>
                                 
                                 <!-- 4. Пчелари -->
-                                <li class="nav-item dropdown">
-                                    <a class="nav-link custom-menu-link dropdown-toggle" href="#" role="button" id="beekeepersDropdown" data-bs-toggle="dropdown" aria-expanded="false">Пчелари</a>
-                                    <ul class="dropdown-menu" aria-labelledby="beekeepersDropdown">
-                                        <li>
-                                            <a class="dropdown-item nav-link text-dark" asp-area="" asp-controller="Beekeeper" asp-action="Map">Интерактивна карта</a>
-                                            <a class="dropdown-item nav-link text-dark" asp-area="" asp-controller="Beekeeper" asp-action="All">Виж всички пчелари</a>
-                                            @if (User.Identity?.IsAuthenticated ?? false && !isUserBeekeeper)
-                                            {
-                                                <a class="dropdown-item nav-link text-dark" asp-area="" asp-controller="Beekeeper" asp-action="Become">Стани Пчелар</a>
-                                            }
-                                            @if (User.Identity?.IsAuthenticated ?? false && isUserBeekeeper)
-                                            {
-                                                <a class="dropdown-item nav-link text-dark" asp-area="" asp-controller="Honey" asp-action="Mine">Моите Медове</a>
-                                                @*<a class="dropdown-item nav-link text-dark" asp-area="" asp-controller="Propolis" asp-action="Mine">Моите Прополиси</a>*@
-                                                <a class="dropdown-item nav-link text-dark" asp-area="" asp-controller="Honey" asp-action="Add">Добави Мед</a>
-                                                @*<a class="dropdown-item nav-link text-dark" asp-area="" asp-controller="Propolis" asp-action="Add">Добави Прополис</a>*@
-                                            }
-                                        </li>
-                                    </ul>
+                                <li class="nav-item">
+                                    <span class="nav-link custom-menu-link coming-soon-item" style="color: #999 !important; cursor: not-allowed; opacity: 0.6; pointer-events: none;">Пчелари <small class="text-muted">(Coming soon)</small></span>
                                 </li>
                                 
                                 <!-- 5. Контакт -->
@@ -309,6 +292,25 @@
             border: none;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             border-radius: 8px;
+        }
+        
+        /* Coming soon items - grayed out and non-clickable */
+        .coming-soon-item {
+            color: #999 !important;
+            opacity: 0.6 !important;
+            cursor: not-allowed !important;
+            pointer-events: none !important;
+            text-decoration: none !important;
+        }
+        
+        .coming-soon-item:hover {
+            color: #999 !important;
+            transform: none !important;
+        }
+        
+        /* Prevent dropdown from opening for disabled items */
+        .nav-item.dropdown .coming-soon-item.dropdown-toggle {
+            cursor: not-allowed !important;
         }
         
         /* Ensure emojis display properly in dropdown */

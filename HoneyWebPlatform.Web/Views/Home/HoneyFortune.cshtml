@@ -23,18 +23,16 @@
         @if (ViewBag.CanAccessFortune == false)
         {
             <!-- Message for users who already got fortune today -->
-            <div class="fortune-message" style="text-align: center; padding: 3rem 2rem; background: linear-gradient(135deg, #FFF8E7 0%, #FFE5B4 100%); border-radius: 24px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); max-width: 600px; margin: 0 auto;">
-                <div style="font-size: 1.5rem; color: #5A3E1F; line-height: 1.8; font-weight: 600;">
+            <div class="fortune-message" style="text-align: center; padding: 1.5rem 2rem; margin-bottom: 2rem; background: linear-gradient(135deg, #FFF8E7 0%, #FFE5B4 100%); border-radius: 16px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); max-width: 600px; margin-left: auto; margin-right: auto;">
+                <div style="font-size: 1.2rem; color: #5A3E1F; line-height: 1.6; font-weight: 600;">
                     Това е твоето късметче за днес, върни се утре отново, за да видиш късметчето си за деня.
-                </div>
-                <div style="margin-top: 2rem; font-size: 1.2rem; color: #8B4513; opacity: 0.8;">
-                    🐝 Следвай пчелата и се върни утре за ново късметче!
                 </div>
             </div>
         }
-        else
+        
+        <!-- Scratch Card Section (always shown, with stored fortune) -->
+        @if (ViewBag.FortuneText != null)
         {
-            <!-- Scratch Card Section -->
             <section id="scratchSection" class="scratch-section" aria-live="polite">
             <div class="scratch-card-wrapper" id="cardWrapper" style="perspective: 1000px; width: 100%; max-width: 520px; margin: 0 auto; position: relative; cursor: pointer;">
                 <div id="cardContainer" class="card-container" style="position: relative; width: 100%; height: 100%; min-height: 300px; transform-style: preserve-3d; transition: transform 0.6s ease-in-out;">
@@ -55,9 +53,6 @@
                     <!-- Back of card (golden with Save the Bee logo) -->
                     <div id="scratchCardBack" class="scratch-card-back" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; min-height: 300px; background: linear-gradient(135deg, #F59F0A 0%, #D97706 50%, #B45309 100%); border-radius: 24px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0.5rem; backface-visibility: hidden; transform: rotateY(180deg); cursor: pointer; pointer-events: auto; overflow: hidden;">
                         <img src="~/Uploads/WebsiteAnimations/save-the-bee-logo.png" alt="Save the Bee" class="card-back-logo" style="width: 100%; height: auto; max-height: 85%; object-fit: contain; pointer-events: none; filter: brightness(1.2) contrast(1.3); display: block; margin: 0 auto; transform: scale(1.5);" />
-                        <div style="margin-top: 0.75rem; color: white; font-size: 0.8rem; opacity: 0.9; text-align: center; pointer-events: none; font-weight: 500;">
-                            👆 Кликни за да видиш късметчето отново
-                        </div>
                     </div>
                 </div>
                 
@@ -368,60 +363,21 @@
 </style>
 
 <script>
-    // 50 short, funny, positive fortunes (1-2 sentences max)
-    const fortunes = [
-        "Късмет! Днес ще намериш нещо сладко, което не е мед.",
-        "Любов! Твоето сърце ще се усмихне поне веднъж днес.",
-        "Пари! Нещо неочаквано ще попълни портфейла ти скоро.",
-        "Успех! Твоите усилия ще дадат плодове по-скоро, отколкото очакваш.",
-        "Здравье! Енергията ти ще бъде заразна — в добрия смисъл.",
-        "Приятелство! Някой ще те направи по-щастлив, без да знаеш защо.",
-        "Приключение! Днес ще се случи нещо, което ще разкажеш след 10 години.",
-        "Спокойствие! Вътрешният ти глас ще ти каже точно какво да правиш.",
-        "Радост! Малко нещо ще ти направи деня по-специален.",
-        "Вдъхновение! Идея, която чакаше, ще дойде днес.",
-        "Щастие! Днес ще усетиш, че си точно там, където трябва да си.",
-        "Смех! Нещо забавно ще се случи и ще ти подобри настроението.",
-        "Надежда! Всичко, което те притеснява, ще се разреши по най-добрия начин.",
-        "Енергия! Днес ще имаш сили за всичко, което искаш.",
-        "Грация! Ще се справиш с всяка ситуация с лекота.",
-        "Мъдрост! Решението, което търсиш, вече е в теб.",
-        "Хармония! Днес всичко ще се подреди по най-добрия начин.",
-        "Страст! Нещо, което обичаш, ще ти донесе радост.",
-        "Благодарност! Ще забележиш нещо хубаво, което преди не си виждал.",
-        "Смелост! Ще направиш стъпка, която ще те направи по-горд.",
-        "Творчество! Идеята, която чакаше, ще дойде днес.",
-        "Баланс! Днес ще намериш време за всичко важно.",
-        "Израстване! Урок, който научи, ще ти помогне много.",
-        "Свързаност! Някой близък ще ти направи деня по-специален.",
-        "Изобилие! Днес ще получиш повече, отколкото очакваш.",
-        "Лекота! Всичко, което те тежи, ще стане по-леко.",
-        "Красота! Ще забележиш нещо прекрасно в ежедневието си.",
-        "Сила! Всяко предизвикателство ще ти покаже колко си способен.",
-        "Мир! Вътрешното спокойствие ще ти донесе яснота.",
-        "Възможности! Двер, която мислеше, че е затворена, ще се отвори.",
-        "Радост! Малко нещо ще ти направи деня по-специален.",
-        "Любопитство! Ще научиш нещо ново, което ще те зарадва.",
-        "Генерозност! Доброто, което правиш, ще се върне при теб.",
-        "Търпение! Всичко, което чакаш, ще дойде в правилния момент.",
-        "Вяра! Ще повярваш в себе си по-силно от вчера.",
-        "Елегантност! Ще се справиш с всяка ситуация с клас.",
-        "Вдъхновение! Нещо ще те мотивира да направиш следващата стъпка.",
-        "Хумор! Днес ще се усмиеш поне веднъж от сърце.",
-        "Свобода! Ще се почувстваш по-освободен от вчера.",
-        "Любов към живота! Днес ще усетиш колко е хубав животът.",
-        "Успех! Твоите мечти са по-близо, отколкото мислиш.",
-        "Благополучие! Всичко в живота ти ще тече по-плавно.",
-        "Радост! Малко нещо ще ти направи деня по-специален.",
-        "Късмет! Днес ще се случи нещо, което ще те зарадва.",
-        "Енергия! Ще имаш сили за всичко, което искаш да направиш.",
-        "Хармония! Днес всичко ще се подреди по най-добрия начин.",
-        "Мъдрост! Решението, което търсиш, вече е в теб.",
-        "Щастие! Днес ще усетиш, че си точно там, където трябва да си.",
-        "Надежда! Всичко, което те притеснява, ще се разреши по най-добрия начин.",
-        "Любов! Твоето сърце ще се усмихне поне веднъж днес.",
-        "Пари! Нещо неочаквано ще попълни портфейла ти скоро."
-    ];
+    // Get the fortune from server (stored per IP per day)
+    @{
+        string fortuneJs = "null";
+        if (ViewBag.FortuneText != null)
+        {
+            // Escape the fortune text for JavaScript
+            fortuneJs = "\"" + ViewBag.FortuneText.ToString()
+                .Replace("\\", "\\\\")
+                .Replace("\"", "\\\"")
+                .Replace("\r", "")
+                .Replace("\n", " ")
+                .Replace("'", "\\'") + "\"";
+        }
+    }
+    const serverFortune = @Html.Raw(fortuneJs);
 
     // DOM Elements
     let scratchSection, fortuneText, scratchCanvas, scratchHand, flyingBee, cardContainer, cardWrapper;
@@ -532,9 +488,10 @@
             document.body.classList.remove('scratching-active');
         }, { passive: false });
 
-        // Get random fortune and show card immediately
-        const randomFortune = fortunes[Math.floor(Math.random() * fortunes.length)];
-        showScratchCard(randomFortune);
+        // Use the fortune from server (same fortune per IP per day)
+        // If serverFortune is null, fallback to a default message (shouldn't happen in normal flow)
+        const fortuneToShow = serverFortune || "Късмет! Днес ще се случи нещо, което ще те зарадва.";
+        showScratchCard(fortuneToShow);
     }
 
     // Show scratch card
@@ -660,34 +617,6 @@
                 // Re-setup handlers to ensure they're active
                 setupCardFlipHandlers();
                 
-                // Add a visual hint
-                const hint = document.createElement('div');
-                hint.id = 'flipHint';
-                hint.style.cssText = 'position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 100; background: rgba(245, 159, 10, 0.95); color: white; padding: 1.5rem 2.5rem; border-radius: 16px; font-weight: 700; font-size: 1.3rem; pointer-events: none; animation: pulse 2s infinite; box-shadow: 0 8px 24px rgba(0,0,0,0.3); text-align: center; cursor: pointer;';
-                hint.textContent = '👆 Кликни за да обърнеш картата!';
-                if (cardWrapper) {
-                    cardWrapper.appendChild(hint);
-                    // Make hint clickable too
-                    hint.style.pointerEvents = 'auto';
-                    hint.onclick = function(e) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        console.log('🔄 Hint clicked - flipping card');
-                        flipCard();
-                    };
-                }
-                
-                // Remove hint after 5 seconds
-                setTimeout(() => {
-                    if (hint.parentElement) {
-                        hint.style.opacity = '0';
-                        hint.style.transition = 'opacity 0.5s ease';
-                        setTimeout(() => {
-                            if (hint.parentElement) hint.remove();
-                        }, 500);
-                    }
-                }, 5000);
-                
                 console.log('✅ Card is ready to flip! Click anywhere on the card to flip.');
             }
         } catch (error) {
@@ -753,14 +682,6 @@
                 scratchCanvas.style.display = 'block';
                 scratchCanvas.style.opacity = '0.1';
                 scratchCanvas.style.pointerEvents = 'none';
-            }
-        }
-        
-        // Remove hint if still visible (only on first flip)
-        if (cardFlipped) {
-            const hint = document.getElementById('flipHint');
-            if (hint && hint.parentElement) {
-                hint.remove();
             }
         }
         

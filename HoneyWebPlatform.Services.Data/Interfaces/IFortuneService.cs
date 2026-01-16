@@ -4,7 +4,9 @@ namespace HoneyWebPlatform.Services.Data.Interfaces
     {
         Task<bool> CanAccessFortuneTodayAsync(string ipAddress);
         
-        Task RecordFortuneAccessAsync(string ipAddress);
+        Task RecordFortuneAccessAsync(string ipAddress, string fortuneText);
+        
+        Task<string?> GetTodayFortuneAsync(string ipAddress);
     }
 }
 

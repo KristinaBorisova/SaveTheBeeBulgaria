@@ -44,7 +44,7 @@ namespace HoneyWebPlatform.Services.Data
             }
         }
 
-        public async Task RecordFortuneAccessAsync(string ipAddress)
+        public async Task RecordFortuneAccessAsync(string ipAddress, string fortuneText)
         {
             try
             {
@@ -61,15 +61,17 @@ namespace HoneyWebPlatform.Services.Data
                         Id = Guid.NewGuid(),
                         IpAddress = ipAddress,
                         LastAccessDate = today,
-                        CreatedOn = today
+                        CreatedOn = today,
+                        FortuneText = fortuneText
                     };
                     
                     await this.dbContext.FortuneAccesses.AddAsync(access);
                 }
                 else
                 {
-                    // Update existing record
+                    // Update existing record with new fortune for today
                     access.LastAccessDate = today;
+                    access.FortuneText = fortuneText;
                     this.dbContext.FortuneAccesses.Update(access);
                 }
 
@@ -79,6 +81,26 @@ namespace HoneyWebPlatform.Services.Data
             {
                 // Silently fail if table doesn't exist - feature will still work but won't track
                 // User can create the table manually when ready
+            }
+        }
+
+        public async Task<string?> GetTodayFortuneAsync(string ipAddress)
+        {
+            try
+            {
+                var today = DateTime.UtcNow.Date;
+                
+                var access = await this.dbContext.FortuneAccesses
+                    .FirstOrDefaultAsync(fa => fa.IpAddress == ipAddress && 
+                                               fa.LastAccessDate.Date == today);
+
+                // Return the fortune text if it exists and was accessed today
+                return access?.FortuneText;
+            }
+            catch (Exception)
+            {
+                // If any error occurs, return null (no stored fortune)
+                return null;
             }
         }
     }

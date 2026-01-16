@@ -16,6 +16,9 @@ namespace HoneyWebPlatform.Data.Models
         public DateTime LastAccessDate { get; set; }
 
         public DateTime CreatedOn { get; set; }
+
+        [MaxLength(500)] // Store the fortune text
+        public string? FortuneText { get; set; }
     }
 }
 

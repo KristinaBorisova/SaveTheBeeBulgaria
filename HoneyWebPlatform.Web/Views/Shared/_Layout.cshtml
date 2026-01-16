@@ -67,34 +67,38 @@
                              id="navbarSupportedContent">
 
                             <ul class="navbar-nav">
-                                <!-- 1. Продукти -->
+                                <!-- 1. Твоето медено късметче -->
+                                <li class="nav-item">
+                                    <a class="nav-link custom-menu-link" asp-area="" asp-controller="Home" asp-action="HoneyFortune">🔮 Твоето медено късметче</a>
+                                </li>
+                                
+                                <!-- 2. Продукти -->
                                 <li class="nav-item dropdown">
                                     <a class="nav-link custom-menu-link dropdown-toggle" href="#" role="button" id="productsDropdown" data-bs-toggle="dropdown" aria-expanded="false">Продукти</a>
                                     <ul class="dropdown-menu" aria-labelledby="productsDropdown">
                                         <li>
                                             <span class="dropdown-item nav-link text-muted coming-soon-item" style="cursor: not-allowed; opacity: 0.6; pointer-events: none;">🍯 Пчелен Мед <small class="text-muted">(Coming soon)</small></span>
-                                            <a class="dropdown-item nav-link text-dark" asp-area="" asp-controller="Home" asp-action="HoneyFortune">🔮 Твоето медено късметче</a>
                                             @*<a class="dropdown-item nav-link text-dark" asp-area="" asp-controller="Propolis" asp-action="All">Прополиси</a>*@
                                         </li>
                                     </ul>
                                 </li>
                                 
-                                <!-- 2. Блог -->
+                                <!-- 3. Блог -->
                                 <li class="nav-item">
                                     <span class="nav-link custom-menu-link coming-soon-item" style="color: #999 !important; cursor: not-allowed; opacity: 0.6; pointer-events: none;">Блог <small class="text-muted">(Coming soon)</small></span>
                                 </li>
                                 
-                                <!-- 3. За Нас -->
+                                <!-- 4. За Нас -->
                                 <li class="nav-item">
                                     <a class="nav-link custom-menu-link" asp-area="" asp-controller="Home" asp-action="About">За Нас</a>
                                 </li>
                                 
-                                <!-- 4. Пчелари -->
+                                <!-- 5. Пчелари -->
                                 <li class="nav-item">
                                     <span class="nav-link custom-menu-link coming-soon-item" style="color: #999 !important; cursor: not-allowed; opacity: 0.6; pointer-events: none;">Пчелари <small class="text-muted">(Coming soon)</small></span>
                                 </li>
                                 
-                                <!-- 5. Контакт -->
+                                <!-- 6. Контакт -->
                                 <li class="nav-item">
                                     <a class="nav-link custom-menu-link" asp-area="" asp-controller="Home" asp-action="Contact">Контакт</a>
                                 </li>
